@@ -1,0 +1,3 @@
+1. Changed property "dir.libs" to point to "../../common/libs" in build.xml
+2. Changed "junit3.7.jar" to "junit3.8.1.jar" in build.xml
+3. Changed property "lib.log4j" value to "log4j-1.2.8.jar" in build.xml

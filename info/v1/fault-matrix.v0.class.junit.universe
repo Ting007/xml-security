@@ -1,0 +1,55 @@
+	1 listversions
+	13 listtests
+CLASSPATH=/nfs/spectre/u5/dohy/Galileo/gal:/nfs/spectre/u5/dohy/Galileo/gal/BCEL:/nfs/spectre/u5/dohy/Galileo/gal/galileo/lib/commons-collections.jar:.:/nfs/spectre/u5/dohy/Prior/apache-xml-security/source:/nfs/spectre/u5/dohy/Prior/apache-xml-security/source/xml-security:/nfs/spectre/u5/dohy/Prior/apache-xml-security/source/xml-security/build/classes:../../common/libs/bc-jce-jdk13-114.jar:../../common/libs/commons-logging-api.jar:../../common/libs/commons-logging.jar:../../common/libs/junit3.8.1.jar:../../common/libs/log4j-1.2.8.jar:../../common/libs/style-apachexml.jar:../../common/libs/stylebook-1.0-b3_xalan-2.jar:../../common/libs/xalan.jar:../../common/libs/xercesImpl.jar:../../common/libs/xml-apis.jar:../../common/libs/xmlParserAPIs.jar
+-P[-sID 1-5 org.apache.xml.security.test.AllTests]
+-P[-sID 6-19 org.apache.xml.security.test.AllTests]
+-P[-sID 25-32 org.apache.xml.security.test.AllTests]
+-P[-sID 33-35 org.apache.xml.security.test.AllTests]
+-P[-sID 36-48 org.apache.xml.security.test.AllTests]
+-P[-sID 49-51 org.apache.xml.security.test.AllTests]
+-P[-sID 52-53 org.apache.xml.security.test.AllTests]
+-P[-sID 54-54 org.apache.xml.security.test.AllTests]
+-P[-sID 55-61 org.apache.xml.security.test.AllTests]
+-P[-sID 62-65 org.apache.xml.security.test.AllTests]
+-P[-sID 66-74 org.apache.xml.security.test.AllTests]
+-P[-sID 75-86 org.apache.xml.security.test.AllTests]
+-P[-sID 87-88 org.apache.xml.security.test.AllTests]
+unitest0:
+v1:
+	0
+unitest1:
+v1:
+	0
+unitest2:
+v1:
+	0
+unitest3:
+v1:
+	0
+unitest4:
+v1:
+	0
+unitest5:
+v1:
+	0
+unitest6:
+v1:
+	0
+unitest7:
+v1:
+	0
+unitest8:
+v1:
+	0
+unitest9:
+v1:
+	0
+unitest10:
+v1:
+	0
+unitest11:
+v1:
+	1
+unitest12:
+v1:
+	0

@@ -1,0 +1,6 @@
+1. Changed property "dir.libs" to point to "../../common/libs" in build.xml
+2. Changed "jce-jdk13-112.jar" to "jce-jdk13-114.jar" (oldest version still available) in build.xml
+3. Changed "junit3.7.jar" to "junit3.8.1.jar" in build.xml
+4. Changed property "lib.log4j" value to "log4j-1.2.8.jar" in build.xml
+5. Disabled MD5 verification (target 'check-bc' in build.xml') on jce-jdk13-114.jar
+   (expects now-unavailable jce-jdk13-112.jar)

@@ -1,0 +1,2 @@
+1. Changed property "dir.libs" to point to "../../common/libs" in build.xml
+2. Changed "junit.jar" to "junit3.8.1.jar" in build.xml

@@ -1,0 +1,13 @@
+JM_HD_1 1 JCEMapper.cpp
+AC_HD_1 1 AttrCompare.cpp
+ATC_AK_1 1 AttrCompare.cpp
+RF_HD_1 1 Reference.cpp
+SI_HD_1 1 SignedInfo.cpp
+SIN_AK_1 2 SignedInfo.cpp
+XS_HD_1 1 XMLSignature.cpp
+XSI_AK_1 2 XMLSignature.cpp
+XSI_HD_1 1 XMLSignatureInput.cpp
+XU_HD_1 1 XMLUtils.cpp
+XU_HD_2 2 XMLUtils.cpp
+EC_AK_1 1 EncryptionConstants.cpp
+IAH_AK_1 1 IgnoreAllErrorHandler.cpp

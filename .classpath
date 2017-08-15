@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="lib" path="common/libs/bc-jce-jdk13-114.jar"/>
+	<classpathentry kind="lib" path="common/libs/commons-logging-api.jar"/>
+	<classpathentry kind="lib" path="common/libs/commons-logging.jar"/>
+	<classpathentry kind="lib" path="common/libs/junit3.8.1.jar"/>
+	<classpathentry kind="lib" path="common/libs/log4j-1.2.8.jar"/>
+	<classpathentry kind="lib" path="common/libs/style-apachexml.jar"/>
+	<classpathentry kind="lib" path="common/libs/stylebook-1.0-b3_xalan-2.jar"/>
+	<classpathentry kind="lib" path="common/libs/xalan.jar"/>
+	<classpathentry kind="lib" path="common/libs/xml-apis.jar"/>
+	<classpathentry kind="lib" path="common/libs/xmlParserAPIs.jar"/>
+	<classpathentry kind="lib" path="common/libs/xerces-2_11_0 2/xercesImpl.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

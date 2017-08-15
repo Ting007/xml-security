@@ -1,0 +1,14 @@
+CH_HD_1 1 C14nHelper.cpp
+CHP_AK_1 2 C14nHelper.cpp
+CB_HD_1 1 CanonicalizerBase.cpp
+CB_HD_2 2 CanonicalizerBase.cpp
+CB_HD_3 3 CanonicalizerBase.cpp
+RF_HD_1 1 Reference.cpp
+REF_AK_1 2 Reference.cpp
+RF_HD_2 3 Reference.cpp
+XSI_HD_1 1 XMLSignatureInput.cpp
+XSI_HD_2 2 XMLSignatureInput.cpp
+XSI_HD_3 3 XMLSignatureInput.cpp
+XSI_HD_4 4 XMLSignatureInput.cpp
+XSI_HD_5 5 XMLSignatureInput.cpp
+XU_HD_1 1 XMLUtils.cpp
