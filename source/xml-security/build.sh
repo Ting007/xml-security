@@ -7,5 +7,6 @@ echo “reached build.sh”
 CLASSPATH=$CLASSPATH:/Users/Shared/Jenkins/Home/workspace/apache-xml-security/source:/Users/Shared/Jenkins/Home/workspace/apache-xml-security/source/xml-security:.
 #export CLASSPATH
 export CLASSPATH
-
+echo $CLASSPATH
+echo "reach ant command"
 ant ${1}
