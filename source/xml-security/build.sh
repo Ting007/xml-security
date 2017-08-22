@@ -7,5 +7,5 @@ CLASSPATH=$CLASSPATH:/Users/Shared/Jenkins/Home/workspace/apache-xml-security/so
 #export CLASSPATH
 export CLASSPATH
 echo $CLASSPATH
-echo "reach ant command"
+echo "now right before ant command"
 ant ${1}
