@@ -1,6 +1,6 @@
-#!/usr/local/bin/bash
+#!/bin/sh
 
-CLASSPATH="$CLASSPATH":/nfs/spectre/u5/aristot/subjects/lib:./build/classes
+CLASSPATH="$CLASSPATH":./build/classes:../../common/libs
 
 for i in ../../common/libs/*.jar
 do
