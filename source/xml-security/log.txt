@@ -373,7 +373,7 @@ DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(9 no
 DEBUG Canonicalizer20010315:? - makeVisible(#document)
 DEBUG Canonicalizer20010315:? - makeVisible(xml-stylesheet)
 DEBUG Canonicalizer20010315:? - makeVisible(doc)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@208a0544) in Element doc
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@26ae533a) in Element doc
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - makeVisible(#comment)
 DEBUG Canonicalizer20010315:? - makeVisible(pi-without-data)
@@ -434,7 +434,7 @@ DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(6 no
 DEBUG Canonicalizer20010315:? - makeVisible(#document)
 DEBUG Canonicalizer20010315:? - makeVisible(xml-stylesheet)
 DEBUG Canonicalizer20010315:? - makeVisible(doc)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@4c349471) in Element doc
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@50059a34) in Element doc
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - makeVisible(pi-without-data)
 DEBUG Canonicalizer20010315:? - checkForRelativeNamespace([doc: null])
@@ -528,7 +528,7 @@ DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(sel
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(19 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(#document)
 DEBUG Canonicalizer20010315:? - makeVisible(doc)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@2a0ab444) in Element doc
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@67eb366) in Element doc
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - makeVisible(clean)
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -1061,7 +1061,7 @@ DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(sel
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(44 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(#document)
 DEBUG Canonicalizer20010315:? - makeVisible(doc)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@4edc41c5) in Element doc
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@53fcc0a2) in Element doc
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - makeVisible(e1)
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -1668,7 +1668,7 @@ DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(sel
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(23 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(#document)
 DEBUG Canonicalizer20010315:? - makeVisible(doc)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@4cdada24) in Element doc
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@198e261d) in Element doc
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - makeVisible(text)
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -1775,7 +1775,7 @@ DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(5 no
 DEBUG Canonicalizer20010315:? - makeVisible(#document)
 DEBUG Canonicalizer20010315:? - makeVisible(doc)
 DEBUG Canonicalizer20010315:? - makeVisible(attrExtEnt="entExt") in Element doc
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@582ab653) in Element doc
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@65493102) in Element doc
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - checkForRelativeNamespace([doc: null])
 DEBUG Canonicalizer20010315:? - checkForRelativeNamespace attrExtEnt="entExt"
@@ -1869,7 +1869,7 @@ DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(sel
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(4 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(#document)
 DEBUG Canonicalizer20010315:? - makeVisible(doc)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@6ee1dac2) in Element doc
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@608b8a47) in Element doc
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - checkForRelativeNamespace([doc: null])
 DEBUG Canonicalizer20010315:? - doc included
@@ -2433,7 +2433,7 @@ DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(6 no
 DEBUG Canonicalizer20010315:? - makeVisible(#document)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.absolute.org/#likeVodka} absolute:correct)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:absolute="http://www.absolute.org/#likeVodka") in Element absolute:correct
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@614a75bb) in Element absolute:correct
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@301db5ec) in Element absolute:correct
 DEBUG Canonicalizer20010315:? - makeVisible({../cheating#away} relative:incorrect)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:relative="../cheating#away") in Element relative:incorrect
 DEBUG Canonicalizer20010315:? - checkForRelativeNamespace([absolute:correct: null])
@@ -2473,7 +2473,7 @@ DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(sel
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(4 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(#document)
 DEBUG Canonicalizer20010315:? - makeVisible(UTF16)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@3cc70b0d) in Element UTF16
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@44ed904) in Element UTF16
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - checkForRelativeNamespace([UTF16: null])
 DEBUG Canonicalizer20010315:? - UTF16 included
@@ -4275,7 +4275,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG Canonicalizer20010315:? - checkForRelativeNamespace([doc: null])
 INFO  XMLSignatureInputTest:? - 0 DOCUMENT [#document: null]
 INFO  XMLSignatureInputTest:? - 1 ELEMENT [doc: null]
-INFO  XMLSignatureInputTest:? - 2 ATTRIBUTE org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@4cc72243
+INFO  XMLSignatureInputTest:? - 2 ATTRIBUTE org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@3496212a
 INFO  XMLSignatureInputTest:? - 3 ELEMENT [n: null]
 INFO  XMLSignatureInputTest:? - 4 TEXT_NODE [#text: 1]
 INFO  XMLSignatureInputTest:? - 5 ELEMENT [n: null]
@@ -4331,7 +4331,7 @@ DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(8 no
 DEBUG Canonicalizer20010315:? - makeVisible(#document)
 DEBUG Canonicalizer20010315:? - makeVisible(#comment)
 DEBUG Canonicalizer20010315:? - makeVisible(RootElement)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@63779885) in Element RootElement
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@2db7ae22) in Element RootElement
 DEBUG Canonicalizer20010315:? - makeVisible(Element1)
 DEBUG Canonicalizer20010315:? - makeVisible(Element2)
 DEBUG Canonicalizer20010315:? - makeVisible(Element3)
@@ -4363,7 +4363,7 @@ DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(8 no
 DEBUG Canonicalizer20010315:? - makeVisible(#document)
 DEBUG Canonicalizer20010315:? - makeVisible(#comment)
 DEBUG Canonicalizer20010315:? - makeVisible(RootElement)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@4585572a) in Element RootElement
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@20d12eea) in Element RootElement
 DEBUG Canonicalizer20010315:? - makeVisible(Element1)
 DEBUG Canonicalizer20010315:? - makeVisible(Element2)
 DEBUG Canonicalizer20010315:? - makeVisible(Element3)
@@ -4682,7 +4682,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(20 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@66fdfc58) in Element Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@5578920a) in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} CanonicalizationMethod)
@@ -4769,7 +4769,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG XMLSignatureInput:? - set XPathNodeSet with 5 nodes
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(5 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@6defe475) in Element Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@242da5a6) in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} Object)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="object") in Element Object
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -4866,7 +4866,7 @@ DEBUG CanonicalizerSpi:? - The XPath (.//. | .//@* | .//namespace::*)[not(self::
 DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c14n-20010315
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(20 nodes)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@60a415a3) in Element Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@18abe654) in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element SignedInfo
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -4937,7 +4937,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(24 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@5f78dc08) in Element Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@1dff2e1b) in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} CanonicalizationMethod)
@@ -5032,7 +5032,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG XMLSignatureInput:? - set XPathNodeSet with 5 nodes
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(5 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@3c63e8c) in Element Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@5e6ffd79) in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} Object)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="object") in Element Object
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -5136,7 +5136,7 @@ DEBUG CanonicalizerSpi:? - The XPath (.//. | .//@* | .//namespace::*)[not(self::
 DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c14n-20010315
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(24 nodes)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@a6a435f) in Element Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@4f62198b) in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element SignedInfo
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -5216,7 +5216,7 @@ DEBUG CanonicalizerSpi:? - The XPath (.//. | .//@* | .//namespace::*)[not(self::
 DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c14n-20010315
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(26 nodes)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@d896a4c) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@170d9151) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -5403,7 +5403,7 @@ DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(6 no
 DEBUG Canonicalizer20010315:? - makeVisible(#document)
 DEBUG Canonicalizer20010315:? - makeVisible({urn:envelope} Envelope)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="urn:envelope") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@1f47e668) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@2594e776) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG XMLSignatureInput:? - The nodeset _inputNodeSet has 6 Nodes
@@ -5604,7 +5604,7 @@ DEBUG CanonicalizerSpi:? - The XPath (.//. | .//@* | .//namespace::*)[not(self::
 DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c14n-20010315
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(26 nodes)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@795e0c2b) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@4bb7b407) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element SignedInfo
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -5689,7 +5689,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(26 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@2d42c778) in Element Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@4add8e0d) in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} CanonicalizationMethod)
@@ -5845,7 +5845,7 @@ DEBUG CanonicalizerSpi:? - The XPath (.//. | .//@* | .//namespace::*)[not(self::
 DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c14n-20010315
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(26 nodes)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@316d3536) in Element Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@67de007d) in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element SignedInfo
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -5930,7 +5930,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(20 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@798f1a31) in Element Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@10c789fb) in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} CanonicalizationMethod)
@@ -6032,7 +6032,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG XMLSignatureInput:? - set XPathNodeSet with 5 nodes
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(5 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@174323d5) in Element Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@57f5b4d1) in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} Object)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="object") in Element Object
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -6228,7 +6228,7 @@ DEBUG CanonicalizerSpi:? - The XPath (.//. | .//@* | .//namespace::*)[not(self::
 DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c14n-20010315
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(20 nodes)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@51c293f8) in Element Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@695cd9c0) in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element SignedInfo
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -6298,7 +6298,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(20 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@7e3eec1a) in Element Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@1864160e) in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} CanonicalizationMethod)
@@ -6409,7 +6409,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG XMLSignatureInput:? - set XPathNodeSet with 5 nodes
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(5 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@4b4ed577) in Element Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@572c4768) in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} Object)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="object") in Element Object
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -6543,7 +6543,7 @@ DEBUG CanonicalizerSpi:? - The XPath (.//. | .//@* | .//namespace::*)[not(self::
 DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c14n-20010315
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(20 nodes)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@531df164) in Element Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@3ed19cdf) in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element SignedInfo
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -6612,7 +6612,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(26 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@4412dd76) in Element Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@1a9db992) in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} CanonicalizationMethod)
@@ -6762,7 +6762,7 @@ DEBUG CanonicalizerSpi:? - The XPath (.//. | .//@* | .//namespace::*)[not(self::
 DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c14n-20010315
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(26 nodes)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@798baf36) in Element Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@391da0) in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element SignedInfo
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -6847,7 +6847,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(20 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@340ae1cf) in Element Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@1594df96) in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} CanonicalizationMethod)
@@ -6978,7 +6978,7 @@ DEBUG CanonicalizerSpi:? - The XPath (.//. | .//@* | .//namespace::*)[not(self::
 DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c14n-20010315
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(20 nodes)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@3ddcc4cd) in Element Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@1f248f2b) in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element SignedInfo
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -7048,7 +7048,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(280 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:foo="http://www.usps.gov/foo") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@4cf221f6) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@4526ba64) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -7855,7 +7855,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG XMLSignatureInput:? - set XPathNodeSet with 24 nodes
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(24 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:foo="http://www.usps.gov/foo") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@6405ce40) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@48f81402) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} Object)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="object-4") in Element Object
@@ -8750,7 +8750,7 @@ DEBUG ElementProxy:? - setElement(Transform, "file:/Users/ting/Doc/ComputerS/Tes
 DEBUG Transforms:? - Preform the (0)th http://www.w3.org/TR/1999/REC-xpath-19991116 transform
 DEBUG TransformXPath:? - The Transform Element is [Transform: null]
 DEBUG TransformXPath:? - Excluded:     xmlns:foo="http://www.usps.gov/foo"
-DEBUG TransformXPath:? - Excluded:     org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@6405ce40
+DEBUG TransformXPath:? - Excluded:     org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@48f81402
 DEBUG TransformXPath:? - Excluded:     xmlns="http://www.w3.org/2000/09/xmldsig#"
 DEBUG TransformXPath:? - Excluded:     [Object: null]
 DEBUG TransformXPath:? - Excluded:     Id="object-4"
@@ -10644,7 +10644,7 @@ DEBUG ElementProxy:? - setElement(Transform, "file:/Users/ting/Doc/ComputerS/Tes
 DEBUG Transforms:? - Preform the (0)th http://www.w3.org/TR/1999/REC-xpath-19991116 transform
 DEBUG TransformXPath:? - The Transform Element is [Transform: null]
 DEBUG TransformXPath:? - Excluded:     xmlns:foo="http://www.usps.gov/foo"
-DEBUG TransformXPath:? - Excluded:     org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@7d57bf4c
+DEBUG TransformXPath:? - Excluded:     org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@31d1fc02
 DEBUG TransformXPath:? - Excluded:     xmlns="http://www.w3.org/2000/09/xmldsig#"
 DEBUG TransformXPath:? - Excluded:     [Object: null]
 DEBUG TransformXPath:? - Excluded:     Id="object-1"
@@ -11562,7 +11562,7 @@ DEBUG TransformXPath:? - Excluded:     [#document: null]
 DEBUG TransformXPath:? - Excluded:     [Envelope: null]
 DEBUG TransformXPath:? - Excluded:     xmlns="http://www.usps.gov/"
 DEBUG TransformXPath:? - Excluded:     xmlns:foo="http://www.usps.gov/foo"
-DEBUG TransformXPath:? - Excluded:     org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@66e8c7db
+DEBUG TransformXPath:? - Excluded:     org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@201532fc
 DEBUG TransformXPath:? - Excluded:     [#text: 
   ]
 DEBUG TransformXPath:? - Excluded:     [DearSir: null]
@@ -13529,7 +13529,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG XMLSignatureInput:? - set XPathNodeSet with 92 nodes
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(92 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:foo="http://www.usps.gov/foo") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@5e1558dc) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@21b38cdc) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} Manifest)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="manifest-1") in Element Manifest
@@ -14574,7 +14574,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG XMLSignatureInput:? - set XPathNodeSet with 15 nodes
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(15 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:foo="http://www.usps.gov/foo") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@2a4bd173) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@59d6e3d2) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} SignatureProperties)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="signature-properties-1") in Element SignatureProperties
@@ -16001,7 +16001,7 @@ DEBUG Canonicalizer20010315:? - makeVisible(#document)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.usps.gov/} Envelope)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.usps.gov/") in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:foo="http://www.usps.gov/foo") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@1a2e34bf) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@6b033450) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.usps.gov/} DearSir)
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -17436,7 +17436,7 @@ DEBUG Canonicalizer20010315:? - makeVisible(#document)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.usps.gov/} Envelope)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.usps.gov/") in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:foo="http://www.usps.gov/foo") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@7bab2c3) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@5a01f91) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.usps.gov/} DearSir)
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -19355,7 +19355,7 @@ DEBUG Canonicalizer20010315:? - makeVisible(#comment)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.usps.gov/} Envelope)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.usps.gov/") in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:foo="http://www.usps.gov/foo") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@56091d7c) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@67c354e6) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.usps.gov/} DearSir)
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -21283,7 +21283,7 @@ DEBUG Canonicalizer20010315:? - makeVisible(#comment)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.usps.gov/} Envelope)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.usps.gov/") in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:foo="http://www.usps.gov/foo") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@2484de3c) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@79123c5f) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.usps.gov/} DearSir)
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -22224,7 +22224,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG XMLSignatureInput:? - set XPathNodeSet with 9 nodes
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(9 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:foo="http://www.usps.gov/foo") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@3aa620f5) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@79cb374f) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} Object)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="object-3") in Element Object
@@ -23161,7 +23161,7 @@ DEBUG Transforms:? - Preform the (0)th http://www.w3.org/TR/2001/REC-xml-c14n-20
 DEBUG TransformC14NWithComments:? - Length: 9 nodes input
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(9 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:foo="http://www.usps.gov/foo") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@20a83c2a) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@727db937) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} Object)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="object-3") in Element Object
@@ -24102,7 +24102,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG XMLSignatureInput:? - set XPathNodeSet with 10 nodes
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(10 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:foo="http://www.usps.gov/foo") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@30b5ac2c) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@1839474b) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} Object)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="object-3") in Element Object
@@ -25052,7 +25052,7 @@ DEBUG Transforms:? - Preform the (0)th http://www.w3.org/TR/2001/REC-xml-c14n-20
 DEBUG TransformC14NWithComments:? - Length: 10 nodes input
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(10 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:foo="http://www.usps.gov/foo") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@2d58497c) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@6dfbe226) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} Object)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="object-3") in Element Object
@@ -25982,7 +25982,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG XMLSignatureInput:? - set XPathNodeSet with 14 nodes
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(14 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:foo="http://www.usps.gov/foo") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@6d1576d7) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@76c7cadf) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element SignedInfo
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} Reference)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="reference-2") in Element Reference
@@ -26939,7 +26939,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG XMLSignatureInput:? - set XPathNodeSet with 13 nodes
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(13 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:foo="http://www.usps.gov/foo") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@6fa8bd74) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@4ce76438) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} Reference)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="manifest-reference-1") in Element Reference
@@ -27885,7 +27885,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG XMLSignatureInput:? - set XPathNodeSet with 14 nodes
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(14 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:foo="http://www.usps.gov/foo") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@1d3c66d8) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@54dbb83a) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element SignedInfo
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} Reference)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="reference-1") in Element Reference
@@ -28859,7 +28859,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(280 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:foo="http://www.usps.gov/foo") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@519549e) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@5c6c2308) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element SignedInfo
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -29643,7 +29643,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(15 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@7481933a) in Element dsig:Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@77b9e7fc) in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:CanonicalizationMethod)
 DEBUG Canonicalizer20010315:? - makeVisible(Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315") in Element dsig:CanonicalizationMethod
@@ -29724,7 +29724,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG XMLSignatureInput:? - set XPathNodeSet with 5 nodes
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(5 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@1be2f6b0) in Element dsig:Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@1c88a970) in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:Object)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="object") in Element dsig:Object
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -29795,7 +29795,7 @@ DEBUG CanonicalizerSpi:? - The XPath (.//. | .//@* | .//namespace::*)[not(self::
 DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c14n-20010315
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(15 nodes)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@28a7bd7a) in Element dsig:Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@541b55f2) in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:SignedInfo
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:CanonicalizationMethod)
@@ -29864,7 +29864,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(15 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@51d2bb9f) in Element dsig:Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@4fb7a553) in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:CanonicalizationMethod)
 DEBUG Canonicalizer20010315:? - makeVisible(Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315") in Element dsig:CanonicalizationMethod
@@ -29945,7 +29945,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG XMLSignatureInput:? - set XPathNodeSet with 5 nodes
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(5 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@862fb35) in Element dsig:Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@7897aaa6) in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:Object)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="object") in Element dsig:Object
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -30016,7 +30016,7 @@ DEBUG CanonicalizerSpi:? - The XPath (.//. | .//@* | .//namespace::*)[not(self::
 DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c14n-20010315
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(15 nodes)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@244e5056) in Element dsig:Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@6088b858) in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:SignedInfo
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:CanonicalizationMethod)
@@ -30084,7 +30084,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(15 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://iaik.at#Envelope") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@201a503f) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@4e62974e) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:CanonicalizationMethod)
@@ -30196,7 +30196,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG XMLSignatureInput:? - set XPathNodeSet with 14 nodes
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(14 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://iaik.at#Envelope") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@2abbaa16) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@7b8353cf) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:Manifest)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="manifest") in Element dsig:Manifest
@@ -30346,7 +30346,7 @@ DEBUG CanonicalizerSpi:? - The XPath (.//. | .//@* | .//namespace::*)[not(self::
 DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c14n-20010315
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(15 nodes)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@12260d8d) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@3e93f13f) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://iaik.at#Envelope") in Element dsig:SignedInfo
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:SignedInfo
@@ -30431,7 +30431,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(15 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://iaik.at#Envelope") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@13d86a73) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@366aa95b) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:CanonicalizationMethod)
@@ -30543,7 +30543,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG XMLSignatureInput:? - set XPathNodeSet with 14 nodes
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(14 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://iaik.at#Envelope") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@dc160cb) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@681497b1) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:Manifest)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="manifest") in Element dsig:Manifest
@@ -30715,7 +30715,7 @@ DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(9 no
 DEBUG Canonicalizer20010315:? - makeVisible(#document)
 DEBUG Canonicalizer20010315:? - makeVisible({http://iaik.at#Sample} Sample)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://iaik.at#Sample") in Element Sample
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@76eb2133) in Element Sample
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@78304648) in Element Sample
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - makeVisible({http://iaik.at#Sample} DataItem)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="DataItem") in Element DataItem
@@ -30761,7 +30761,7 @@ DEBUG CanonicalizerSpi:? - The XPath (.//. | .//@* | .//namespace::*)[not(self::
 DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c14n-20010315
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(15 nodes)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@17332b63) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@21913751) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://iaik.at#Envelope") in Element dsig:SignedInfo
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:SignedInfo
@@ -30846,7 +30846,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(71 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://iaik.at#Envelope") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@74ac576f) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@30086359) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:CanonicalizationMethod)
@@ -31183,7 +31183,7 @@ DEBUG TransformXPath:? - The Transform Element is [dsig:Transform: null]
 DEBUG TransformXPath:? - Excluded:     [#document: null]
 DEBUG TransformXPath:? - Excluded:     [Envelope: null]
 DEBUG TransformXPath:? - Excluded:     xmlns="http://iaik.at#Envelope"
-DEBUG TransformXPath:? - Excluded:     org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@1547a16f
+DEBUG TransformXPath:? - Excluded:     org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@3c2250d5
 DEBUG TransformXPath:? - Excluded:     [#text: 
   ]
 DEBUG TransformXPath:? - Excluded:     [dsig:Signature: null]
@@ -31475,7 +31475,7 @@ DEBUG TransformXPath:? - The Transform Element is [dsig:Transform: null]
 DEBUG TransformXPath:? - Excluded:     [#document: null]
 DEBUG TransformXPath:? - Excluded:     [Sample: null]
 DEBUG TransformXPath:? - Excluded:     xmlns="http://iaik.at#Sample"
-DEBUG TransformXPath:? - Excluded:     org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@48b524aa
+DEBUG TransformXPath:? - Excluded:     org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@2a5b8e8c
 DEBUG TransformXPath:? - Excluded:     [#text: 
   ]
 DEBUG TransformXPath:? - Included: (+) [DataItem: null]
@@ -31544,7 +31544,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG XMLSignatureInput:? - set XPathNodeSet with 6 nodes
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(6 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://iaik.at#Envelope") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@6a3de2df) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@61697d14) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:Object)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="objectId") in Element dsig:Object
@@ -31748,7 +31748,7 @@ DEBUG TransformXPath:? - The Transform Element is [dsig:Transform: null]
 DEBUG TransformXPath:? - Excluded:     [#document: null]
 DEBUG TransformXPath:? - Excluded:     [Envelope: null]
 DEBUG TransformXPath:? - Excluded:     xmlns="http://iaik.at#Envelope"
-DEBUG TransformXPath:? - Excluded:     org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@521d590d
+DEBUG TransformXPath:? - Excluded:     org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@7cd47880
 DEBUG TransformXPath:? - Excluded:     [#text: 
   ]
 DEBUG TransformXPath:? - Excluded:     [dsig:Signature: null]
@@ -32152,7 +32152,7 @@ DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(9 no
 DEBUG Canonicalizer20010315:? - makeVisible(#document)
 DEBUG Canonicalizer20010315:? - makeVisible({http://iaik.at#Envelope} Envelope)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://iaik.at#Envelope") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@6b6c14c0) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@4c68059) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - makeVisible({http://iaik.at#Envelope} DataItem)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="DataItem") in Element DataItem
@@ -32339,7 +32339,7 @@ DEBUG CanonicalizerSpi:? - The XPath (.//. | .//@* | .//namespace::*)[not(self::
 DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c14n-20010315
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(70 nodes)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@52f9cbe5) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@c387202) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://iaik.at#Envelope") in Element dsig:SignedInfo
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:SignedInfo
@@ -32614,7 +32614,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(15 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@cc749e4) in Element dsig:Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@49b9a538) in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:CanonicalizationMethod)
 DEBUG Canonicalizer20010315:? - makeVisible(Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315") in Element dsig:CanonicalizationMethod
@@ -32719,7 +32719,7 @@ DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(5 no
 DEBUG Canonicalizer20010315:? - makeVisible(#document)
 DEBUG Canonicalizer20010315:? - makeVisible({http://anonymous.com} Anonymous)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://anonymous.com") in Element Anonymous
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@6fb8fcdd) in Element Anonymous
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@e2f75e5) in Element Anonymous
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - checkForRelativeNamespace([Anonymous: null])
 DEBUG Canonicalizer20010315:? - checkForRelativeNamespace xmlns="http://anonymous.com"
@@ -32755,7 +32755,7 @@ DEBUG CanonicalizerSpi:? - The XPath (.//. | .//@* | .//namespace::*)[not(self::
 DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c14n-20010315
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(15 nodes)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@55e03a61) in Element dsig:Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@7aaf8b32) in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:SignedInfo
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:CanonicalizationMethod)
@@ -32825,7 +32825,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(13 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@7aaf8b32) in Element dsig:Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@2d6acad2) in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:CanonicalizationMethod)
 DEBUG Canonicalizer20010315:? - makeVisible(Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315") in Element dsig:CanonicalizationMethod
@@ -32944,7 +32944,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG XMLSignatureInput:? - set XPathNodeSet with 5 nodes
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(5 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@2d6acad2) in Element dsig:Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@3b961a84) in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:Object)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="object") in Element dsig:Object
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -33055,7 +33055,7 @@ DEBUG CanonicalizerSpi:? - The XPath (.//. | .//@* | .//namespace::*)[not(self::
 DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c14n-20010315
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(13 nodes)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@699dd97b) in Element dsig:Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@242870b7) in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:SignedInfo
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:CanonicalizationMethod)
@@ -33116,7 +33116,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(13 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@7bfd25ce) in Element dsig:Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@32552379) in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:CanonicalizationMethod)
 DEBUG Canonicalizer20010315:? - makeVisible(Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315") in Element dsig:CanonicalizationMethod
@@ -33211,7 +33211,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG XMLSignatureInput:? - set XPathNodeSet with 5 nodes
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(5 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@5fc8ad52) in Element dsig:Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@7433c78b) in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:Object)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="object") in Element dsig:Object
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -33296,7 +33296,7 @@ DEBUG CanonicalizerSpi:? - The XPath (.//. | .//@* | .//namespace::*)[not(self::
 DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c14n-20010315
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(13 nodes)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@1ad997f9) in Element dsig:Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@67afe460) in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:SignedInfo
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:CanonicalizationMethod)
@@ -33356,7 +33356,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(16 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@7433c78b) in Element dsig:Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@5fcfad77) in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:CanonicalizationMethod)
 DEBUG Canonicalizer20010315:? - makeVisible(Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315") in Element dsig:CanonicalizationMethod
@@ -33479,7 +33479,7 @@ DEBUG CanonicalizerSpi:? - The XPath (.//. | .//@* | .//namespace::*)[not(self::
 DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c14n-20010315
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(16 nodes)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@2081ca25) in Element dsig:Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@377e4cec) in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:SignedInfo
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:CanonicalizationMethod)
@@ -33551,7 +33551,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(25 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@199de181) in Element dsig:Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@79a86488) in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:CanonicalizationMethod)
 DEBUG Canonicalizer20010315:? - makeVisible(Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315") in Element dsig:CanonicalizationMethod
@@ -33694,7 +33694,7 @@ DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(6 no
 DEBUG Canonicalizer20010315:? - makeVisible(#document)
 DEBUG Canonicalizer20010315:? - makeVisible(xml-stylesheet)
 DEBUG Canonicalizer20010315:? - makeVisible(doc)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@47fe1e26) in Element doc
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@3d4c7deb) in Element doc
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - makeVisible(pi-without-data)
 DEBUG Canonicalizer20010315:? - checkForRelativeNamespace([doc: null])
@@ -33730,7 +33730,7 @@ DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(9 no
 DEBUG Canonicalizer20010315:? - makeVisible(#document)
 DEBUG Canonicalizer20010315:? - makeVisible(xml-stylesheet)
 DEBUG Canonicalizer20010315:? - makeVisible(doc)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@10db5b3f) in Element doc
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@3bea817f) in Element doc
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - makeVisible(#comment)
 DEBUG Canonicalizer20010315:? - makeVisible(pi-without-data)
@@ -33764,7 +33764,7 @@ DEBUG CanonicalizerSpi:? - The XPath (.//. | .//@* | .//namespace::*)[not(self::
 DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c14n-20010315
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(25 nodes)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@4c84f665) in Element dsig:Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@65ebba10) in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:SignedInfo
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:CanonicalizationMethod)
@@ -33868,7 +33868,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(17 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://iaik.at#Envelope") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@5704a4b6) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@15d07c3f) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:CanonicalizationMethod)
@@ -34023,7 +34023,7 @@ DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(8 no
 DEBUG Canonicalizer20010315:? - makeVisible(#document)
 DEBUG Canonicalizer20010315:? - makeVisible({http://iaik.at#Envelope} Envelope)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://iaik.at#Envelope") in Element Envelope
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@31672113) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@6745934e) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - makeVisible({http://iaik.at#Envelope} DataItem)
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -34120,7 +34120,7 @@ DEBUG CanonicalizerSpi:? - The XPath (.//. | .//@* | .//namespace::*)[not(self::
 DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c14n-20010315
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(17 nodes)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@47662250) in Element Envelope
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@3cbdb6ae) in Element Envelope
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://iaik.at#Envelope") in Element dsig:SignedInfo
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:SignedInfo
@@ -34209,7 +34209,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(34 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@3e0339) in Element dsig:Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@5e28df48) in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:CanonicalizationMethod)
 DEBUG Canonicalizer20010315:? - makeVisible(Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315") in Element dsig:CanonicalizationMethod
@@ -34382,7 +34382,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG XMLSignatureInput:? - set XPathNodeSet with 5 nodes
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(5 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@6ff0239) in Element dsig:Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@15117cc0) in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:Object)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="objectId") in Element dsig:Object
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -34514,7 +34514,7 @@ DEBUG Transforms:? - Preform the (0)th http://www.w3.org/TR/2001/REC-xml-c14n-20
 DEBUG TransformC14NWithComments:? - Length: 6 nodes input
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(6 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@2f152c0e) in Element dsig:Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@2f6e4ddd) in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:Object)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="objectId") in Element dsig:Object
 DEBUG Canonicalizer20010315:? - makeVisible(#comment)
@@ -34628,7 +34628,7 @@ DEBUG TransformXPath:? - The Transform Element is [dsig:Transform: null]
 DEBUG TransformXPath:? - Excluded:     [#document: null]
 DEBUG TransformXPath:? - Excluded:     [dsig:Signature: null]
 DEBUG TransformXPath:? - Excluded:     xmlns:dsig="http://www.w3.org/2000/09/xmldsig#"
-DEBUG TransformXPath:? - Excluded:     org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@ffce2f2
+DEBUG TransformXPath:? - Excluded:     org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@246adb31
 DEBUG TransformXPath:? - Excluded:     [dsig:SignedInfo: null]
 DEBUG TransformXPath:? - Excluded:     xmlns:dsig="http://www.w3.org/2000/09/xmldsig#"
 DEBUG TransformXPath:? - Excluded:     [dsig:CanonicalizationMethod: null]
@@ -34798,7 +34798,7 @@ DEBUG CanonicalizerSpi:? - The XPath (.//. | .//@* | .//namespace::*)[not(self::
 DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c14n-20010315
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(33 nodes)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@5fdbe72f) in Element dsig:Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@32554189) in Element dsig:Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns:dsig="http://www.w3.org/2000/09/xmldsig#") in Element dsig:SignedInfo
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:CanonicalizationMethod)
@@ -34928,7 +34928,7 @@ DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(25 nodes)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element Signature
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@60bb1ee) in Element Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@29dd8664) in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} CanonicalizationMethod)
@@ -35054,7 +35054,7 @@ DEBUG CanonicalizerSpi:? - The XPath (//. | //@* | //namespace::*)[not(self::com
 DEBUG TransformC14N:? - Created a C14n Transform
 DEBUG Transforms:? - Preform the (0)th http://www.w3.org/TR/2001/REC-xml-c14n-20010315 transform
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(8 nodes)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@5c2bae98) in Element Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@300b6421) in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} dsig:Object)
 DEBUG Canonicalizer20010315:? - makeVisible(Id="envelopedData") in Element dsig:Object
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="") in Element dsig:Object
@@ -35220,7 +35220,7 @@ DEBUG CanonicalizerSpi:? - The XPath (.//. | .//@* | .//namespace::*)[not(self::
 DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c14n-20010315
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(25 nodes)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@59f52125) in Element Signature
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@50908faf) in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element SignedInfo
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -35301,7 +35301,7 @@ DEBUG CanonicalizerSpi:? - The XPath (.//. | .//@* | .//namespace::*)[not(self::
 DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c14n-20010315
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(28 nodes)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@662ad0d) in Element FOO
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@6dc6480f) in Element FOO
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element Signature
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
@@ -35493,7 +35493,7 @@ DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(5 no
 DEBUG Canonicalizer20010315:? - makeVisible(#document)
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.foo.org/foo} FOO)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.foo.org/foo") in Element FOO
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@7d8e4a2e) in Element FOO
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@2f473a2e) in Element FOO
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
 DEBUG Canonicalizer20010315:? - checkForRelativeNamespace([FOO: null])
 DEBUG Canonicalizer20010315:? - checkForRelativeNamespace xmlns="http://www.foo.org/foo"
@@ -35623,7 +35623,7 @@ DEBUG CanonicalizerSpi:? - The XPath (.//. | .//@* | .//namespace::*)[not(self::
 DEBUG Canonicalizer:? - Canonicalizer  spi = http://www.w3.org/TR/2001/REC-xml-c14n-20010315
 DEBUG Canonicalizer20010315:? - xpath is(.//. | .//@* | .//namespace::*)[not(self::comment())]
 DEBUG Canonicalizer20010315:? - Canonicalizer20010315.engineSetXPathNodeSet(28 nodes)
-DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@69127c4d) in Element FOO
+DEBUG Canonicalizer20010315:? - makeVisible(org.apache.xml.dtm.ref.dom2dtm.DOM2DTMdefaultNamespaceDeclarationNode@11dd1ed2) in Element FOO
 DEBUG Canonicalizer20010315:? - makeVisible({http://www.w3.org/2000/09/xmldsig#} SignedInfo)
 DEBUG Canonicalizer20010315:? - makeVisible(xmlns="http://www.w3.org/2000/09/xmldsig#") in Element SignedInfo
 DEBUG Canonicalizer20010315:? - makeVisible(#text)
