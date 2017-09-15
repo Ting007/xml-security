@@ -1,0 +1,531 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JCEMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.algorithms</a> &gt; <span class="el_source">JCEMapper.java</span></div><h1>JCEMapper.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.algorithms;
+
+
+
+import java.util.*;
+import java.security.*;
+import org.w3c.dom.*;
+import org.apache.xpath.XPathAPI;
+import javax.xml.transform.TransformerException;
+import org.apache.xml.security.utils.*;
+
+
+/**
+ * This class maps algorithm identifier URIs to JAVA JCE class names.
+ *
+ * @author $Author: dohy $
+ */
+<span class="nc" id="L76">public class JCEMapper {</span>
+
+   /** {@link org.apache.log4j} logging facility */
+<span class="fc" id="L79">   static org.apache.log4j.Category cat =</span>
+      org.apache.log4j.Category.getInstance(JCEMapper.class.getName());
+
+   /** Field _providerList */
+<span class="fc" id="L83">   private static Element _providerList = null;</span>
+
+   /** Field _nscontext */
+<span class="fc" id="L86">   private static Element _nscontext = null;</span>
+
+   /**
+    * Method init
+    *
+    * @param mappingElement
+    * @throws Exception
+    */
+   public static void init(Element mappingElement) throws Exception {
+
+<span class="fc" id="L96">      JCEMapper._providerList = mappingElement;</span>
+
+<span class="fc" id="L98">      Document doc = mappingElement.getOwnerDocument();</span>
+
+<span class="fc" id="L100">      JCEMapper._nscontext =</span>
+         XMLUtils.createDSctx(doc, &quot;x&quot;,
+                              &quot;http://www.xmlsecurity.org/NS/#configuration&quot;);
+<span class="fc" id="L103">   }</span>
+
+   /**
+    * This method takes a Provider ID and tries to register this provider in the JCE.
+    *
+    * @param Id
+    * @return
+    */
+   public static boolean addProvider(String Id) {
+
+      try {
+<span class="fc bfc" id="L114" title="All 2 branches covered.">         if (Security.getProvider(Id) == null) {</span>
+<span class="fc" id="L115">            Element providerElem = (Element) XPathAPI.selectSingleNode(</span>
+               JCEMapper._providerList,
+               &quot;./x:Providers/x:Provider[@Id='&quot; + Id + &quot;']&quot;,
+               JCEMapper._nscontext);
+<span class="fc" id="L119">            String providerClass = providerElem.getAttributeNS(null, &quot;Class&quot;);</span>
+<span class="fc" id="L120">            java.security.Provider prov =</span>
+               (java.security.Provider) Class.forName(providerClass)
+                  .newInstance();
+
+<span class="pc bpc" id="L124" title="1 of 2 branches missed.">            if (java.security.Security.getProvider(Id) == null) {</span>
+<span class="fc" id="L125">               cat.debug(&quot;The provider &quot; + Id</span>
+                         + &quot; had to be added to the java.security.Security&quot;);
+<span class="fc" id="L127">               java.security.Security.addProvider(prov);</span>
+
+<span class="fc" id="L129">               Provider registeredProvider =</span>
+                  java.security.Security.getProvider(Id);
+
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">               if (registeredProvider != null) {</span>
+<span class="fc" id="L133">                  return true;</span>
+               }
+            }
+         }
+<span class="nc" id="L137">      } catch (TransformerException ex) {}</span>
+<span class="nc" id="L138">      catch (ClassNotFoundException ex) {}</span>
+<span class="nc" id="L139">      catch (IllegalAccessException ex) {}</span>
+<span class="pc" id="L140">      catch (InstantiationException ex) {}</span>
+
+<span class="fc" id="L142">      return false;</span>
+   }
+
+   /**
+    * Method getProviderIsAvailable
+    *
+    * @param providerId
+    * @return
+    */
+   public static boolean getProviderIsInClassPath(String providerId) {
+
+<span class="fc" id="L153">      boolean available = false;</span>
+
+      try {
+<span class="fc" id="L156">         Element pro =</span>
+            (Element) XPathAPI.selectSingleNode(JCEMapper._providerList,
+                                                &quot;./x:Providers/x:Provider[@Id='&quot;
+                                                + providerId + &quot;']&quot;,
+                                                JCEMapper._nscontext);
+<span class="fc" id="L161">         String providerClass = pro.getAttributeNS(null, &quot;Class&quot;);</span>
+<span class="fc" id="L162">         java.security.Provider prov =</span>
+            (java.security.Provider) Class.forName(providerClass).newInstance();
+
+<span class="pc bpc" id="L165" title="1 of 2 branches missed.">         if (prov != null) {</span>
+<span class="fc" id="L166">            available = true;</span>
+         }
+<span class="nc" id="L168">      } catch (TransformerException ex) {</span>
+         ;
+<span class="nc" id="L170">      } catch (ClassNotFoundException ex) {</span>
+         ;
+<span class="nc" id="L172">      } catch (IllegalAccessException ex) {</span>
+         ;
+<span class="nc" id="L174">      } catch (InstantiationException ex) {</span>
+         ;
+<span class="pc" id="L176">      }</span>
+
+<span class="fc" id="L178">      return available;</span>
+   }
+
+   /**
+    * Return &lt;CODE&gt;true&lt;/CODE&gt; if the Provider with the given
+    * &lt;CODE&gt;providerId&lt;/CODE&gt; is available in {@link java.security.Security}.
+    *
+    * @param providerId
+    * @return &lt;CODE&gt;true&lt;/CODE&gt; if the Provider with the given &lt;CODE&gt;providerId&lt;/CODE&gt; is available in {@link java.security.Security}
+    */
+   public static boolean getProviderIsRegisteredAtSecurity(String providerId) {
+
+<span class="fc" id="L190">      java.security.Provider prov =</span>
+         java.security.Security.getProvider(providerId);
+
+<span class="fc bfc" id="L193" title="All 2 branches covered.">      if (prov != null) {</span>
+<span class="fc" id="L194">         return true;</span>
+      }
+
+<span class="fc" id="L197">      return false;</span>
+   }
+
+   /**
+    * Method translateURItoJCEID
+    *
+    * @param AlgorithmURI
+    * @return
+    */
+   public static ProviderIdClass translateURItoJCEID(String AlgorithmURI) {
+
+<span class="fc" id="L208">      cat.debug(&quot;Request for URI &quot; + AlgorithmURI);</span>
+
+      try {
+
+         /*
+         Attr jceName = (Attr) XPathAPI.selectSingleNode(
+            JCEMapper._providerList,
+            &quot;./x:Algorithms/x:Algorithm[@URI='&quot; + AlgorithmURI
+            + &quot;']/x:Provider[1]/@JCEName&quot;, JCEMapper._nscontext);
+         */
+<span class="fc" id="L218">         NodeList providers = XPathAPI.selectNodeList(JCEMapper._providerList,</span>
+                                 &quot;./x:Algorithms/x:Algorithm[@URI='&quot;
+                                 + AlgorithmURI + &quot;']/x:ProviderAlgo&quot;,
+                                 JCEMapper._nscontext);
+
+<span class="pc bpc" id="L223" title="1 of 2 branches missed.">         for (int i = 0; i &lt; providers.getLength(); i++) {</span>
+<span class="fc" id="L224">            Element pro = (Element) providers.item(i);</span>
+<span class="fc" id="L225">            String jceName = pro.getAttributeNS(null, &quot;JCEName&quot;);</span>
+<span class="fc" id="L226">            String providerId = pro.getAttributeNS(null, &quot;ProviderId&quot;);</span>
+
+<span class="pc bpc" id="L228" title="1 of 2 branches missed.">            if (JCEMapper.getProviderIsInClassPath(providerId)) {</span>
+<span class="fc" id="L229">               JCEMapper.addProvider(providerId);</span>
+
+<span class="fc" id="L231">               ProviderIdClass result = new ProviderIdClass(jceName,</span>
+                                           providerId);
+
+<span class="fc" id="L234">               cat.debug(&quot;Found &quot; + result.getAlgorithmID() + &quot; from provider &quot;</span>
+                         + result.getProviderId());
+
+<span class="fc" id="L237">               return result;</span>
+            }
+         }
+<span class="nc" id="L240">      } catch (TransformerException ex) {</span>
+<span class="nc" id="L241">         cat.debug(&quot;Found nothing: &quot; + ex.getMessage());</span>
+<span class="nc" id="L242">      }</span>
+
+<span class="nc" id="L244">      return null;</span>
+   }
+
+   /**
+    * Method translateURItoJCEID
+    *
+    * @param AlgorithmURI
+    * @param requestedProviderId
+    * @return
+    */
+   public static ProviderIdClass translateURItoJCEID(String AlgorithmURI,
+           String requestedProviderId) {
+
+<span class="fc" id="L257">      cat.debug(&quot;Request for URI &quot; + AlgorithmURI + &quot; from provider &quot;</span>
+                + requestedProviderId);
+
+<span class="pc bpc" id="L260" title="1 of 2 branches missed.">      if (!JCEMapper.getProviderIsInClassPath(requestedProviderId)) {</span>
+<span class="nc" id="L261">         return null;</span>
+      }
+
+      try {
+<span class="fc" id="L265">         Element pro = (Element) XPathAPI.selectSingleNode(</span>
+            JCEMapper._providerList,
+            &quot;./x:Algorithms/x:Algorithm[@URI='&quot; + AlgorithmURI
+            + &quot;']/x:ProviderAlgo[@ProviderId='&quot; + requestedProviderId + &quot;']&quot;,
+            JCEMapper._nscontext);
+<span class="fc" id="L270">         String jceName = pro.getAttributeNS(null, &quot;JCEName&quot;);</span>
+
+<span class="fc" id="L272">         JCEMapper.addProvider(requestedProviderId);</span>
+
+<span class="fc" id="L274">         ProviderIdClass result = new ProviderIdClass(jceName,</span>
+                                     requestedProviderId);
+
+<span class="fc" id="L277">         cat.debug(&quot;Found &quot; + result.getAlgorithmID() + &quot; from provider &quot;</span>
+                   + result.getProviderId());
+
+<span class="fc" id="L280">         return result;</span>
+<span class="nc" id="L281">      } catch (TransformerException ex) {</span>
+<span class="nc" id="L282">         cat.debug(&quot;Found nothing: &quot; + ex.getMessage());</span>
+      }
+
+<span class="nc" id="L285">      return null;</span>
+   }
+
+   /**
+    * Method getAlgorithmClassFromURI
+    *
+    * @param AlgorithmURI
+    * @return
+    */
+   public static String getAlgorithmClassFromURI(String AlgorithmURI) {
+
+<span class="nc" id="L296">      cat.debug(&quot;Request for URI &quot; + AlgorithmURI);</span>
+
+      try {
+<span class="nc" id="L299">         NodeList providers = XPathAPI.selectNodeList(JCEMapper._providerList,</span>
+                                 &quot;./x:Algorithms/x:Algorithm[@URI='&quot;
+                                 + AlgorithmURI + &quot;']/x:ProviderAlgo&quot;,
+                                 JCEMapper._nscontext);
+
+<span class="nc bnc" id="L304" title="All 2 branches missed.">         for (int i = 0; i &lt; providers.getLength(); i++) {</span>
+<span class="nc" id="L305">            Element pro = (Element) providers.item(i);</span>
+<span class="nc" id="L306">            Attr jceName = pro.getAttributeNode(&quot;JCEName&quot;);</span>
+
+<span class="nc" id="L308">            cat.debug(&quot;Found &quot; + jceName.getNodeValue());</span>
+         }
+
+<span class="nc" id="L311">         return ((Element) providers.item(0)).getAttributeNS(null, &quot;JCEName&quot;);</span>
+<span class="nc" id="L312">      } catch (TransformerException ex) {</span>
+<span class="nc" id="L313">         cat.debug(&quot;Found nothing: &quot; + ex.getMessage());</span>
+
+<span class="nc" id="L315">         return &quot;&quot;;</span>
+      }
+   }
+
+   /**
+    * Method getKeyTypeFromURI
+    *
+    * @param AlgorithmURI
+    * @return
+    */
+   public static int getKeyTypeFromURI(String AlgorithmURI) {
+
+      try {
+<span class="fc" id="L328">         Attr algoclassAttr =</span>
+            (Attr) XPathAPI.selectSingleNode(JCEMapper._providerList,
+                                             &quot;./x:Algorithms/x:Algorithm[@URI='&quot;
+                                             + AlgorithmURI
+                                             + &quot;']/@AlgorithmClass&quot;, JCEMapper
+                                                ._nscontext);
+
+<span class="pc bpc" id="L335" title="1 of 2 branches missed.">         if (algoclassAttr == null) {</span>
+<span class="nc" id="L336">            return -1;</span>
+         } else {
+<span class="fc" id="L338">            String algoclass = algoclassAttr.getNodeValue();</span>
+
+<span class="pc bpc" id="L340" title="1 of 2 branches missed.">            if (algoclass.equals(JCEMapper.KEYTYPE_BLOCK_ENCRYPTION)) {</span>
+<span class="fc" id="L341">               return javax.crypto.Cipher.SECRET_KEY;</span>
+<span class="nc bnc" id="L342" title="All 2 branches missed.">            } else if (algoclass.equals(&quot;Mac&quot;)) {</span>
+<span class="nc" id="L343">               return javax.crypto.Cipher.SECRET_KEY;</span>
+<span class="nc bnc" id="L344" title="All 2 branches missed.">            } else if (algoclass.equals(JCEMapper.KEYTYPE_SYMMETRIC_KEY_WRAP)) {</span>
+<span class="nc" id="L345">               return javax.crypto.Cipher.SECRET_KEY;</span>
+            }
+         }
+<span class="nc" id="L348">      } catch (TransformerException ex) {</span>
+<span class="nc" id="L349">         cat.debug(&quot;Found nothing: &quot; + ex.getMessage());</span>
+<span class="nc" id="L350">      }</span>
+
+<span class="nc" id="L352">      return -1;</span>
+   }
+
+   /**
+    * Returns the keylength in bit for a particular algorithm.
+    *
+    * @param AlgorithmURI
+    * @return
+    */
+   public static int getKeyLengthFromURI(String AlgorithmURI) {
+
+      try {
+<span class="nc" id="L364">         Attr algoclassAttr =</span>
+            (Attr) XPathAPI.selectSingleNode(JCEMapper._providerList,
+                                             &quot;./x:Algorithms/x:Algorithm[@URI='&quot;
+                                             + AlgorithmURI + &quot;']/@KeyLength&quot;,
+                                             JCEMapper._nscontext);
+
+<span class="nc bnc" id="L370" title="All 2 branches missed.">         if (algoclassAttr != null) {</span>
+<span class="nc" id="L371">            return Integer.parseInt(algoclassAttr.getNodeValue());</span>
+         }
+<span class="nc" id="L373">      } catch (TransformerException ex) {</span>
+<span class="nc" id="L374">         cat.debug(&quot;Found nothing: &quot; + ex.getMessage());</span>
+<span class="nc" id="L375">      }</span>
+
+<span class="nc" id="L377">      return 0;</span>
+   }
+
+   /**
+    * Method getJCEKeyAlgorithmFromURI
+    *
+    * @param AlgorithmURI
+    * @param ProviderId
+    * @return
+    */
+   public static String getJCEKeyAlgorithmFromURI(String AlgorithmURI,
+           String ProviderId) {
+
+      try {
+<span class="nc" id="L391">         Attr algoclassAttr =</span>
+            (Attr) XPathAPI.selectSingleNode(JCEMapper._providerList,
+                                             &quot;./x:Algorithms/x:Algorithm[@URI='&quot;
+                                             + AlgorithmURI
+                                             + &quot;']/x:ProviderAlgo[@ProviderId='&quot;
+                                             + ProviderId + &quot;']/@RequiredKey&quot;,
+                                             JCEMapper._nscontext);
+
+<span class="nc bnc" id="L399" title="All 2 branches missed.">         if (algoclassAttr != null) {</span>
+<span class="nc" id="L400">            return algoclassAttr.getNodeValue();</span>
+         }
+<span class="nc" id="L402">      } catch (TransformerException ex) {</span>
+<span class="nc" id="L403">         cat.debug(&quot;Found nothing: &quot; + ex.getMessage());</span>
+<span class="nc" id="L404">      }</span>
+
+<span class="nc" id="L406">      return null;</span>
+   }
+
+
+   public static String getJCEIVAlgorithmFromURI(String AlgorithmURI,
+           String ProviderId) {
+
+      try {
+<span class="nc" id="L414">         Attr algoclassAttr =</span>
+            (Attr) XPathAPI.selectSingleNode(JCEMapper._providerList,
+                                             &quot;./x:Algorithms/x:Algorithm[@URI='&quot;
+                                             + AlgorithmURI
+                                             + &quot;']/x:ProviderAlgo[@ProviderId='&quot;
+                                             + ProviderId + &quot;']/@IVJCEName&quot;,
+                                             JCEMapper._nscontext);
+
+<span class="nc bnc" id="L422" title="All 2 branches missed.">         if (algoclassAttr != null) {</span>
+<span class="nc" id="L423">            return algoclassAttr.getNodeValue();</span>
+         }
+<span class="nc" id="L425">      } catch (TransformerException ex) {</span>
+<span class="nc" id="L426">         cat.debug(&quot;Found nothing: &quot; + ex.getMessage());</span>
+<span class="nc" id="L427">      }</span>
+
+<span class="nc" id="L429">      return null;</span>
+   }
+
+   /** Field KEYTYPE_SYMMETRIC_KEY_WRAP           */
+   public static final String KEYTYPE_SYMMETRIC_KEY_WRAP = &quot;SymmetricKeyWrap&quot;;
+
+   /** Field KEYTYPE_BLOCK_ENCRYPTION           */
+   public static final String KEYTYPE_BLOCK_ENCRYPTION = &quot;BlockEncryption&quot;;
+
+   /** Field KEYTYPE_KEY_TRANSPORT           */
+   public static final String KEYTYPE_KEY_TRANSPORT = &quot;KeyTransport&quot;;
+
+   /**
+    * This takes a {@link Key} and one of the &lt;CODE&gt;JCEMapper.KEYTYPE_XXX&lt;/CODE&gt;
+    * Strings and returns the algorithm for which this key is.
+    * &lt;BR /&gt;
+    * Example: If you enter an AES Key of length 128 bit and the
+    * &lt;CODE&gt;JCEMapper.KEYTYPE_SYMMETRIC_KEY_WRAP&lt;/CODE&gt;, the result is
+    * &lt;CODE&gt;EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128&lt;/CODE&gt;.
+    *
+    *
+    * @param key
+    * @param type
+    * @return
+    */
+   public static String getURIfromKey(Key key, String type) {
+
+<span class="fc" id="L456">      String JCEalgo = key.getAlgorithm();</span>
+<span class="fc" id="L457">      String keyLength = new Integer(key.getEncoded().length * 8).toString();</span>
+
+      try {
+<span class="fc" id="L460">         Attr URI = (Attr) XPathAPI.selectSingleNode(</span>
+            JCEMapper._providerList,
+            &quot;./x:Algorithms/x:Algorithm[@KeyLength='&quot; + keyLength
+            + &quot;' and @AlgorithmClass='&quot; + type
+            + &quot;']/x:ProviderAlgo[@RequiredKey='&quot; + JCEalgo + &quot;']/../@URI&quot;,
+            JCEMapper._nscontext);
+
+<span class="pc bpc" id="L467" title="1 of 2 branches missed.">         if (URI != null) {</span>
+<span class="fc" id="L468">            return URI.getNodeValue();</span>
+         }
+<span class="nc" id="L470">      } catch (TransformerException ex) {</span>
+<span class="nc" id="L471">         cat.debug(&quot;Found nothing: &quot; + ex.getMessage());</span>
+<span class="nc" id="L472">      }</span>
+
+<span class="nc" id="L474">      return null;</span>
+   }
+
+   /*
+   public static String getWrapURIfromKey(Key key) {
+      return JCEMapper.getURIfromKey(key, JCEMapper.KEYTYPE_SYMMETRIC_KEY_WRAP);
+   }
+
+   public static String getCipherURIfromKey(Key key) {
+      return JCEMapper.getURIfromKey(key, JCEMapper.KEYTYPE_BLOCK_ENCRYPTION);
+   }
+   */
+
+   /**
+    * Class ProviderIdClass
+    *
+    * @author $Author: dohy $
+    * @version $Revision: 1.1.1.1 $
+    */
+<span class="nc" id="L493">   public static class ProviderIdClass {</span>
+
+      /** Field _jceid */
+      private String _algorithmId;
+
+      /** Field _providerClass */
+      private String _providerId;
+
+      /**
+       * Constructor ProviderIdClass
+       *
+       * @param AlgorithmID
+       * @param ProviderId
+       */
+<span class="fc" id="L507">      protected ProviderIdClass(String AlgorithmID, String ProviderId) {</span>
+<span class="fc" id="L508">         this._algorithmId = AlgorithmID;</span>
+<span class="fc" id="L509">         this._providerId = ProviderId;</span>
+<span class="fc" id="L510">      }</span>
+
+      /**
+       * Method getJceId
+       *
+       * @return
+       */
+      public String getAlgorithmID() {
+<span class="fc" id="L518">         return this._algorithmId;</span>
+      }
+
+      /**
+       * Method getProvider
+       *
+       * @return
+       */
+      public String getProviderId() {
+<span class="fc" id="L527">         return this._providerId;</span>
+      }
+   }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

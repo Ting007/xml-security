@@ -1,0 +1,636 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ElementProxy.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.utils</a> &gt; <span class="el_source">ElementProxy.java</span></div><h1>ElementProxy.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.utils;
+
+
+
+import java.io.*;
+import java.util.*;
+import org.w3c.dom.*;
+import org.apache.xml.security.c14n.*;
+import org.apache.xml.security.exceptions.*;
+import org.apache.xml.security.c14n.CanonicalizationException;
+import org.apache.xml.security.signature.XMLSignatureException;
+import org.apache.xml.security.utils.*;
+import java.math.BigInteger;
+import javax.xml.transform.TransformerException;
+import org.apache.xpath.XPathAPI;
+
+
+/**
+ * This is the base class to all Objects which have a direct 1:1 mapping to an
+ * Element in a particular namespace.
+ *
+ * @author $Author: dohy $
+ */
+public abstract class ElementProxy {
+
+   /** Field cat */
+<span class="fc" id="L85">   static org.apache.log4j.Category cat =</span>
+      org.apache.log4j.Category.getInstance(ElementProxy.class.getName());
+   //J-
+   public static final int MODE_CREATE  = 0;
+   public static final int MODE_PROCESS = 1;
+   public static final int MODE_UNKNOWN = 2;
+
+   public static final int MODE_SIGN    = MODE_CREATE;
+   public static final int MODE_VERIFY  = MODE_PROCESS;
+
+   public static final int MODE_ENCRYPT = MODE_CREATE;
+   public static final int MODE_DECRYPT = MODE_PROCESS;
+
+<span class="fc" id="L98">   protected int _state = MODE_UNKNOWN;</span>
+   //J+
+
+   /**
+    * Returns the namespace of the Elements of the sub-class.
+    *
+    * @return the namespace of the Elements of the sub-class.
+    */
+   public abstract String getBaseNamespace();
+
+   /**
+    * Returns the localname of the Elements of the sub-class.
+    *
+    * @return the localname of the Elements of the sub-class.
+    */
+   public abstract String getBaseLocalName();
+
+   /** Field _constructionElement */
+<span class="fc" id="L116">   protected Element _constructionElement = null;</span>
+
+   /** Field _baseURI */
+<span class="fc" id="L119">   protected String _baseURI = null;</span>
+
+   /** Field _doc */
+<span class="fc" id="L122">   protected Document _doc = null;</span>
+
+   /**
+    * Constructor ElementProxy
+    *
+    */
+<span class="fc" id="L128">   public ElementProxy() {</span>
+
+<span class="fc" id="L130">      this._doc = null;</span>
+<span class="fc" id="L131">      this._state = ElementProxy.MODE_UNKNOWN;</span>
+<span class="fc" id="L132">      this._baseURI = null;</span>
+<span class="fc" id="L133">      this._constructionElement = null;</span>
+<span class="fc" id="L134">   }</span>
+
+   /**
+    * Constructor ElementProxy
+    *
+    * @param doc
+    */
+   public ElementProxy(Document doc) {
+
+<span class="fc" id="L143">      this();</span>
+
+<span class="pc bpc" id="L145" title="1 of 2 branches missed.">      if (doc == null) {</span>
+<span class="nc" id="L146">         throw new RuntimeException(&quot;Document is null&quot;);</span>
+      }
+
+<span class="fc" id="L149">      this._doc = doc;</span>
+<span class="fc" id="L150">      this._state = ElementProxy.MODE_CREATE;</span>
+<span class="fc" id="L151">      this._constructionElement = ElementProxy.createElementForFamily(this._doc,</span>
+              this.getBaseNamespace(), this.getBaseLocalName());
+<span class="fc" id="L153">   }</span>
+
+   /**
+    * This method creates an Element in a given namespace with a given localname.
+    * It uses the {@link ElementProxy#getDefaultPrefix} method to decide whether
+    * a particular prefix is bound to that namespace.
+    * &lt;BR /&gt;
+    * This method was refactored out of the constructor.
+    *
+    * @param doc
+    * @param namespace
+    * @param localName
+    * @return
+    */
+   public static Element createElementForFamily(Document doc, String namespace,
+           String localName) {
+
+<span class="fc" id="L170">      Element result = null;</span>
+<span class="fc" id="L171">      String prefix = ElementProxy.getDefaultPrefix(namespace);</span>
+
+<span class="pc bpc" id="L173" title="1 of 2 branches missed.">      if (namespace == null) {</span>
+<span class="nc" id="L174">         result = doc.createElementNS(null, localName);</span>
+      } else {
+<span class="pc bpc" id="L176" title="2 of 4 branches missed.">         if ((prefix == null) || (prefix.length() == 0)) {</span>
+<span class="nc" id="L177">            result = doc.createElementNS(namespace, localName);</span>
+
+<span class="nc" id="L179">            result.setAttributeNS(Constants.NamespaceSpecNS, &quot;xmlns&quot;,</span>
+                                  namespace);
+         } else {
+<span class="fc" id="L182">            result = doc.createElementNS(namespace, prefix + &quot;:&quot; + localName);</span>
+
+<span class="fc" id="L184">            result.setAttributeNS(Constants.NamespaceSpecNS, &quot;xmlns:&quot; + prefix,</span>
+                                  namespace);
+         }
+      }
+
+<span class="fc" id="L189">      return result;</span>
+   }
+
+   /**
+    * Method setElement
+    *
+    * @param element
+    * @param BaseURI
+    * @throws XMLSecurityException
+    */
+   public void setElement(Element element, String BaseURI)
+           throws XMLSecurityException {
+
+<span class="nc bnc" id="L202" title="All 2 branches missed.">      if (element == null) {</span>
+<span class="nc" id="L203">         throw new XMLSecurityException(&quot;ElementProxy.nullElement&quot;);</span>
+      }
+
+<span class="nc" id="L206">      cat.debug(&quot;setElement(&quot; + element.getTagName() + &quot;, \&quot;&quot; + BaseURI + &quot;\&quot;&quot;);</span>
+
+<span class="nc" id="L208">      this._doc = element.getOwnerDocument();</span>
+<span class="nc" id="L209">      this._state = ElementProxy.MODE_PROCESS;</span>
+<span class="nc" id="L210">      this._constructionElement = element;</span>
+<span class="nc" id="L211">      this._baseURI = BaseURI;</span>
+<span class="nc" id="L212">   }</span>
+
+   /**
+    * Constructor ElementProxy
+    *
+    * @param element
+    * @param BaseURI
+    * @throws XMLSecurityException
+    */
+   public ElementProxy(Element element, String BaseURI)
+           throws XMLSecurityException {
+
+<span class="fc" id="L224">      this();</span>
+
+<span class="pc bpc" id="L226" title="1 of 2 branches missed.">      if (element == null) {</span>
+<span class="nc" id="L227">         throw new XMLSecurityException(&quot;ElementProxy.nullElement&quot;);</span>
+      }
+
+<span class="fc" id="L230">      cat.debug(&quot;setElement(\&quot;&quot; + element.getTagName() + &quot;\&quot;, \&quot;&quot; + BaseURI + &quot;\&quot;)&quot;);</span>
+
+<span class="fc" id="L232">      this._doc = element.getOwnerDocument();</span>
+<span class="fc" id="L233">      this._state = ElementProxy.MODE_PROCESS;</span>
+<span class="fc" id="L234">      this._constructionElement = element;</span>
+<span class="fc" id="L235">      this._baseURI = BaseURI;</span>
+
+<span class="fc" id="L237">      this.guaranteeThatElementInCorrectSpace(this.getBaseLocalName());</span>
+<span class="fc" id="L238">   }</span>
+
+   /**
+    * Returns the Element which was constructed by the Object.
+    *
+    * @return the Element which was constructed by the Object.
+    */
+   public final Element getElement() {
+<span class="fc" id="L246">      return this._constructionElement;</span>
+   }
+
+   /**
+    * Returns the Element plus a leading and a trailing CarriageReturn Text node.
+    *
+    * @return the Element which was constructed by the Object.
+    */
+   public final NodeList getElementPlusReturns() {
+
+<span class="nc" id="L256">      HelperNodeList nl = new HelperNodeList();</span>
+
+<span class="nc" id="L258">      nl.appendChild(this._doc.createTextNode(&quot;\n&quot;));</span>
+<span class="nc" id="L259">      nl.appendChild(this.getElement());</span>
+<span class="nc" id="L260">      nl.appendChild(this._doc.createTextNode(&quot;\n&quot;));</span>
+
+<span class="nc" id="L262">      return nl;</span>
+   }
+
+   /**
+    * Method getDocument
+    *
+    * @return
+    */
+   public Document getDocument() {
+<span class="nc" id="L271">      return this._doc;</span>
+   }
+
+   /**
+    * Method getBaseURI
+    *
+    * @return
+    */
+   public String getBaseURI() {
+<span class="fc" id="L280">      return this._baseURI;</span>
+   }
+
+   /**
+    * Method guaranteeThatElementInCorrectSpace
+    *
+    * @param localname
+    * @throws XMLSecurityException
+    */
+   public void guaranteeThatElementInCorrectSpace(String localname)
+           throws XMLSecurityException {
+
+<span class="pc bpc" id="L292" title="5 of 12 branches missed.">      if ((localname == null) || (localname.equals(&quot;&quot;))</span>
+              || (this._constructionElement == null)
+              || (this._constructionElement.getNamespaceURI() == null)
+              || (!this._constructionElement.getLocalName().equals(localname))
+              || (!this._constructionElement.getNamespaceURI()
+                 .equals(this.getBaseNamespace()))) {
+<span class="fc" id="L298">         Object exArgs[] = { localname,</span>
+                             this._constructionElement.getLocalName() };
+
+<span class="fc" id="L301">         throw new XMLSecurityException(&quot;xml.WrongElement&quot;, exArgs);</span>
+      }
+<span class="fc" id="L303">   }</span>
+
+   /**
+    * Method setVal
+    *
+    * @param bi
+    * @param localname
+    */
+   public void addBigIntegerElement(BigInteger bi, String localname) {
+
+<span class="nc bnc" id="L313" title="All 2 branches missed.">      if (bi != null) {</span>
+<span class="nc" id="L314">         Element e = XMLUtils.createElementInSignatureSpace(this._doc,</span>
+                        localname);
+
+<span class="nc" id="L317">         Base64.fillElementWithBigInteger(e, bi);</span>
+<span class="nc" id="L318">         this._constructionElement.appendChild(e);</span>
+<span class="nc" id="L319">         XMLUtils.addReturnToElement(this._constructionElement);</span>
+      }
+<span class="nc" id="L321">   }</span>
+
+   /**
+    * Method addBase64Element
+    *
+    * @param bytes
+    * @param localname
+    */
+   public void addBase64Element(byte[] bytes, String localname) {
+
+<span class="nc bnc" id="L331" title="All 2 branches missed.">      if (bytes != null) {</span>
+<span class="nc" id="L332">         Element e = Base64.encodeToElement(this._doc, localname, bytes);</span>
+
+<span class="nc" id="L334">         this._constructionElement.appendChild(e);</span>
+<span class="nc" id="L335">         this._constructionElement.appendChild(this._doc.createTextNode(&quot;\n&quot;));</span>
+      }
+<span class="nc" id="L337">   }</span>
+
+   /**
+    * Method addTextElement
+    *
+    * @param text
+    * @param localname
+    */
+   public void addTextElement(String text, String localname) {
+
+<span class="nc" id="L347">      Element e = XMLUtils.createElementInSignatureSpace(this._doc, localname);</span>
+<span class="nc" id="L348">      Text t = this._doc.createTextNode(text);</span>
+
+<span class="nc" id="L350">      e.appendChild(t);</span>
+<span class="nc" id="L351">      this._constructionElement.appendChild(e);</span>
+<span class="nc" id="L352">      XMLUtils.addReturnToElement(this._constructionElement);</span>
+<span class="nc" id="L353">   }</span>
+
+   /**
+    * Method addBase64Text
+    *
+    * @param bytes
+    */
+   public void addBase64Text(byte[] bytes) {
+
+<span class="nc bnc" id="L362" title="All 2 branches missed.">      if (bytes != null) {</span>
+<span class="nc" id="L363">         Text t = this._doc.createTextNode(&quot;\n&quot; + Base64.encode(bytes) + &quot;\n&quot;);</span>
+
+<span class="nc" id="L365">         this._constructionElement.appendChild(t);</span>
+      }
+<span class="nc" id="L367">   }</span>
+
+   /**
+    * Method addText
+    *
+    * @param text
+    */
+   public void addText(String text) {
+
+<span class="nc bnc" id="L376" title="All 2 branches missed.">      if (text != null) {</span>
+<span class="nc" id="L377">         Text t = this._doc.createTextNode(text);</span>
+
+<span class="nc" id="L379">         this._constructionElement.appendChild(t);</span>
+      }
+<span class="nc" id="L381">   }</span>
+
+   /**
+    * Method getVal
+    *
+    * @param localname
+    * @param namespace
+    * @return
+    * @throws XMLSecurityException
+    */
+   public BigInteger getBigIntegerFromChildElement(
+           String localname, String namespace) throws XMLSecurityException {
+
+      try {
+<span class="fc" id="L395">         Element nscontext = XMLUtils.createDSctx(this._doc, &quot;x&quot;, namespace);</span>
+<span class="fc" id="L396">         Text t = (Text) XPathAPI.selectSingleNode(this._constructionElement,</span>
+                                                   &quot;./x:&quot; + localname
+                                                   + &quot;/text()&quot;, nscontext);
+
+<span class="fc" id="L400">         return Base64.decodeBigIntegerFromText(t);</span>
+<span class="nc" id="L401">      } catch (TransformerException ex) {</span>
+<span class="nc" id="L402">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+      }
+   }
+
+   /**
+    * Method getBytesFromChildElement
+    *
+    * @param localname
+    * @param namespace
+    * @return
+    * @throws XMLSecurityException
+    */
+   public byte[] getBytesFromChildElement(String localname, String namespace)
+           throws XMLSecurityException {
+
+      try {
+<span class="nc" id="L418">         Element nscontext = XMLUtils.createDSctx(this._doc, &quot;x&quot;, namespace);</span>
+<span class="nc" id="L419">         Element e =</span>
+            (Element) XPathAPI.selectSingleNode(this._constructionElement,
+                                                &quot;./x:&quot; + localname, nscontext);
+
+<span class="nc" id="L423">         return Base64.decode(e);</span>
+<span class="nc" id="L424">      } catch (TransformerException ex) {</span>
+<span class="nc" id="L425">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+      }
+   }
+
+   /**
+    * Method getTextFromChildElement
+    *
+    * @param localname
+    * @param namespace
+    * @return
+    * @throws XMLSecurityException
+    */
+   public String getTextFromChildElement(String localname, String namespace)
+           throws XMLSecurityException {
+
+      try {
+<span class="nc" id="L441">         Element nscontext = XMLUtils.createDSctx(this._doc, &quot;x&quot;, namespace);</span>
+<span class="nc" id="L442">         Text t = (Text) XPathAPI.selectSingleNode(this._constructionElement,</span>
+                                                   &quot;./x:&quot; + localname
+                                                   + &quot;/text()&quot;, nscontext);
+
+<span class="nc" id="L446">         return t.getData();</span>
+<span class="nc" id="L447">      } catch (TransformerException ex) {</span>
+<span class="nc" id="L448">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+      }
+   }
+
+   /**
+    * Method getBytesFromTextChild
+    *
+    * @return
+    * @throws XMLSecurityException
+    */
+   public byte[] getBytesFromTextChild() throws XMLSecurityException {
+
+      try {
+<span class="fc" id="L461">         Text t = (Text) XPathAPI.selectSingleNode(this._constructionElement,</span>
+                                                   &quot;./text()&quot;);
+
+<span class="fc" id="L464">         return Base64.decode(t.getData());</span>
+<span class="nc" id="L465">      } catch (TransformerException ex) {</span>
+<span class="nc" id="L466">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+      }
+   }
+
+   /**
+    * Method getTextFromTextChild
+    *
+    * @return
+    */
+   public String getTextFromTextChild() {
+<span class="nc" id="L476">      return XMLUtils.getFullTextChildrenFromElement(this._constructionElement);</span>
+   }
+
+   /**
+    * This method returns the index&amp;apos;th child with the given namespace
+    * and localname.
+    *
+    * @param index
+    * @param namespace
+    * @param localname
+    * @return null if the Element does not contain the requested child
+    */
+   public Element getChildElementLocalName(int index, String namespace,
+                                              String localname) {
+
+<span class="fc" id="L491">      NodeList childNodes = this._constructionElement.getChildNodes();</span>
+<span class="fc" id="L492">      int maxLength = childNodes.getLength();</span>
+
+<span class="fc" id="L494">      int result = -1;</span>
+<span class="fc bfc" id="L495" title="All 2 branches covered.">      for (int i=0; i&lt;maxLength; i++) {</span>
+<span class="fc" id="L496">         Node n = childNodes.item(i);</span>
+<span class="fc bfc" id="L497" title="All 2 branches covered.">         if (n.getNodeType() == Node.ELEMENT_NODE) {</span>
+<span class="fc" id="L498">            String ns = n.getNamespaceURI();</span>
+<span class="fc" id="L499">            String name = n.getLocalName();</span>
+
+<span class="pc bpc" id="L501" title="7 of 10 branches missed.">            if (namespace != null &amp;&amp; ns != null &amp;&amp; namespace.equals(ns) ||</span>
+                namespace == null &amp;&amp; ns == null) {
+<span class="fc bfc" id="L503" title="All 2 branches covered.">               if (localname.equals(name)) {</span>
+<span class="fc" id="L504">                  result++;</span>
+
+<span class="fc bfc" id="L506" title="All 2 branches covered.">                  if (result == index) {</span>
+<span class="fc" id="L507">                     return (Element) n;</span>
+                  }
+               }
+            }
+         }
+      }
+
+      // throw new IndexOutOfBoundsException(&quot;Try to get &quot; + index + &quot;/&quot; + maxLength + &quot; {&quot; + namespace + &quot;}&quot; + localname + &quot; from &quot; + this._constructionElement.getTagName());
+<span class="fc" id="L515">      return null;</span>
+   }
+
+   /**
+    * Method length
+    *
+    * @param namespace
+    * @param localname
+    * @return
+    */
+   public int length(String namespace, String localname) {
+<span class="fc" id="L526">      NodeList childNodes = this._constructionElement.getChildNodes();</span>
+<span class="fc" id="L527">      int maxLength = childNodes.getLength();</span>
+
+<span class="fc" id="L529">      int result = 0;</span>
+<span class="fc bfc" id="L530" title="All 2 branches covered.">      for (int i=0; i&lt;maxLength; i++) {</span>
+<span class="fc" id="L531">         Node n = childNodes.item(i);</span>
+<span class="fc bfc" id="L532" title="All 2 branches covered.">         if (n.getNodeType() == Node.ELEMENT_NODE) {</span>
+<span class="fc" id="L533">            String ns = n.getNamespaceURI();</span>
+<span class="fc" id="L534">            String name = n.getLocalName();</span>
+
+<span class="pc bpc" id="L536" title="7 of 10 branches missed.">            if (namespace != null &amp;&amp; ns != null &amp;&amp; namespace.equals(ns) ||</span>
+                namespace == null &amp;&amp; ns == null) {
+<span class="fc bfc" id="L538" title="All 2 branches covered.">               if (localname.equals(name)) {</span>
+<span class="fc" id="L539">                  result++;</span>
+               }
+            }
+         }
+      }
+
+<span class="fc" id="L545">      return result;</span>
+   }
+
+   /**
+    * Adds an xmlns: definition to the Element. This can be called as follows:
+    *
+    * &lt;PRE&gt;
+    * // set namespace with ds prefix
+    * xpathContainer.setXPathNamespaceContext(&quot;ds&quot;, &quot;http://www.w3.org/2000/09/xmldsig#&quot;);
+    * xpathContainer.setXPathNamespaceContext(&quot;xmlns:ds&quot;, &quot;http://www.w3.org/2000/09/xmldsig#&quot;);
+    * &lt;/PRE&gt;
+    *
+    * @param prefix
+    * @param uri
+    * @throws XMLSecurityException
+    */
+   public void setXPathNamespaceContext(String prefix, String uri)
+           throws XMLSecurityException {
+
+      String ns;
+
+<span class="nc bnc" id="L566" title="All 4 branches missed.">      if (prefix == null || prefix.length() == 0) {</span>
+<span class="nc" id="L567">         ns = &quot;xmlns&quot;;</span>
+<span class="nc bnc" id="L568" title="All 2 branches missed.">      } else if (prefix.equals(&quot;xmlns&quot;)) {</span>
+<span class="nc" id="L569">         ns = &quot;xmlns&quot;;</span>
+<span class="nc bnc" id="L570" title="All 2 branches missed.">      } else if (prefix.startsWith(&quot;xmlns:&quot;)) {</span>
+<span class="nc" id="L571">         ns = &quot;xmlns:&quot; + prefix.substring(&quot;xmlns:&quot;.length());</span>
+      } else {
+<span class="nc" id="L573">         ns = &quot;xmlns:&quot; + prefix;</span>
+      }
+
+<span class="nc bnc" id="L576" title="All 2 branches missed.">      if (ns.equals(&quot;xmlns&quot;)) {</span>
+<span class="nc" id="L577">         throw new XMLSecurityException(&quot;defaultNamespaceCannotBeSetHere&quot;);</span>
+      }
+
+<span class="nc" id="L580">      Attr a = this._constructionElement.getAttributeNode(ns);</span>
+
+<span class="nc bnc" id="L582" title="All 4 branches missed.">      if ((a != null) &amp;&amp; (!a.getNodeValue().equals(uri))) {</span>
+<span class="nc" id="L583">         Object exArgs[] = { ns, this._constructionElement.getAttributeNS(null, ns) };</span>
+
+<span class="nc" id="L585">         throw new XMLSecurityException(</span>
+            &quot;namespacePrefixAlreadyUsedByOtherURI&quot;, exArgs);
+      }
+
+<span class="nc" id="L589">      this._constructionElement.setAttributeNS(Constants.NamespaceSpecNS, ns,</span>
+                                               uri);
+<span class="nc" id="L591">   }</span>
+
+   /** Field _prefixMappings */
+<span class="fc" id="L594">   static HashMap _prefixMappings = new HashMap();</span>
+
+   /**
+    * Method setDefaultPrefix
+    *
+    * @param namespace
+    * @param prefix
+    * @throws XMLSecurityException
+    */
+   public static void setDefaultPrefix(String namespace, String prefix)
+           throws XMLSecurityException {
+
+<span class="fc" id="L606">      Iterator keys = ElementProxy._prefixMappings.keySet().iterator();</span>
+
+<span class="fc bfc" id="L608" title="All 2 branches covered.">      while (keys.hasNext()) {</span>
+<span class="fc" id="L609">         String storedNamespace = (String) keys.next();</span>
+<span class="fc" id="L610">         String storedPrefix =</span>
+            (String) ElementProxy._prefixMappings.get(storedNamespace);
+
+<span class="pc bpc" id="L613" title="3 of 4 branches missed.">         if (storedPrefix.equals(prefix) &amp;&amp;!storedNamespace.equals(namespace)) {</span>
+<span class="nc" id="L614">            Object exArgs[] = { prefix, namespace, storedNamespace };</span>
+
+<span class="nc" id="L616">            throw new XMLSecurityException(&quot;prefix.AlreadyAssigned&quot;, exArgs);</span>
+         }
+<span class="fc" id="L618">      }</span>
+
+<span class="fc" id="L620">      ElementProxy._prefixMappings.put(namespace, prefix);</span>
+<span class="fc" id="L621">   }</span>
+
+   /**
+    * Method getDefaultPrefix
+    *
+    * @param namespace
+    * @return
+    */
+   public static String getDefaultPrefix(String namespace) {
+
+<span class="fc" id="L631">      String prefix = (String) ElementProxy._prefixMappings.get(namespace);</span>
+
+<span class="fc" id="L633">      return prefix;</span>
+   }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

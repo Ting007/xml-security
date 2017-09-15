@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MessageDigestAlgorithm.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.algorithms</a> &gt; <span class="el_source">MessageDigestAlgorithm.java</span></div><h1>MessageDigestAlgorithm.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.algorithms;
+
+
+
+import java.util.Collection;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import org.w3c.dom.*;
+import org.apache.xml.security.signature.XMLSignatureInput;
+import org.apache.xml.security.signature.XMLSignatureException;
+import org.apache.xml.security.utils.*;
+import org.apache.xml.security.c14n.CanonicalizationException;
+import org.apache.xml.security.c14n.InvalidCanonicalizerException;
+import java.io.IOException;
+
+
+/**
+ * Digest Message wrapper &amp; selector class.
+ *
+ * &lt;pre&gt;
+ * MessageDigestAlgorithm.getInstance()
+ * &lt;/pre&gt;
+ *
+ */
+public class MessageDigestAlgorithm extends Algorithm {
+
+   /** {@link org.apache.log4j} logging facility */
+<span class="fc" id="L86">   static org.apache.log4j.Category cat =</span>
+      org.apache.log4j.Category
+         .getInstance(MessageDigestAlgorithm.class.getName());
+
+   // Message Digest - NOT RECOMMENDED MD5
+   public static final String ALGO_ID_DIGEST_NOT_RECOMMENDED_MD5 = Constants.MoreAlgorithmsSpecNS + &quot;md5&quot;;
+   // Digest - Required SHA1
+   public static final String ALGO_ID_DIGEST_SHA1 = Constants.SignatureSpecNS + &quot;sha1&quot;;
+   // Message Digest - RECOMMENDED SHA256
+   public static final String ALGO_ID_DIGEST_SHA256 = EncryptionConstants.EncryptionSpecNS + &quot;sha256&quot;;
+   // Message Digest - OPTIONAL SHA384
+   public static final String ALGO_ID_DIGEST_SHA384 = Constants.MoreAlgorithmsSpecNS + &quot;sha384&quot;;
+   // Message Digest - OPTIONAL SHA512
+   public static final String ALGO_ID_DIGEST_SHA512 = EncryptionConstants.EncryptionSpecNS + &quot;sha512&quot;;
+   // Message Digest - OPTIONAL RIPEMD-160
+   public static final String ALGO_ID_DIGEST_RIPEMD160 = EncryptionConstants.EncryptionSpecNS + &quot;ripemd160&quot;;
+
+   /** Field algorithm stores the actual {@link java.security.MessageDigest} */
+<span class="fc" id="L104">   java.security.MessageDigest algorithm = null;</span>
+
+   /**
+    * Constructor for the brave who pass their own message digest algorithms and the corresponding URI.
+    * @param doc
+    * @param messageDigest
+    * @param algorithmURI
+    */
+   private MessageDigestAlgorithm(Document doc, MessageDigest messageDigest,
+                                  String algorithmURI) {
+
+<span class="fc" id="L115">      super(doc, algorithmURI);</span>
+
+<span class="fc" id="L117">      this.algorithm = messageDigest;</span>
+<span class="fc" id="L118">   }</span>
+
+   /**
+    * Factory method for constructing a message digest algorithm by name.
+    *
+    * @param doc
+    * @param algorithmURI
+    * @return
+    * @throws XMLSignatureException
+    */
+   public static MessageDigestAlgorithm getInstance(
+           Document doc, String algorithmURI) throws XMLSignatureException {
+
+<span class="fc" id="L131">      JCEMapper.ProviderIdClass algorithmID =</span>
+         JCEMapper.translateURItoJCEID(algorithmURI);
+      MessageDigest md;
+
+      try {
+<span class="fc" id="L136">         md = MessageDigest.getInstance(algorithmID.getAlgorithmID(),</span>
+                                        algorithmID.getProviderId());
+<span class="nc" id="L138">      } catch (java.security.NoSuchAlgorithmException ex) {</span>
+<span class="nc" id="L139">         Object[] exArgs = { algorithmID.getAlgorithmID(),</span>
+                             ex.getLocalizedMessage() };
+
+<span class="nc" id="L142">         throw new XMLSignatureException(&quot;algorithms.NoSuchAlgorithm&quot;, exArgs);</span>
+<span class="nc" id="L143">      } catch (java.security.NoSuchProviderException ex) {</span>
+<span class="nc" id="L144">         Object[] exArgs = { algorithmID.getProviderId(),</span>
+                             ex.getLocalizedMessage() };
+
+<span class="nc" id="L147">         throw new XMLSignatureException(&quot;algorithms.NoSuchAlgorithm&quot;, exArgs);</span>
+<span class="fc" id="L148">      }</span>
+
+<span class="fc" id="L150">      return new MessageDigestAlgorithm(doc, md, algorithmURI);</span>
+   }
+
+   /**
+    * Returns the actual {@link java.security.MessageDigest} algorithm object
+    *
+    * @return the actual {@link java.security.MessageDigest} algorithm object
+    */
+   public java.security.MessageDigest getAlgorithm() {
+<span class="fc" id="L159">      return this.algorithm;</span>
+   }
+
+   /**
+    * Proxy method for {@link java.security.MessageDigest#isEqual}
+    * which is executed on the internal {@link java.security.MessageDigest} object.
+    *
+    * @param digesta
+    * @param digestb
+    * @return the result of the {@link java.security.MessageDigest#isEqual} method
+    * @see org.apache.xml.security.util.JavaUtils#binaryCompare
+    */
+   public static boolean isEqual(byte[] digesta, byte[] digestb) {
+<span class="fc" id="L172">      return java.security.MessageDigest.isEqual(digesta, digestb);</span>
+   }
+
+   /**
+    * Proxy method for {@link java.security.MessageDigest#digest}
+    * which is executed on the internal {@link java.security.MessageDigest} object.
+    *
+    * @return the result of the {@link java.security.MessageDigest#digest} method
+    */
+   public byte[] digest() {
+<span class="fc" id="L182">      return this.algorithm.digest();</span>
+   }
+
+   /**
+    * Proxy method for {@link java.security.MessageDigest#digest}
+    * which is executed on the internal {@link java.security.MessageDigest} object.
+    *
+    * @param input
+    * @return the result of the {@link java.security.MessageDigest#digest} method
+    */
+   public byte[] digest(byte input[]) {
+<span class="nc" id="L193">      return this.algorithm.digest(input);</span>
+   }
+
+   /**
+    * Proxy method for {@link java.security.MessageDigest#digest}
+    * which is executed on the internal {@link java.security.MessageDigest} object.
+    *
+    * @param buf
+    * @param offset
+    * @param len
+    * @return the result of the {@link java.security.MessageDigest#digest} method
+    * @throws java.security.DigestException
+    */
+   public int digest(byte buf[], int offset, int len)
+           throws java.security.DigestException {
+<span class="nc" id="L208">      return this.algorithm.digest(buf, offset, len);</span>
+   }
+
+   /**
+    * Proxy method for {@link java.security.MessageDigest#getAlgorithm}
+    * which is executed on the internal {@link java.security.MessageDigest} object.
+    *
+    * @return the result of the {@link java.security.MessageDigest#getAlgorithm} method
+    */
+   public String getJCEAlgorithmString() {
+<span class="nc" id="L218">      return this.algorithm.getAlgorithm();</span>
+   }
+
+   /**
+    * Proxy method for {@link java.security.MessageDigest#getProvider}
+    * which is executed on the internal {@link java.security.MessageDigest} object.
+    *
+    * @return the result of the {@link java.security.MessageDigest#getProvider} method
+    */
+   public java.security.Provider getJCEProvider() {
+<span class="nc" id="L228">      return this.algorithm.getProvider();</span>
+   }
+
+   /**
+    * Proxy method for {@link java.security.MessageDigest#getDigestLength}
+    * which is executed on the internal {@link java.security.MessageDigest} object.
+    *
+    * @return the result of the {@link java.security.MessageDigest#getDigestLength} method
+    */
+   public int getDigestLength() {
+<span class="nc" id="L238">      return this.algorithm.getDigestLength();</span>
+   }
+
+   /**
+    * Proxy method for {@link java.security.MessageDigest#reset}
+    * which is executed on the internal {@link java.security.MessageDigest} object.
+    *
+    */
+   public void reset() {
+<span class="fc" id="L247">      this.algorithm.reset();</span>
+<span class="fc" id="L248">   }</span>
+
+   /**
+    * Proxy method for {@link java.security.MessageDigest#update}
+    * which is executed on the internal {@link java.security.MessageDigest} object.
+    *
+    * @param input
+    */
+   public void update(byte[] input) {
+<span class="fc" id="L257">      this.algorithm.update(input);</span>
+<span class="fc" id="L258">   }</span>
+
+   /**
+    * Proxy method for {@link java.security.MessageDigest#update}
+    * which is executed on the internal {@link java.security.MessageDigest} object.
+    *
+    * @param input
+    */
+   public void update(byte input) {
+<span class="nc" id="L267">      this.algorithm.update(input);</span>
+<span class="nc" id="L268">   }</span>
+
+   /**
+    * Proxy method for {@link java.security.MessageDigest#update}
+    * which is executed on the internal {@link java.security.MessageDigest} object.
+    *
+    * @param buf
+    * @param offset
+    * @param len
+    */
+   public void update(byte buf[], int offset, int len) {
+<span class="nc" id="L279">      this.algorithm.update(buf, offset, len);</span>
+<span class="nc" id="L280">   }</span>
+
+   /**
+    * Method getBaseNamespace
+    *
+    * @return
+    */
+   public String getBaseNamespace() {
+<span class="fc" id="L288">      return Constants.SignatureSpecNS;</span>
+   }
+
+   public String getBaseLocalName() {
+<span class="fc" id="L292">      return Constants._TAG_DIGESTMETHOD;</span>
+   }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

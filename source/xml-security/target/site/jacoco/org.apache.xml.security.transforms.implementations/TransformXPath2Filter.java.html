@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransformXPath2Filter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.transforms.implementations</a> &gt; <span class="el_source">TransformXPath2Filter.java</span></div><h1>TransformXPath2Filter.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.transforms.implementations;
+
+
+
+import java.util.*;
+import java.io.IOException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import org.xml.sax.SAXException;
+import org.w3c.dom.*;
+import org.apache.xml.security.signature.XMLSignatureInput;
+import org.apache.xml.security.c14n.*;
+import org.apache.xml.security.transforms.params.XPath2FilterContainer;
+import org.apache.xml.security.transforms.*;
+import org.apache.xml.security.exceptions.*;
+import org.apache.xml.security.utils.*;
+import org.apache.xpath.CachedXPathAPI;
+import org.apache.xpath.objects.XObject;
+import org.apache.xml.utils.PrefixResolverDefault;
+import org.apache.xml.utils.PrefixResolver;
+import org.apache.xml.dtm.DTMManager;
+
+
+/**
+ * Implements the &lt;I&gt;XML Signature XPath Filter v2.0&lt;/I&gt;
+ *
+ * @author $Author: dohy $
+ * @see &lt;A HREF=&quot;http://www.w3.org/TR/xmldsig-filter2/&quot;&gt;XPath Filter v2.0 (TR)&lt;/A&gt;
+ * @see &lt;A HREF=http://www.w3.org/Signature/Drafts/xmldsig-xfilter2/&quot;&gt;XPath Filter v2.0 (editors copy)&lt;/A&gt;
+ */
+<span class="nc" id="L89">public class TransformXPath2Filter extends TransformSpi {</span>
+
+   /** {@link org.apache.log4j} logging facility */
+   // static org.apache.log4j.Category cat = org.apache.log4j.Category.getInstance(TransformXPath2Filter.class.getName());
+
+   /** Field implementedTransformURI */
+   public static final String implementedTransformURI =
+      Transforms.TRANSFORM_XPATH2FILTER;
+   //J-
+   // contains the type of the filter
+<span class="nc" id="L99">   Vector _filterTypes = new Vector();</span>
+
+   // contains the node set
+<span class="nc" id="L102">   Vector _filterNodes = new Vector();</span>
+
+<span class="nc" id="L104">   Set _F = null;</span>
+<span class="nc" id="L105">   Vector _ancestors = null;</span>
+
+   private static final String FUnion = &quot;union&quot;;
+   private static final String FSubtract = &quot;subtract&quot;;
+   private static final String FIntersect = &quot;intersect&quot;;
+
+<span class="nc" id="L111">   public boolean wantsOctetStream ()   { return false; }</span>
+<span class="nc" id="L112">   public boolean wantsNodeSet ()       { return true; }</span>
+<span class="nc" id="L113">   public boolean returnsOctetStream () { return false; }</span>
+<span class="nc" id="L114">   public boolean returnsNodeSet ()     { return true; }</span>
+
+   //J+
+
+   /**
+    * Method engineGetURI
+    *
+    * @return
+    */
+   protected String engineGetURI() {
+<span class="nc" id="L124">      return this.implementedTransformURI;</span>
+   }
+
+<span class="nc" id="L127">   Set _inputSet = null;</span>
+
+   /**
+    * Method enginePerformTransform
+    *
+    * @param input
+    * @return
+    * @throws TransformationException
+    */
+   protected XMLSignatureInput enginePerformTransform(XMLSignatureInput input)
+           throws TransformationException {
+
+      try {
+<span class="nc" id="L140">         long start = System.currentTimeMillis();</span>
+
+<span class="nc" id="L142">         this._inputSet = input.getNodeSet();</span>
+
+<span class="nc bnc" id="L144" title="All 2 branches missed.">         if (this._inputSet.size() == 0) {</span>
+
+            // input node set contains no nodes
+<span class="nc" id="L147">            return input;</span>
+         }
+
+<span class="nc" id="L150">         CachedXPathFuncHereAPI xPathFuncHereAPI =</span>
+            new CachedXPathFuncHereAPI(input.getCachedXPathAPI());
+<span class="nc" id="L152">         CachedXPathAPI myXPathAPI =</span>
+            new CachedXPathAPI(input.getCachedXPathAPI());
+<span class="nc" id="L154">         Document inputDoc = null;</span>
+
+         {
+<span class="nc" id="L157">            Iterator it = this._inputSet.iterator();</span>
+
+<span class="nc" id="L159">            inputDoc = XMLUtils.getOwnerDocument((Node) it.next());</span>
+         }
+
+<span class="nc" id="L162">         int noOfSteps =</span>
+            this._transformObject.length(Transforms.TRANSFORM_XPATH2FILTER,
+                                         &quot;XPath&quot;);
+
+<span class="nc bnc" id="L166" title="All 2 branches missed.">         if (noOfSteps == 0) {</span>
+<span class="nc" id="L167">            Object exArgs[] = { Transforms.TRANSFORM_XPATH2FILTER, &quot;XPath&quot; };</span>
+
+<span class="nc" id="L169">            throw new TransformationException(&quot;xml.WrongContent&quot;, exArgs);</span>
+         }
+
+         if (true) {
+<span class="nc" id="L173">            XPath2FilterContainer unionDocFilter =</span>
+               XPath2FilterContainer
+                  .newInstanceUnion(this._transformObject.getDocument(), &quot;/&quot;);
+
+<span class="nc" id="L177">            _filterTypes.add(FUnion);</span>
+
+            // Set root = new HashSet(); root.add(inputDoc);
+<span class="nc" id="L180">            HelperNodeList root = new HelperNodeList();</span>
+
+<span class="nc" id="L182">            root.appendChild(inputDoc);</span>
+<span class="nc" id="L183">            _filterNodes.add(root);</span>
+         }
+
+<span class="nc bnc" id="L186" title="All 2 branches missed.">         for (int i = 0; i &lt; noOfSteps; i++) {</span>
+<span class="nc" id="L187">            Element xpathElement =</span>
+               this._transformObject.getChildElementLocalName(i,
+                  XPath2FilterContainer.XPathFilter2NS,
+                  XPath2FilterContainer._TAG_XPATH2);
+<span class="nc" id="L191">            XPath2FilterContainer xpathContainer =</span>
+               XPath2FilterContainer.newInstance(xpathElement,
+                                                   input.getSourceURI());
+
+<span class="nc bnc" id="L195" title="All 2 branches missed.">            if (xpathContainer.isIntersect()) {</span>
+<span class="nc" id="L196">               _filterTypes.add(FIntersect);</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">            } else if (xpathContainer.isSubtract()) {</span>
+<span class="nc" id="L198">               _filterTypes.add(FSubtract);</span>
+<span class="nc bnc" id="L199" title="All 2 branches missed.">            } else if (xpathContainer.isUnion()) {</span>
+<span class="nc" id="L200">               _filterTypes.add(FUnion);</span>
+            } else {
+<span class="nc" id="L202">               _filterTypes.add(null);</span>
+            }
+
+<span class="nc" id="L205">            NodeList subtreeRoots = xPathFuncHereAPI.selectNodeList(inputDoc,</span>
+                                       xpathContainer.getXPathFilterTextNode(),
+                                       xpathContainer.getElement());
+
+            // _filterNodes.add(XMLUtils.convertNodelistToSet(subtreeRoots));
+<span class="nc" id="L210">            _filterNodes.add(subtreeRoots);</span>
+         }
+
+<span class="nc" id="L213">         this._F = new HashSet();</span>
+<span class="nc" id="L214">         this._ancestors = new Vector();</span>
+
+<span class="nc" id="L216">         this.traversal(inputDoc);</span>
+
+<span class="nc" id="L218">         Set resultSet = new HashSet();</span>
+<span class="nc" id="L219">         Iterator it = this._inputSet.iterator();</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">         while (it.hasNext()) {</span>
+<span class="nc" id="L221">            Node n = (Node) it.next();</span>
+<span class="nc bnc" id="L222" title="All 2 branches missed.">            if (this._F.contains(n)) {</span>
+<span class="nc" id="L223">               resultSet.add(n);</span>
+            }
+<span class="nc" id="L225">         }</span>
+
+<span class="nc" id="L227">         XMLSignatureInput result = new XMLSignatureInput(resultSet,</span>
+                                       input.getCachedXPathAPI());
+
+
+<span class="nc" id="L231">         result.setSourceURI(input.getSourceURI());</span>
+
+<span class="nc" id="L233">         long end = System.currentTimeMillis();</span>
+
+<span class="nc" id="L235">         return result;</span>
+<span class="nc" id="L236">      } catch (TransformerException ex) {</span>
+<span class="nc" id="L237">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L238">      } catch (DOMException ex) {</span>
+<span class="nc" id="L239">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L240">      } catch (IOException ex) {</span>
+<span class="nc" id="L241">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L242">      } catch (CanonicalizationException ex) {</span>
+<span class="nc" id="L243">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L244">      } catch (InvalidCanonicalizerException ex) {</span>
+<span class="nc" id="L245">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L246">      } catch (ParserConfigurationException ex) {</span>
+<span class="nc" id="L247">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L248">      } catch (XMLSecurityException ex) {</span>
+<span class="nc" id="L249">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L250">      } catch (SAXException ex) {</span>
+<span class="nc" id="L251">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+      }
+   }
+
+   /**
+    * Method traversal
+    *
+    * @param currentNode
+    * @param Z
+    */
+   private void traversal(Node currentNode) {
+
+<span class="nc" id="L263">      this._ancestors.add(currentNode);</span>
+
+<span class="nc bnc" id="L265" title="All 2 branches missed.">      if (this._inputSet.contains(currentNode)) {</span>
+
+<span class="nc" id="L267">      int iMax = this._filterTypes.size();</span>
+<span class="nc" id="L268">      int i = 0;</span>
+
+<span class="nc bnc" id="L270" title="All 2 branches missed.">      searchFirstUnionWhichContainsNode: for (i = iMax - 1; i &gt;= 0; i--) {</span>
+<span class="nc" id="L271">         NodeList rootNodes = (NodeList) this._filterNodes.elementAt(i);</span>
+<span class="nc" id="L272">         String type = (String) this._filterTypes.elementAt(i);</span>
+
+<span class="nc bnc" id="L274" title="All 4 branches missed.">         if ((type == FUnion)</span>
+                 &amp;&amp; rooted(currentNode, this._ancestors, rootNodes)) {
+
+            /*
+            if (currentNode.getNodeType() == Node.ELEMENT_NODE) {
+               cat.debug(i + &quot; &quot; + ((Element) currentNode).getTagName()
+                         + &quot; is &quot; + type + &quot; of &quot; + rootNode.getNodeName());
+            }
+            */
+<span class="nc" id="L283">            break searchFirstUnionWhichContainsNode;</span>
+         }
+      }
+
+<span class="nc" id="L287">      int IStart = i;</span>
+
+<span class="nc bnc" id="L289" title="All 2 branches missed.">      if (IStart == -1) {</span>
+<span class="nc" id="L290">         IStart = 0;</span>
+      }
+
+<span class="nc" id="L293">      boolean include = true;</span>
+
+      // search in the subsequent steps for
+<span class="nc bnc" id="L296" title="All 2 branches missed.">      for (int I = IStart; I &lt; iMax; I++) {</span>
+<span class="nc" id="L297">         NodeList rootNodes = (NodeList) this._filterNodes.elementAt(I);</span>
+<span class="nc" id="L298">         String type = (String) this._filterTypes.elementAt(I);</span>
+<span class="nc" id="L299">         boolean rooted = rooted(currentNode, this._ancestors, rootNodes);</span>
+
+<span class="nc bnc" id="L301" title="All 4 branches missed.">         if ((type == FIntersect) &amp;&amp;!rooted) {</span>
+
+            /*
+            if (currentNode.getNodeType() == Node.ELEMENT_NODE) {
+               cat.debug(&quot;The intersect operation from step &quot; + I
+                         + &quot; does not include &quot; + currentNode.getNodeName());
+            }
+            */
+<span class="nc" id="L309">            include = false;</span>
+
+<span class="nc" id="L311">            break;</span>
+<span class="nc bnc" id="L312" title="All 4 branches missed.">         } else if ((type == FSubtract) &amp;&amp; rooted) {</span>
+
+            /*
+            if (currentNode.getNodeType() == Node.ELEMENT_NODE) {
+               cat.debug(&quot;The subtract operation from step &quot; + I
+                         + &quot; does subtract &quot; + currentNode.getNodeName());
+            }
+            */
+<span class="nc" id="L320">            include = false;</span>
+
+<span class="nc" id="L322">            break;</span>
+         } else {
+            ;
+         }
+      }
+
+<span class="nc bnc" id="L328" title="All 2 branches missed.">      if (include) {</span>
+<span class="nc" id="L329">         this._F.add(currentNode);</span>
+      }
+      }
+
+      {
+
+         // here we do the traversal
+<span class="nc bnc" id="L336" title="All 2 branches missed.">         if (currentNode.getNodeType() == Node.ELEMENT_NODE) {</span>
+<span class="nc" id="L337">            NamedNodeMap attributes = ((Element) currentNode).getAttributes();</span>
+<span class="nc" id="L338">            int attributesLength = attributes.getLength();</span>
+
+<span class="nc bnc" id="L340" title="All 2 branches missed.">            for (int x = 0; x &lt; attributesLength; x++) {</span>
+<span class="nc" id="L341">               Node attr = attributes.item(x);</span>
+
+<span class="nc" id="L343">               traversal(attr);</span>
+            }
+         }
+
+<span class="nc" id="L347">         for (Node currentChild = currentNode.getFirstChild();</span>
+<span class="nc bnc" id="L348" title="All 2 branches missed.">                 currentChild != null;</span>
+<span class="nc" id="L349">                 currentChild = currentChild.getNextSibling()) {</span>
+<span class="nc" id="L350">            traversal(currentChild);</span>
+         }
+      }
+
+<span class="nc" id="L354">      this._ancestors.remove(currentNode);</span>
+<span class="nc" id="L355">   }</span>
+
+   /**
+    * Method rooted
+    *
+    * @param currentNode
+    * @param ancestors
+    * @param rootNodes
+    * @return
+    */
+   boolean rooted(Node currentNode, Vector ancestors, NodeList rootNodes) {
+
+<span class="nc" id="L367">      int length = rootNodes.getLength();</span>
+
+<span class="nc bnc" id="L369" title="All 2 branches missed.">      for (int i = 0; i &lt; length; i++) {</span>
+<span class="nc" id="L370">         Node rootNode = rootNodes.item(i);</span>
+
+<span class="nc bnc" id="L372" title="All 2 branches missed.">         if (ancestors.contains(rootNode)) {</span>
+<span class="nc" id="L373">            return true;</span>
+         }
+      }
+
+<span class="nc" id="L377">      return false;</span>
+   }
+
+   /**
+    * Method __isRootedBy
+    *
+    * @param ctx
+    * @param rootInQuestion
+    * @return
+    */
+   private static boolean __isRootedBy(Node ctx, Node rootInQuestion) {
+
+<span class="nc bnc" id="L389" title="All 4 branches missed.">      if ((ctx == null) || (rootInQuestion == null)) {</span>
+<span class="nc" id="L390">         return false;</span>
+      }
+
+<span class="nc bnc" id="L393" title="All 2 branches missed.">      if (rootInQuestion.getNodeType() == Node.DOCUMENT_NODE) {</span>
+<span class="nc" id="L394">         return true;</span>
+      }
+
+<span class="nc" id="L397">      Node n = ctx;</span>
+
+<span class="nc bnc" id="L399" title="All 2 branches missed.">      while (n != null) {</span>
+<span class="nc bnc" id="L400" title="All 2 branches missed.">         if (n == rootInQuestion) {</span>
+<span class="nc" id="L401">            return true;</span>
+         }
+
+<span class="nc bnc" id="L404" title="All 2 branches missed.">         if (n.getNodeType() == Node.ATTRIBUTE_NODE) {</span>
+<span class="nc" id="L405">            n = ((Attr) n).getOwnerElement();</span>
+         } else {
+<span class="nc" id="L407">            n = n.getParentNode();</span>
+         }
+      }
+
+<span class="nc" id="L411">      return false;</span>
+   }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

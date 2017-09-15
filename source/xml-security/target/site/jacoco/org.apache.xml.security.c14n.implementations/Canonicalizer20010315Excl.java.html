@@ -1,0 +1,1125 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Canonicalizer20010315Excl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.c14n.implementations</a> &gt; <span class="el_source">Canonicalizer20010315Excl.java</span></div><h1>Canonicalizer20010315Excl.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.c14n.implementations;
+
+
+
+import java.io.*;
+import java.util.*;
+import javax.xml.parsers.*;
+import javax.xml.transform.TransformerException;
+import org.apache.xml.utils.PrefixResolverDefault;
+import org.apache.xpath.NodeSet;
+import org.apache.xpath.XPath;
+import org.apache.xpath.CachedXPathAPI;
+import org.w3c.dom.*;
+import org.xml.sax.*;
+import org.apache.xml.security.c14n.*;
+import org.apache.xml.security.c14n.helper.*;
+import org.apache.xml.security.utils.*;
+import org.apache.xml.security.transforms.params.InclusiveNamespaces;
+
+
+/**
+ * Implements &lt;A HREF=&quot;http://www.w3.org/Signature/Drafts/xml-exc-c14n&quot;&gt;&quot;Exclusive
+ * XML Canonicalization, Version 1.0&quot;&lt;/A&gt;, Rev 1.58.
+ * &lt;BR /&gt;
+ * Credits: During restructuring of the Canonicalizer framework, Ren� Kollmorgen from
+ * Software AG submitted an implementation of ExclC14n which fitted into the old
+ * architecture and which based heavily on my old (and slow) implementation of
+ * &quot;Canonical XML&quot;. A big &quot;thank you&quot; to Ren� for this.
+ * &lt;BR /&gt;
+ * THIS implementation is a complete rewrite of the algorithm.
+ *
+ * @author $Author: dohy $
+ * @version $Revision: 1.1.1.1 $
+ * @see &lt;A HREF=&quot;http://www.w3.org/Signature/Drafts/xml-exc-c14n&quot;&gt;&quot;Exclusive XML Canonicalization, Version 1.0&quot;&lt;/A&gt;, Rev 1.58.
+ */
+public abstract class Canonicalizer20010315Excl extends CanonicalizerSpi {
+   //J-
+<span class="fc" id="L96">   boolean _includeComments = false;</span>
+
+<span class="fc" id="L98">   Set _xpathNodeSet = null;</span>
+<span class="fc" id="L99">   Set _inclusiveNSSet = null;</span>
+
+<span class="fc" id="L101">   Document _doc = null;</span>
+<span class="fc" id="L102">   Element _documentElement = null;</span>
+<span class="fc" id="L103">   Node _rootNodeOfC14n = null;</span>
+
+<span class="fc" id="L105">   Writer _writer = null;</span>
+   //J+
+
+   /**
+    * Constructor Canonicalizer20010315Excl
+    *
+    * @param includeComments
+    */
+<span class="fc" id="L113">   public Canonicalizer20010315Excl(boolean includeComments) {</span>
+<span class="fc" id="L114">      this._includeComments = includeComments;</span>
+<span class="fc" id="L115">   }</span>
+
+   /**
+    * Method engineCanonicalizeSubTree
+    *
+    * @param rootNode
+    * @return
+    * @throws CanonicalizationException
+    */
+   public byte[] engineCanonicalizeSubTree(Node rootNode)
+           throws CanonicalizationException {
+<span class="fc" id="L126">      return this.engineCanonicalizeSubTree(rootNode, &quot;&quot;);</span>
+   }
+
+   /**
+    * Method engineCanonicalizeSubTree
+    *
+    * @param rootNode
+    * @param inclusiveNamespaces
+    * @return
+    * @throws CanonicalizationException
+    */
+   public byte[] engineCanonicalizeSubTree(
+           Node rootNode, String inclusiveNamespaces)
+              throws CanonicalizationException {
+
+<span class="fc" id="L141">      this._rootNodeOfC14n = rootNode;</span>
+<span class="fc" id="L142">      this._doc = XMLUtils.getOwnerDocument(this._rootNodeOfC14n);</span>
+<span class="fc" id="L143">      this._documentElement = this._doc.getDocumentElement();</span>
+
+      try {
+<span class="fc" id="L146">         ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+
+<span class="fc" id="L148">         this._writer = new OutputStreamWriter(baos, Canonicalizer.ENCODING);</span>
+<span class="fc" id="L149">         this._inclusiveNSSet =</span>
+            InclusiveNamespaces.prefixStr2Set(inclusiveNamespaces);
+
+<span class="fc" id="L152">         Map inscopeNamespaces = this.getInscopeNamespaces(rootNode);</span>
+<span class="fc" id="L153">         Map alreadyVisible = new HashMap();</span>
+
+<span class="fc" id="L155">         canonicalizeSubTree(rootNode, inscopeNamespaces, alreadyVisible);</span>
+<span class="fc" id="L156">         this._writer.flush();</span>
+<span class="fc" id="L157">         this._writer.close();</span>
+
+<span class="fc" id="L159">         return baos.toByteArray();</span>
+<span class="nc" id="L160">      } catch (UnsupportedEncodingException ex) {</span>
+<span class="nc" id="L161">         throw new CanonicalizationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L162">      } catch (IOException ex) {</span>
+<span class="nc" id="L163">         throw new CanonicalizationException(&quot;empty&quot;, ex);</span>
+      } finally {
+<span class="pc" id="L165">         this._xpathNodeSet = null;</span>
+<span class="pc" id="L166">         this._inclusiveNSSet = null;</span>
+<span class="pc" id="L167">         this._rootNodeOfC14n = null;</span>
+<span class="pc" id="L168">         this._doc = null;</span>
+<span class="pc" id="L169">         this._documentElement = null;</span>
+<span class="pc" id="L170">         this._writer = null;</span>
+      }
+   }
+
+   /**
+    * Method canonicalizeSubTree
+    *
+    * @param currentNode
+    * @param inscopeNamespaces
+    * @param alreadyVisible
+    * @throws CanonicalizationException
+    * @throws IOException
+    */
+   void canonicalizeSubTree(
+           Node currentNode, Map inscopeNamespaces, Map alreadyVisible)
+              throws CanonicalizationException, IOException {
+
+<span class="fc" id="L187">      int currentNodeType = currentNode.getNodeType();</span>
+
+<span class="pc bpc" id="L189" title="5 of 7 branches missed.">      switch (currentNodeType) {</span>
+
+      case Node.DOCUMENT_TYPE_NODE :
+      default :
+<span class="nc" id="L193">         break;</span>
+
+      case Node.ENTITY_NODE :
+      case Node.NOTATION_NODE :
+      case Node.DOCUMENT_FRAGMENT_NODE :
+      case Node.ATTRIBUTE_NODE :
+<span class="nc" id="L199">         throw new CanonicalizationException(&quot;empty&quot;);</span>
+      case Node.DOCUMENT_NODE :
+<span class="nc" id="L201">         for (Node currentChild = currentNode.getFirstChild();</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">                 currentChild != null;</span>
+<span class="nc" id="L203">                 currentChild = currentChild.getNextSibling()) {</span>
+<span class="nc" id="L204">            canonicalizeSubTree(currentChild, inscopeNamespaces,</span>
+                                alreadyVisible);
+         }
+<span class="nc" id="L207">         break;</span>
+
+      case Node.COMMENT_NODE :
+<span class="nc bnc" id="L210" title="All 2 branches missed.">         if (this._includeComments) {</span>
+<span class="nc" id="L211">            int position = getPositionRelativeToDocumentElement(currentNode);</span>
+
+<span class="nc bnc" id="L213" title="All 2 branches missed.">            if (position == NODE_AFTER_DOCUMENT_ELEMENT) {</span>
+<span class="nc" id="L214">               this._writer.write(&quot;\n&quot;);</span>
+            }
+
+<span class="nc" id="L217">            outputCommentToWriter((Comment) currentNode);</span>
+
+<span class="nc bnc" id="L219" title="All 2 branches missed.">            if (position == NODE_BEFORE_DOCUMENT_ELEMENT) {</span>
+<span class="nc" id="L220">               this._writer.write(&quot;\n&quot;);</span>
+            }
+<span class="nc" id="L222">         }</span>
+         break;
+
+      case Node.PROCESSING_INSTRUCTION_NODE :
+<span class="nc" id="L226">         int position = getPositionRelativeToDocumentElement(currentNode);</span>
+
+<span class="nc bnc" id="L228" title="All 2 branches missed.">         if (position == NODE_AFTER_DOCUMENT_ELEMENT) {</span>
+<span class="nc" id="L229">            this._writer.write(&quot;\n&quot;);</span>
+         }
+
+<span class="nc" id="L232">         outputPItoWriter((ProcessingInstruction) currentNode);</span>
+
+<span class="nc bnc" id="L234" title="All 2 branches missed.">         if (position == NODE_BEFORE_DOCUMENT_ELEMENT) {</span>
+<span class="nc" id="L235">            this._writer.write(&quot;\n&quot;);</span>
+         }
+         break;
+
+      case Node.TEXT_NODE :
+      case Node.CDATA_SECTION_NODE :
+<span class="fc" id="L241">         outputTextToWriter(currentNode.getNodeValue());</span>
+<span class="fc" id="L242">         break;</span>
+
+      case Node.ELEMENT_NODE :
+<span class="fc" id="L245">         Element currentElement = (Element) currentNode;</span>
+
+<span class="fc" id="L247">         this._writer.write(&quot;&lt;&quot;);</span>
+<span class="fc" id="L248">         this._writer.write(currentElement.getTagName());</span>
+
+<span class="fc" id="L250">         List attrs =</span>
+            updateInscopeNamespacesAndReturnVisibleAttrs(currentElement,
+               inscopeNamespaces, alreadyVisible);
+
+
+         // we output all Attrs which are available
+<span class="fc bfc" id="L256" title="All 2 branches covered.">         for (int i = 0; i &lt; attrs.size(); i++) {</span>
+<span class="fc" id="L257">            outputAttrToWriter(((Attr) attrs.get(i)).getNodeName(),</span>
+                               ((Attr) attrs.get(i)).getNodeValue());
+         }
+
+<span class="fc" id="L261">         this._writer.write(&quot;&gt;&quot;);</span>
+
+         // traversal
+<span class="fc" id="L264">         for (Node currentChild = currentNode.getFirstChild();</span>
+<span class="fc bfc" id="L265" title="All 2 branches covered.">                 currentChild != null;</span>
+<span class="fc" id="L266">                 currentChild = currentChild.getNextSibling()) {</span>
+<span class="fc bfc" id="L267" title="All 2 branches covered.">            if (currentChild.getNodeType() == Node.ELEMENT_NODE) {</span>
+
+               /*
+                * We must 'clone' the inscopeNamespaces to allow the child elements
+                * to mess around in their own map
+                */
+<span class="fc" id="L273">               canonicalizeSubTree(currentChild,</span>
+                                   new HashMap(inscopeNamespaces),
+                                   new HashMap(alreadyVisible));
+            } else {
+<span class="fc" id="L277">               canonicalizeSubTree(currentChild, inscopeNamespaces,</span>
+                                   alreadyVisible);
+            }
+         }
+
+<span class="fc" id="L282">         this._writer.write(&quot;&lt;/&quot;);</span>
+<span class="fc" id="L283">         this._writer.write(currentElement.getTagName());</span>
+<span class="fc" id="L284">         this._writer.write(&quot;&gt;&quot;);</span>
+         break;
+      }
+<span class="fc" id="L287">   }</span>
+
+   /**
+    * This method updates the inscopeNamespaces based on the currentElement and
+    * returns the Attr[]s to be outputted.
+    *
+    * @param inscopeNamespaces is changed by this method !!!
+    * @param currentElement
+    * @param alreadyVisible
+    * @return the Attr[]s to be outputted
+    * @throws CanonicalizationException
+    */
+   List updateInscopeNamespacesAndReturnVisibleAttrs(
+           Element currentElement, Map inscopeNamespaces, Map alreadyVisible)
+              throws CanonicalizationException {
+
+<span class="fc" id="L303">      Vector ns = new Vector();</span>
+<span class="fc" id="L304">      Vector at = new Vector();</span>
+
+<span class="fc" id="L306">      NamedNodeMap attributes = currentElement.getAttributes();</span>
+<span class="fc" id="L307">      int attributesLength = attributes.getLength();</span>
+
+<span class="fc bfc" id="L309" title="All 2 branches covered.">      for (int i = 0; i &lt; attributesLength; i++) {</span>
+<span class="fc" id="L310">         Attr currentAttr = (Attr) attributes.item(i);</span>
+<span class="fc" id="L311">         String name = currentAttr.getNodeName();</span>
+<span class="fc" id="L312">         String value = currentAttr.getValue();</span>
+
+<span class="pc bpc" id="L314" title="1 of 4 branches missed.">         if (name.equals(&quot;xmlns&quot;) &amp;&amp; value.equals(&quot;&quot;)</span>
+
+         /* &amp;&amp; inscopeNamespaces.containsKey(name) */
+         ) {
+
+            // undeclare default namespace
+<span class="nc" id="L320">            inscopeNamespaces.remove(&quot;xmlns&quot;);</span>
+<span class="pc bpc" id="L321" title="1 of 4 branches missed.">         } else if (name.startsWith(&quot;xmlns&quot;) &amp;&amp;!value.equals(&quot;&quot;)) {</span>
+
+            // update inscope namespaces
+<span class="fc" id="L324">            inscopeNamespaces.put(name, value);</span>
+<span class="fc bfc" id="L325" title="All 2 branches covered.">         } else if (name.startsWith(&quot;xml:&quot;)) {</span>
+
+            // output xml:blah features
+<span class="fc" id="L328">            inscopeNamespaces.put(name, value);</span>
+         } else {
+
+            // output regular attributes
+<span class="fc" id="L332">            at.add(currentAttr);</span>
+         }
+      }
+
+      {
+
+         // check whether default namespace must be deleted
+<span class="pc bpc" id="L339" title="3 of 4 branches missed.">         if (alreadyVisible.containsKey(&quot;xmlns&quot;)</span>
+                 &amp;&amp;!inscopeNamespaces.containsKey(&quot;xmlns&quot;)) {
+
+            // undeclare default namespace
+<span class="nc" id="L343">            alreadyVisible.remove(&quot;xmlns&quot;);</span>
+
+<span class="nc" id="L345">            Attr a = this._doc.createAttributeNS(Constants.NamespaceSpecNS,</span>
+                                                 &quot;xmlns&quot;);
+
+<span class="nc" id="L348">            a.setValue(&quot;&quot;);</span>
+<span class="nc" id="L349">            ns.add(a);</span>
+         }
+      }
+
+<span class="fc" id="L353">      Iterator it = inscopeNamespaces.keySet().iterator();</span>
+
+<span class="fc bfc" id="L355" title="All 2 branches covered.">      while (it.hasNext()) {</span>
+<span class="fc" id="L356">         String name = (String) it.next();</span>
+<span class="fc" id="L357">         String inscopeValue = (String) inscopeNamespaces.get(name);</span>
+
+<span class="pc bpc" id="L359" title="1 of 6 branches missed.">         if (name.startsWith(&quot;xml:&quot;)</span>
+                 &amp;&amp;!(alreadyVisible.containsKey(name)
+                     &amp;&amp; alreadyVisible.get(name).equals(inscopeValue))) {
+<span class="fc" id="L362">            alreadyVisible.put(name, inscopeValue);</span>
+
+<span class="fc" id="L364">            Attr a =</span>
+               this._doc.createAttributeNS(Constants.XML_LANG_SPACE_SpecNS,
+                                           name);
+
+<span class="fc" id="L368">            a.setValue(inscopeValue);</span>
+<span class="fc" id="L369">            at.add(a);</span>
+<span class="pc bpc" id="L370" title="2 of 8 branches missed.">         } else if (this.utilizedOrIncluded(currentElement, name)</span>
+                    &amp;&amp; (!alreadyVisible.containsKey(name)
+                        || (alreadyVisible.containsKey(name)
+                            &amp;&amp;!alreadyVisible.get(name)
+                               .equals(inscopeValue)))) {
+<span class="pc bpc" id="L375" title="1 of 2 branches missed.">            if (C14nHelper.namespaceIsRelative(inscopeValue)) {</span>
+<span class="nc" id="L376">               Object exArgs[] = { currentElement.getTagName(), name,</span>
+                                   inscopeValue };
+
+<span class="nc" id="L379">               throw new CanonicalizationException(</span>
+                  &quot;c14n.Canonicalizer.RelativeNamespace&quot;, exArgs);
+            }
+
+<span class="fc" id="L383">            alreadyVisible.put(name, inscopeValue);</span>
+
+<span class="fc" id="L385">            Attr a = this._doc.createAttributeNS(Constants.NamespaceSpecNS,</span>
+                                                 name);
+
+<span class="fc" id="L388">            a.setValue(inscopeValue);</span>
+<span class="fc" id="L389">            ns.add(a);</span>
+         }
+<span class="fc" id="L391">      }</span>
+
+<span class="fc" id="L393">      Collections.sort(ns, new org.apache.xml.security.c14n.helper.NSAttrCompare());</span>
+<span class="fc" id="L394">      Collections.sort(at, new org.apache.xml.security.c14n.helper.NonNSAttrCompare());</span>
+
+<span class="fc" id="L396">      ns.addAll(at);</span>
+
+<span class="fc" id="L398">      return ns;</span>
+   }
+
+   /**
+    * Collects all relevant xml:* and attributes from all ancestor
+    * Elements from rootNode and creates a Map containg the attribute
+    * names/values.
+    *
+    * @param apexNode
+    * @return
+    * @throws CanonicalizationException
+    */
+   Map getInscopeNamespaces(Node apexNode) throws CanonicalizationException {
+
+<span class="fc" id="L412">      Map result = new HashMap();</span>
+
+<span class="pc bpc" id="L414" title="1 of 2 branches missed.">      if (apexNode.getNodeType() != Node.ELEMENT_NODE) {</span>
+<span class="nc" id="L415">         return result;</span>
+      }
+
+<span class="fc" id="L418">      Element apexElement = (Element) apexNode;</span>
+
+<span class="fc" id="L420">      for (Node parent = apexElement.getParentNode();</span>
+<span class="pc bpc" id="L421" title="1 of 4 branches missed.">              ((parent != null) &amp;&amp; (parent.getNodeType() == Node.ELEMENT_NODE));</span>
+<span class="fc" id="L422">              parent = parent.getParentNode()) {</span>
+<span class="fc" id="L423">         NamedNodeMap attributes = parent.getAttributes();</span>
+<span class="fc" id="L424">         int nrOfAttrs = attributes.getLength();</span>
+
+<span class="fc bfc" id="L426" title="All 2 branches covered.">         for (int i = 0; i &lt; nrOfAttrs; i++) {</span>
+<span class="fc" id="L427">            Attr currentAttr = (Attr) attributes.item(i);</span>
+<span class="fc" id="L428">            String name = currentAttr.getNodeName();</span>
+<span class="fc" id="L429">            String value = currentAttr.getValue();</span>
+
+<span class="pc bpc" id="L431" title="1 of 4 branches missed.">            if (name.equals(&quot;xmlns&quot;) &amp;&amp; value.equals(&quot;&quot;)) {</span>
+<span class="nc" id="L432">               result.remove(name);</span>
+<span class="pc bpc" id="L433" title="1 of 4 branches missed.">            } else if (name.startsWith(&quot;xmlns&quot;) &amp;&amp;!value.equals(&quot;&quot;)) {</span>
+<span class="fc bfc" id="L434" title="All 2 branches covered.">               if (!result.containsKey(name)) {</span>
+<span class="fc" id="L435">                  result.put(name, value);</span>
+               }
+            }
+         }
+      }
+
+<span class="fc" id="L441">      return result;</span>
+   }
+
+   //J-
+   private static final int NODE_BEFORE_DOCUMENT_ELEMENT = -1;
+   private static final int NODE_NOT_BEFORE_OR_AFTER_DOCUMENT_ELEMENT = 0;
+   private static final int NODE_AFTER_DOCUMENT_ELEMENT = 1;
+   //J+
+
+   /**
+    * Checks whether a Comment or ProcessingInstruction is before or after the
+    * document element. This is needed for prepending or appending &quot;\n&quot;s.
+    *
+    * @param currentNode comment or pi to check
+    * @return NODE_BEFORE_DOCUMENT_ELEMENT, NODE_NOT_BEFORE_OR_AFTER_DOCUMENT_ELEMENT or NODE_AFTER_DOCUMENT_ELEMENT
+    * @see NODE_BEFORE_DOCUMENT_ELEMENT
+    * @see NODE_NOT_BEFORE_OR_AFTER_DOCUMENT_ELEMENT
+    * @see NODE_AFTER_DOCUMENT_ELEMENT
+    */
+   static int getPositionRelativeToDocumentElement(Node currentNode) {
+
+<span class="pc bpc" id="L462" title="1 of 2 branches missed.">      if (currentNode == null) {</span>
+<span class="nc" id="L463">         return NODE_NOT_BEFORE_OR_AFTER_DOCUMENT_ELEMENT;</span>
+      }
+
+<span class="fc" id="L466">      Document doc = currentNode.getOwnerDocument();</span>
+
+<span class="pc bpc" id="L468" title="1 of 2 branches missed.">      if (currentNode.getParentNode() != doc) {</span>
+<span class="fc" id="L469">         return NODE_NOT_BEFORE_OR_AFTER_DOCUMENT_ELEMENT;</span>
+      }
+
+<span class="nc" id="L472">      Element documentElement = doc.getDocumentElement();</span>
+
+<span class="nc bnc" id="L474" title="All 2 branches missed.">      if (documentElement == null) {</span>
+<span class="nc" id="L475">         return NODE_NOT_BEFORE_OR_AFTER_DOCUMENT_ELEMENT;</span>
+      }
+
+<span class="nc bnc" id="L478" title="All 2 branches missed.">      if (documentElement == currentNode) {</span>
+<span class="nc" id="L479">         return NODE_NOT_BEFORE_OR_AFTER_DOCUMENT_ELEMENT;</span>
+      }
+
+<span class="nc bnc" id="L482" title="All 2 branches missed.">      for (Node x = currentNode; x != null; x = x.getNextSibling()) {</span>
+<span class="nc bnc" id="L483" title="All 2 branches missed.">         if (x == documentElement) {</span>
+<span class="nc" id="L484">            return NODE_BEFORE_DOCUMENT_ELEMENT;</span>
+         }
+      }
+
+<span class="nc" id="L488">      return NODE_AFTER_DOCUMENT_ELEMENT;</span>
+   }
+
+   /**
+    * Method engineCanonicalizeXPathNodeSet
+    *
+    * @param xpathNodeSet
+    * @return
+    * @throws CanonicalizationException
+    */
+   public byte[] engineCanonicalizeXPathNodeSet(Set xpathNodeSet)
+           throws CanonicalizationException {
+<span class="fc" id="L500">      return this.engineCanonicalizeXPathNodeSet(xpathNodeSet, &quot;&quot;);</span>
+   }
+
+   /**
+    * Method engineCanonicalizeXPathNodeSet
+    *
+    * @param xpathNodeSet
+    * @param inclusiveNamespaces
+    * @return
+    * @throws CanonicalizationException
+    */
+   public byte[] engineCanonicalizeXPathNodeSet(
+           Set xpathNodeSet, String inclusiveNamespaces)
+              throws CanonicalizationException {
+
+<span class="fc" id="L515">      this._xpathNodeSet = xpathNodeSet;</span>
+
+<span class="pc bpc" id="L517" title="1 of 2 branches missed.">      if (this._xpathNodeSet.size() == 0) {</span>
+<span class="nc" id="L518">         return new byte[0];</span>
+      }
+
+      {
+
+         // get only a single node as anchor to fetch the owner document
+<span class="fc" id="L524">         Node n = (Node) this._xpathNodeSet.iterator().next();</span>
+
+<span class="fc" id="L526">         this._doc = XMLUtils.getOwnerDocument(n);</span>
+<span class="fc" id="L527">         this._documentElement = this._doc.getDocumentElement();</span>
+      }
+
+      try {
+<span class="fc" id="L531">         ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+
+<span class="fc" id="L533">         this._writer = new OutputStreamWriter(baos, Canonicalizer.ENCODING);</span>
+<span class="fc" id="L534">         this._inclusiveNSSet =</span>
+            InclusiveNamespaces.prefixStr2Set(inclusiveNamespaces);
+
+<span class="fc" id="L537">         this.canonicalizeXPathNodeSet(this._doc, true, new EC14nCtx());</span>
+
+<span class="fc" id="L539">         this._writer.close();</span>
+
+<span class="fc" id="L541">         return baos.toByteArray();</span>
+<span class="nc" id="L542">      } catch (UnsupportedEncodingException ex) {</span>
+<span class="nc" id="L543">         throw new CanonicalizationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L544">      } catch (IOException ex) {</span>
+<span class="nc" id="L545">         throw new CanonicalizationException(&quot;empty&quot;, ex);</span>
+      } finally {
+<span class="pc" id="L547">         this._xpathNodeSet = null;</span>
+<span class="pc" id="L548">         this._inclusiveNSSet = null;</span>
+<span class="pc" id="L549">         this._rootNodeOfC14n = null;</span>
+<span class="pc" id="L550">         this._doc = null;</span>
+<span class="pc" id="L551">         this._documentElement = null;</span>
+<span class="pc" id="L552">         this._writer = null;</span>
+      }
+   }
+
+   /**
+    * Method canonicalizeXPathNodeSet
+    *
+    * @param currentNode
+    * @param parentIsVisible
+    * @param ctx
+    * @throws CanonicalizationException
+    * @throws IOException
+    */
+   void canonicalizeXPathNodeSet(
+           Node currentNode, boolean parentIsVisible, EC14nCtx ctx)
+              throws CanonicalizationException, IOException {
+
+<span class="fc" id="L569">      int currentNodeType = currentNode.getNodeType();</span>
+<span class="fc" id="L570">      boolean currentNodeIsVisible = this._xpathNodeSet.contains(currentNode);</span>
+
+<span class="pc bpc" id="L572" title="2 of 7 branches missed.">      switch (currentNodeType) {</span>
+
+      case Node.DOCUMENT_TYPE_NODE :
+      default :
+<span class="fc" id="L576">         break;</span>
+
+      case Node.ENTITY_NODE :
+      case Node.NOTATION_NODE :
+      case Node.DOCUMENT_FRAGMENT_NODE :
+      case Node.ATTRIBUTE_NODE :
+<span class="nc" id="L582">         throw new CanonicalizationException(&quot;empty&quot;);</span>
+      case Node.DOCUMENT_NODE :
+<span class="fc" id="L584">         for (Node currentChild = currentNode.getFirstChild();</span>
+<span class="fc bfc" id="L585" title="All 2 branches covered.">                 currentChild != null;</span>
+<span class="fc" id="L586">                 currentChild = currentChild.getNextSibling()) {</span>
+<span class="fc" id="L587">            canonicalizeXPathNodeSet(currentChild, true, ctx);</span>
+         }
+<span class="fc" id="L589">         break;</span>
+
+      case Node.COMMENT_NODE :
+<span class="pc bpc" id="L592" title="1 of 4 branches missed.">         if (this._includeComments</span>
+                 &amp;&amp; this._xpathNodeSet.contains(currentNode)) {
+<span class="fc" id="L594">            int position = getPositionRelativeToDocumentElement(currentNode);</span>
+
+<span class="pc bpc" id="L596" title="1 of 2 branches missed.">            if (position == NODE_AFTER_DOCUMENT_ELEMENT) {</span>
+<span class="nc" id="L597">               this._writer.write(&quot;\n&quot;);</span>
+            }
+
+<span class="fc" id="L600">            outputCommentToWriter((Comment) currentNode);</span>
+
+<span class="pc bpc" id="L602" title="1 of 2 branches missed.">            if (position == NODE_BEFORE_DOCUMENT_ELEMENT) {</span>
+<span class="nc" id="L603">               this._writer.write(&quot;\n&quot;);</span>
+            }
+<span class="fc" id="L605">         }</span>
+         break;
+
+      case Node.PROCESSING_INSTRUCTION_NODE :
+<span class="nc bnc" id="L609" title="All 2 branches missed.">         if (this._xpathNodeSet.contains(currentNode)) {</span>
+<span class="nc" id="L610">            int position = getPositionRelativeToDocumentElement(currentNode);</span>
+
+<span class="nc bnc" id="L612" title="All 2 branches missed.">            if (position == NODE_AFTER_DOCUMENT_ELEMENT) {</span>
+<span class="nc" id="L613">               this._writer.write(&quot;\n&quot;);</span>
+            }
+
+<span class="nc" id="L616">            outputPItoWriter((ProcessingInstruction) currentNode);</span>
+
+<span class="nc bnc" id="L618" title="All 2 branches missed.">            if (position == NODE_BEFORE_DOCUMENT_ELEMENT) {</span>
+<span class="nc" id="L619">               this._writer.write(&quot;\n&quot;);</span>
+            }
+<span class="nc" id="L621">         }</span>
+         break;
+
+      case Node.TEXT_NODE :
+      case Node.CDATA_SECTION_NODE :
+<span class="fc bfc" id="L626" title="All 2 branches covered.">         if (this._xpathNodeSet.contains(currentNode)) {</span>
+<span class="fc" id="L627">            outputTextToWriter(currentNode.getNodeValue());</span>
+
+<span class="fc" id="L629">            for (Node nextSibling =</span>
+                    currentNode
+<span class="pc bpc" id="L631" title="2 of 6 branches missed.">                       .getNextSibling(); (nextSibling != null) &amp;&amp; ((nextSibling</span>
+                          .getNodeType() == Node.TEXT_NODE) || (nextSibling
+                             .getNodeType() == Node
+<span class="pc" id="L634">                                .CDATA_SECTION_NODE)); nextSibling =</span>
+                                   nextSibling.getNextSibling()) {
+
+               /* The XPath data model allows to select only the first of a
+                * sequence of mixed text and CDATA nodes. But we must output
+                * them all, so we must search:
+                *
+                * @see http://nagoya.apache.org/bugzilla/show_bug.cgi?id=6329
+                */
+<span class="nc" id="L643">               outputTextToWriter(nextSibling.getNodeValue());</span>
+            }
+         }
+         break;
+
+      case Node.ELEMENT_NODE :
+<span class="fc" id="L649">         Element currentElement = (Element) currentNode;</span>
+
+<span class="fc bfc" id="L651" title="All 2 branches covered.">         if (currentNodeIsVisible) {</span>
+<span class="fc" id="L652">            this._writer.write(&quot;&lt;&quot;);</span>
+<span class="fc" id="L653">            this._writer.write(currentElement.getTagName());</span>
+         }
+
+         // we output all Attrs which are available
+<span class="fc" id="L657">         List attrs = this.getAttrs(currentElement, parentIsVisible, ctx);</span>
+<span class="fc" id="L658">         int attrsLength = attrs.size();</span>
+
+<span class="fc bfc" id="L660" title="All 2 branches covered.">         for (int i = 0; i &lt; attrsLength; i++) {</span>
+<span class="fc" id="L661">            Attr a = (Attr) attrs.get(i);</span>
+
+<span class="fc" id="L663">            outputAttrToWriter(a.getNodeName(), a.getNodeValue());</span>
+         }
+
+<span class="fc bfc" id="L666" title="All 2 branches covered.">         if (currentNodeIsVisible) {</span>
+<span class="fc" id="L667">            this._writer.write(&quot;&gt;&quot;);</span>
+         }
+
+         // traversal
+<span class="fc" id="L671">         for (Node currentChild = currentNode.getFirstChild();</span>
+<span class="fc bfc" id="L672" title="All 2 branches covered.">                 currentChild != null;</span>
+<span class="fc" id="L673">                 currentChild = currentChild.getNextSibling()) {</span>
+<span class="fc bfc" id="L674" title="All 2 branches covered.">            if (currentChild.getNodeType() == Node.ELEMENT_NODE) {</span>
+
+               /*
+                * We must 'clone' the inscopeXMLAttrs to allow the descendants
+                * to mess around in their own map
+                */
+<span class="fc" id="L680">               canonicalizeXPathNodeSet(currentChild, currentNodeIsVisible,</span>
+                                        ctx.copy());
+            } else {
+<span class="fc" id="L683">               canonicalizeXPathNodeSet(currentChild, currentNodeIsVisible,</span>
+                                        ctx);
+            }
+         }
+
+<span class="fc bfc" id="L688" title="All 2 branches covered.">         if (currentNodeIsVisible) {</span>
+<span class="fc" id="L689">            this._writer.write(&quot;&lt;/&quot;);</span>
+<span class="fc" id="L690">            this._writer.write(currentElement.getTagName());</span>
+<span class="fc" id="L691">            this._writer.write(&quot;&gt;&quot;);</span>
+         }
+         break;
+      }
+<span class="fc" id="L695">   }</span>
+
+   /**
+    * Method getAttrs
+    *
+    * @param currentElement
+    * @param parentIsVisible
+    * @param ctx
+    * @return
+    * @throws CanonicalizationException
+    */
+   List getAttrs(Element currentElement, boolean parentIsVisible, EC14nCtx ctx)
+           throws CanonicalizationException {
+
+<span class="fc" id="L709">      Set visiblyUtilized = new HashSet();</span>
+
+<span class="fc" id="L711">      boolean currentElementIsInNodeset = this._xpathNodeSet.contains(currentElement);</span>
+<span class="fc bfc" id="L712" title="All 2 branches covered.">      if (currentElementIsInNodeset) {</span>
+<span class="fc bfc" id="L713" title="All 2 branches covered.">         if (currentElement.getNamespaceURI() != null) {</span>
+<span class="fc" id="L714">            String prefix = currentElement.getPrefix();</span>
+
+<span class="fc bfc" id="L716" title="All 2 branches covered.">            if (prefix == null) {</span>
+<span class="fc" id="L717">               visiblyUtilized.add(&quot;xmlns&quot;);</span>
+            } else {
+<span class="fc" id="L719">               visiblyUtilized.add(&quot;xmlns:&quot; + prefix);</span>
+            }
+         }
+      }
+
+<span class="fc" id="L724">      Vector namespacesInSubset = new Vector();</span>
+<span class="fc" id="L725">      Vector attributesInSubset = new Vector();</span>
+<span class="fc" id="L726">      NamedNodeMap attributes = currentElement.getAttributes();</span>
+<span class="fc" id="L727">      int attributesLength = attributes.getLength();</span>
+<span class="fc bfc" id="L728" title="All 2 branches covered.">      for (int i = 0; i &lt; attributesLength; i++) {</span>
+<span class="fc" id="L729">         Attr currentAttr = (Attr) attributes.item(i);</span>
+<span class="fc bfc" id="L730" title="All 2 branches covered.">         if (this._xpathNodeSet.contains(currentAttr)) {</span>
+<span class="fc" id="L731">            String URI = currentAttr.getNamespaceURI();</span>
+<span class="fc bfc" id="L732" title="All 4 branches covered.">            if (URI != null &amp;&amp; Constants.NamespaceSpecNS.equals(URI)) {</span>
+<span class="fc" id="L733">               String value = currentAttr.getValue();</span>
+<span class="pc bpc" id="L734" title="1 of 2 branches missed.">               if (C14nHelper.namespaceIsRelative(value)) {</span>
+<span class="nc" id="L735">                  Object exArgs[] = { currentElement.getTagName(), currentAttr.getNodeName(), value };</span>
+
+<span class="nc" id="L737">                  throw new CanonicalizationException(&quot;c14n.Canonicalizer.RelativeNamespace&quot;, exArgs);</span>
+               }
+<span class="fc" id="L739">               namespacesInSubset.add(currentAttr);</span>
+<span class="fc" id="L740">            } else {</span>
+<span class="fc" id="L741">               attributesInSubset.add(currentAttr);</span>
+
+<span class="fc" id="L743">               String prefix = currentAttr.getPrefix();</span>
+<span class="fc bfc" id="L744" title="All 2 branches covered.">               if (prefix != null) {</span>
+<span class="fc" id="L745">                  visiblyUtilized.add(&quot;xmlns:&quot; + prefix);</span>
+               }
+            }
+         }
+      }
+<span class="fc" id="L750">      Collections.sort(namespacesInSubset,</span>
+                       new org.apache.xml.security.c14n.helper.NSAttrCompare());
+<span class="fc" id="L752">      Collections.sort(attributesInSubset,</span>
+                       new org.apache.xml.security.c14n.helper.NonNSAttrCompare());
+
+<span class="fc" id="L755">      Vector nsResult = new Vector();</span>
+<span class="fc bfc" id="L756" title="All 2 branches covered.">      for (int i = 0; i &lt; namespacesInSubset.size(); i++) {</span>
+<span class="fc" id="L757">         Attr currentAttr = (Attr) namespacesInSubset.get(i);</span>
+<span class="fc" id="L758">         String name = currentAttr.getNodeName();</span>
+<span class="fc" id="L759">         String value = currentAttr.getValue();</span>
+
+<span class="fc bfc" id="L761" title="All 4 branches covered.">         if (name.equals(&quot;xmlns&quot;) &amp;&amp; value.equals(&quot;&quot;)) {</span>
+            // undeclare default namespace
+<span class="fc" id="L763">            boolean nameAlreadyVisible = ctx.n.containsKey(name);</span>
+
+<span class="fc bfc" id="L765" title="All 2 branches covered.">            if (nameAlreadyVisible) {</span>
+<span class="fc" id="L766">               ctx.n.remove(name);</span>
+<span class="fc" id="L767">               nsResult.add(currentAttr);</span>
+            }
+<span class="fc" id="L769">         } else {</span>
+            //J-
+            // boolean utilizedOrIncluded = this.utilizedOrIncluded(currentElement, name);
+<span class="fc bfc" id="L772" title="All 4 branches covered.">            boolean utilizedOrIncluded = visiblyUtilized.contains(name) || this._inclusiveNSSet.contains(name);</span>
+<span class="fc" id="L773">            boolean nameAlreadyVisible = ctx.n.containsKey(name);</span>
+<span class="fc bfc" id="L774" title="All 4 branches covered.">            boolean visibleButNotEqual = nameAlreadyVisible &amp;&amp; !ctx.n.get(name).equals(value);</span>
+            //J+
+<span class="fc bfc" id="L776" title="All 8 branches covered.">            if (currentElementIsInNodeset &amp;&amp; utilizedOrIncluded &amp;&amp; (!nameAlreadyVisible || visibleButNotEqual)) {</span>
+               // ns_rendered_new.put(name, value);
+<span class="fc" id="L778">               ctx.n.put(name, value);</span>
+<span class="fc" id="L779">               nsResult.add(currentAttr);</span>
+            }
+         }
+      }
+<span class="fc" id="L783">      nsResult.addAll(attributesInSubset);</span>
+
+<span class="fc" id="L785">      return nsResult;</span>
+   }
+
+   /**
+    * Normalizes an {@link Attr}ibute value
+    *
+    * The string value of the node is modified by replacing
+    * &lt;UL&gt;
+    * &lt;LI&gt;all ampersands (&amp;) with &lt;CODE&gt;&amp;amp;amp;&lt;/CODE&gt;&lt;/LI&gt;
+    * &lt;LI&gt;all open angle brackets (&lt;) with &lt;CODE&gt;&amp;amp;lt;&lt;/CODE&gt;&lt;/LI&gt;
+    * &lt;LI&gt;all quotation mark characters with &lt;CODE&gt;&amp;amp;quot;&lt;/CODE&gt;&lt;/LI&gt;
+    * &lt;LI&gt;and the whitespace characters &lt;CODE&gt;#x9&lt;/CODE&gt;, #xA, and #xD, with character
+    * references. The character references are written in uppercase
+    * hexadecimal with no leading zeroes (for example, &lt;CODE&gt;#xD&lt;/CODE&gt; is represented
+    * by the character reference &lt;CODE&gt;&amp;amp;#xD;&lt;/CODE&gt;)&lt;/LI&gt;
+    * &lt;/UL&gt;
+    *
+    * @param name
+    * @param value
+    * @throws IOException
+    */
+   void outputAttrToWriter(String name, String value) throws IOException {
+
+<span class="fc" id="L808">      this._writer.write(&quot; &quot;);</span>
+<span class="fc" id="L809">      this._writer.write(name);</span>
+<span class="fc" id="L810">      this._writer.write(&quot;=\&quot;&quot;);</span>
+
+<span class="fc" id="L812">      int length = value.length();</span>
+
+<span class="fc bfc" id="L814" title="All 2 branches covered.">      for (int i = 0; i &lt; length; i++) {</span>
+<span class="fc" id="L815">         char c = value.charAt(i);</span>
+
+<span class="pc bpc" id="L817" title="6 of 7 branches missed.">         switch (c) {</span>
+
+         case '&amp;' :
+<span class="nc" id="L820">            this._writer.write(&quot;&amp;amp;&quot;);</span>
+<span class="nc" id="L821">            break;</span>
+
+         case '&lt;' :
+<span class="nc" id="L824">            this._writer.write(&quot;&amp;lt;&quot;);</span>
+<span class="nc" id="L825">            break;</span>
+
+         case '&quot;' :
+<span class="nc" id="L828">            this._writer.write(&quot;&amp;quot;&quot;);</span>
+<span class="nc" id="L829">            break;</span>
+
+         case 0x09 :    // '\t'
+<span class="nc" id="L832">            this._writer.write(&quot;&amp;#x9;&quot;);</span>
+<span class="nc" id="L833">            break;</span>
+
+         case 0x0A :    // '\n'
+<span class="nc" id="L836">            this._writer.write(&quot;&amp;#xA;&quot;);</span>
+<span class="nc" id="L837">            break;</span>
+
+         case 0x0D :    // '\r'
+<span class="nc" id="L840">            this._writer.write(&quot;&amp;#xD;&quot;);</span>
+<span class="nc" id="L841">            break;</span>
+
+         default :
+<span class="fc" id="L844">            this._writer.write(c);</span>
+            break;
+         }
+      }
+
+<span class="fc" id="L849">      this._writer.write(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L850">   }</span>
+
+   /**
+    * Normalizes a {@link org.w3c.dom.Comment} value
+    *
+    * @param currentPI
+    * @throws IOException
+    */
+   void outputPItoWriter(ProcessingInstruction currentPI) throws IOException {
+<span class="nc bnc" id="L859" title="All 2 branches missed.">      if (currentPI == null) {</span>
+<span class="nc" id="L860">        return;</span>
+      }
+
+<span class="nc" id="L863">      this._writer.write(&quot;&lt;?&quot;);</span>
+
+<span class="nc" id="L865">      String target = currentPI.getTarget();</span>
+<span class="nc" id="L866">      int length = target.length();</span>
+
+<span class="nc bnc" id="L868" title="All 2 branches missed.">      for (int i = 0; i &lt; length; i++) {</span>
+<span class="nc" id="L869">         char c = target.charAt(i);</span>
+
+<span class="nc bnc" id="L871" title="All 2 branches missed.">         switch (c) {</span>
+
+         case 0x0D :
+<span class="nc" id="L874">            this._writer.write(&quot;&amp;#xD;&quot;);</span>
+<span class="nc" id="L875">            break;</span>
+
+         default :
+<span class="nc" id="L878">            this._writer.write(c);</span>
+            break;
+         }
+      }
+
+<span class="nc" id="L883">      String data = currentPI.getData();</span>
+
+<span class="nc" id="L885">      length = data.length();</span>
+
+<span class="nc bnc" id="L887" title="All 4 branches missed.">      if ((data != null) &amp;&amp; (length &gt; 0)) {</span>
+<span class="nc" id="L888">         this._writer.write(&quot; &quot;);</span>
+
+<span class="nc bnc" id="L890" title="All 2 branches missed.">         for (int i = 0; i &lt; length; i++) {</span>
+<span class="nc" id="L891">            char c = data.charAt(i);</span>
+
+<span class="nc bnc" id="L893" title="All 2 branches missed.">            switch (c) {</span>
+
+            case 0x0D :
+<span class="nc" id="L896">               this._writer.write(&quot;&amp;#xD;&quot;);</span>
+<span class="nc" id="L897">               break;</span>
+
+            default :
+<span class="nc" id="L900">               this._writer.write(c);</span>
+               break;
+            }
+         }
+      }
+
+<span class="nc" id="L906">      this._writer.write(&quot;?&gt;&quot;);</span>
+<span class="nc" id="L907">   }</span>
+
+   /**
+    * Method outputCommentToWriter
+    *
+    * @param currentComment
+    * @throws IOException
+    */
+   void outputCommentToWriter(Comment currentComment) throws IOException {
+<span class="pc bpc" id="L916" title="1 of 2 branches missed.">      if (currentComment == null) {</span>
+<span class="nc" id="L917">        return;</span>
+      }
+
+<span class="fc" id="L920">      this._writer.write(&quot;&lt;!--&quot;);</span>
+
+<span class="fc" id="L922">      String data = currentComment.getData();</span>
+<span class="fc" id="L923">      int length = data.length();</span>
+
+<span class="fc bfc" id="L925" title="All 2 branches covered.">      for (int i = 0; i &lt; length; i++) {</span>
+<span class="fc" id="L926">         char c = data.charAt(i);</span>
+
+<span class="pc bpc" id="L928" title="1 of 2 branches missed.">         switch (c) {</span>
+
+         case 0x0D :
+<span class="nc" id="L931">            this._writer.write(&quot;&amp;#xD;&quot;);</span>
+<span class="nc" id="L932">            break;</span>
+
+         default :
+<span class="fc" id="L935">            this._writer.write(c);</span>
+            break;
+         }
+      }
+
+<span class="fc" id="L940">      this._writer.write(&quot;--&gt;&quot;);</span>
+<span class="fc" id="L941">   }</span>
+
+   /**
+    * Method outputTextToWriter
+    *
+    * @param text
+    * @throws IOException
+    */
+   void outputTextToWriter(String text) throws IOException {
+<span class="pc bpc" id="L950" title="1 of 2 branches missed.">      if (text == null) {</span>
+<span class="nc" id="L951">        return;</span>
+      }
+
+<span class="fc" id="L954">      int length = text.length();</span>
+
+<span class="fc bfc" id="L956" title="All 2 branches covered.">      for (int i = 0; i &lt; length; i++) {</span>
+<span class="fc" id="L957">         char c = text.charAt(i);</span>
+
+<span class="pc bpc" id="L959" title="4 of 5 branches missed.">         switch (c) {</span>
+
+         case '&amp;' :
+<span class="nc" id="L962">            this._writer.write(&quot;&amp;amp;&quot;);</span>
+<span class="nc" id="L963">            break;</span>
+
+         case '&lt;' :
+<span class="nc" id="L966">            this._writer.write(&quot;&amp;lt;&quot;);</span>
+<span class="nc" id="L967">            break;</span>
+
+         case '&gt;' :
+<span class="nc" id="L970">            this._writer.write(&quot;&amp;gt;&quot;);</span>
+<span class="nc" id="L971">            break;</span>
+
+         case 0xD :
+<span class="nc" id="L974">            this._writer.write(&quot;&amp;#xD;&quot;);</span>
+<span class="nc" id="L975">            break;</span>
+
+         default :
+<span class="fc" id="L978">            this._writer.write(c);</span>
+            break;
+         }
+      }
+<span class="fc" id="L982">   }</span>
+
+   /**
+    * Returns &lt;code&gt;true&lt;/code&gt; is the namespace is either utilized by the
+    * given element or included by the includedNamespaces parameter.
+    *
+    * @param element
+    * @param namespace
+    * @return
+    */
+   public boolean utilizedOrIncluded(Element element, String namespace) {
+
+<span class="pc bpc" id="L994" title="1 of 2 branches missed.">      if (this._inclusiveNSSet.contains(namespace)) {</span>
+
+         // included;
+<span class="nc" id="L997">         return true;</span>
+      }
+
+<span class="fc" id="L1000">      boolean utilized = this.visiblyUtilized(element).contains(namespace);</span>
+
+<span class="fc" id="L1002">      return utilized;</span>
+   }
+
+   /**
+    * Method visiblyUtilized
+    *
+    * @param element
+    * @return
+    */
+   public Set visiblyUtilized(Element element) {
+
+<span class="fc" id="L1013">      Set result = new HashSet();</span>
+
+<span class="pc bpc" id="L1015" title="1 of 2 branches missed.">      if (this._xpathNodeSet == null) {</span>
+
+         // we are in the canonicalizeSubtree part
+<span class="pc bpc" id="L1018" title="1 of 2 branches missed.">         if (element.getNamespaceURI() != null) {</span>
+<span class="fc" id="L1019">            String elementPrefix = element.getPrefix();</span>
+
+<span class="fc bfc" id="L1021" title="All 2 branches covered.">            if (elementPrefix == null) {</span>
+<span class="fc" id="L1022">               result.add(&quot;xmlns&quot;);</span>
+            } else {
+<span class="fc" id="L1024">               result.add(&quot;xmlns:&quot; + elementPrefix);</span>
+            }
+         }
+
+<span class="fc" id="L1028">         NamedNodeMap attributes = element.getAttributes();</span>
+<span class="fc" id="L1029">         int attributesLength = attributes.getLength();</span>
+
+         // if the attribute is not xmlns:... and not xml:... but
+         // a:..., add xmlns:a to the list
+<span class="fc bfc" id="L1033" title="All 2 branches covered.">         for (int i = 0; i &lt; attributesLength; i++) {</span>
+<span class="fc" id="L1034">            Attr currentAttr = (Attr) attributes.item(i);</span>
+
+<span class="fc bfc" id="L1036" title="All 2 branches covered.">            if (currentAttr.getNamespaceURI() != null) {</span>
+<span class="fc" id="L1037">               String attrPrefix = currentAttr.getPrefix();</span>
+
+<span class="pc bpc" id="L1039" title="1 of 6 branches missed.">               if ((attrPrefix != null) &amp;&amp;!attrPrefix.equals(&quot;xml&quot;)</span>
+                       &amp;&amp;!attrPrefix.equals(&quot;xmlns&quot;)) {
+<span class="nc" id="L1041">                  result.add(&quot;xmlns:&quot; + attrPrefix);</span>
+               }
+            }
+         }
+<span class="pc bnc" id="L1045" title="All 4 branches missed.">      } else if ((this._xpathNodeSet != null)</span>
+                 &amp;&amp; this._xpathNodeSet.contains(element)) {
+
+         // we are in the canonicalizeXPathNodeSet part
+<span class="nc bnc" id="L1049" title="All 2 branches missed.">         if (element.getNamespaceURI() != null) {</span>
+<span class="nc" id="L1050">            String elementPrefix = element.getPrefix();</span>
+
+<span class="nc bnc" id="L1052" title="All 4 branches missed.">            if ((elementPrefix == null) || (elementPrefix.length() == 0)) {</span>
+<span class="nc" id="L1053">               result.add(&quot;xmlns&quot;);</span>
+            } else {
+<span class="nc" id="L1055">               result.add(&quot;xmlns:&quot; + elementPrefix);</span>
+            }
+         }
+
+<span class="nc" id="L1059">         NamedNodeMap attributes = element.getAttributes();</span>
+<span class="nc" id="L1060">         int attributesLength = attributes.getLength();</span>
+
+         // if the attribute is not xmlns:... and not xml:... but
+         // a:..., add xmlns:a to the list
+<span class="nc bnc" id="L1064" title="All 2 branches missed.">         for (int i = 0; i &lt; attributesLength; i++) {</span>
+<span class="nc" id="L1065">            Attr currentAttr = (Attr) attributes.item(i);</span>
+
+<span class="nc bnc" id="L1067" title="All 4 branches missed.">            if (this._xpathNodeSet.contains(currentAttr)</span>
+                    &amp;&amp; (currentAttr.getNamespaceURI() != null)) {
+<span class="nc" id="L1069">               String attrPrefix = currentAttr.getPrefix();</span>
+
+<span class="nc bnc" id="L1071" title="All 6 branches missed.">               if ((attrPrefix != null) &amp;&amp;!attrPrefix.equals(&quot;xml&quot;)</span>
+                       &amp;&amp;!attrPrefix.equals(&quot;xmlns&quot;)) {
+<span class="nc" id="L1073">                  result.add(&quot;xmlns:&quot; + attrPrefix);</span>
+               }
+            }
+         }
+      }
+
+<span class="fc" id="L1079">      return result;</span>
+   }
+
+   /**
+    * Class EC14nCtx
+    *
+    * @author $Author: dohy $
+    * @version $Revision: 1.1.1.1 $
+    */
+   class EC14nCtx {
+
+      /** Field n */
+      Map n;
+
+      /**
+       * Constructor EC14nCtx
+       *
+       */
+<span class="fc" id="L1097">      public EC14nCtx() {</span>
+<span class="fc" id="L1098">         this.n = new HashMap();</span>
+<span class="fc" id="L1099">      }</span>
+
+      /**
+       * Constructor EC14nCtx
+       *
+       * @param n
+       */
+<span class="nc" id="L1106">      public EC14nCtx(Map n) {</span>
+<span class="nc" id="L1107">         this.n = n;</span>
+<span class="nc" id="L1108">      }</span>
+
+      /**
+       * Method copy
+       *
+       * @return
+       */
+      public EC14nCtx copy() {
+
+<span class="fc" id="L1117">         EC14nCtx c = new EC14nCtx();</span>
+
+<span class="fc" id="L1119">         c.n = new HashMap(this.n);</span>
+
+<span class="fc" id="L1121">         return c;</span>
+      }
+   }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

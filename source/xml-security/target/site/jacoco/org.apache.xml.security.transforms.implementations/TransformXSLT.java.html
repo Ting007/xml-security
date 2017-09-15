@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransformXSLT.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.transforms.implementations</a> &gt; <span class="el_source">TransformXSLT.java</span></div><h1>TransformXSLT.java</h1><pre class="source lang-java linenums">
+/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.transforms.implementations;
+
+
+
+import java.io.*;
+import java.io.IOException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.*;
+import javax.xml.transform.Source;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import org.apache.xml.security.c14n.*;
+import org.apache.xml.security.c14n.CanonicalizationException;
+import org.apache.xml.security.exceptions.*;
+import org.apache.xml.security.signature.*;
+import org.apache.xml.security.transforms.*;
+import org.apache.xml.security.utils.*;
+import org.apache.xpath.XPathAPI;
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
+
+
+/**
+ * Class TransformXSLT
+ *
+ * Implements the &lt;CODE&gt;http://www.w3.org/TR/1999/REC-xslt-19991116&lt;/CODE&gt;
+ * transform.
+ *
+ * @author Christian Geuer-Pollmann
+ */
+<span class="nc" id="L93">public class TransformXSLT extends TransformSpi {</span>
+
+   /** Field implementedTransformURI */
+   public static final String implementedTransformURI =
+      Transforms.TRANSFORM_XSLT;
+   //J-
+   public static final String XSLTSpecNS              = &quot;http://www.w3.org/1999/XSL/Transform&quot;;
+   public static final String defaultXSLTSpecNSprefix = &quot;xslt&quot;;
+   public static final String XSLTSTYLESHEET          = &quot;stylesheet&quot;;
+
+<span class="nc" id="L103">   public boolean wantsOctetStream ()   { return false; }</span>
+<span class="nc" id="L104">   public boolean wantsNodeSet ()       { return true; }</span>
+<span class="nc" id="L105">   public boolean returnsOctetStream () { return true; }</span>
+<span class="nc" id="L106">   public boolean returnsNodeSet ()     { return true; }</span>
+   //J+
+
+   /**
+    * Method engineGetURI
+    *
+    * @return
+    */
+   protected String engineGetURI() {
+<span class="nc" id="L115">      return this.implementedTransformURI;</span>
+   }
+
+   /**
+    * Method enginePerformTransform
+    *
+    * @param input the input for this transform
+    * @return the result of this Transform
+    * @throws CanonicalizationException
+    * @throws IOException
+    * @throws TransformationException
+    */
+   protected XMLSignatureInput enginePerformTransform(XMLSignatureInput input)
+           throws IOException, CanonicalizationException,
+                  TransformationException {
+
+      try {
+<span class="nc" id="L132">         Element transformElement = this._transformObject.getElement();</span>
+<span class="nc" id="L133">         Document doc = transformElement.getOwnerDocument();</span>
+<span class="nc" id="L134">         Element nscontext = XMLUtils.createDSctx(doc, &quot;xslt&quot;, XSLTSpecNS);</span>
+
+<span class="nc" id="L136">         Element _xsltElement =</span>
+            (Element) XPathAPI.selectSingleNode(transformElement,
+                                                &quot;./xslt:stylesheet&quot;, nscontext);
+
+<span class="nc bnc" id="L140" title="All 2 branches missed.">         if (_xsltElement == null) {</span>
+<span class="nc" id="L141">            Object exArgs[] = { &quot;xslt:stylesheet&quot;, &quot;Transform&quot; };</span>
+
+<span class="nc" id="L143">            throw new TransformationException(&quot;xml.WrongContent&quot;, exArgs);</span>
+         }
+
+<span class="nc" id="L146">         TransformerFactory tFactory = TransformerFactory.newInstance();</span>
+
+         /*
+          * This transform requires an octet stream as input. If the actual
+          * input is an XPath node-set, then the signature application should
+          * attempt to convert it to octets (apply Canonical XML]) as described
+          * in the Reference Processing Model (section 4.3.3.2).
+          */
+<span class="nc" id="L154">         Source xmlSource =</span>
+            new StreamSource(new ByteArrayInputStream(input.getBytes()));
+         Source stylesheet;
+
+         /*
+          * This complicated transformation of the stylesheet itself is necessary
+          * because of the need to get the pure style sheet. If we simply say
+          * Source stylesheet = new DOMSource(this._xsltElement);
+          * whereby this._xsltElement is not the rootElement of the Document,
+          * this causes problems;
+          * so we convert the stylesheet to byte[] and use this as input stream
+          */
+         {
+<span class="nc" id="L167">            ByteArrayOutputStream os = new ByteArrayOutputStream();</span>
+<span class="nc" id="L168">            Transformer transformer = tFactory.newTransformer();</span>
+<span class="nc" id="L169">            DOMSource source = new DOMSource((Node) _xsltElement);</span>
+<span class="nc" id="L170">            StreamResult result = new StreamResult(os);</span>
+
+<span class="nc" id="L172">            transformer.transform(source, result);</span>
+
+<span class="nc" id="L174">            stylesheet =</span>
+               new StreamSource(new ByteArrayInputStream(os.toByteArray()));
+         }
+
+<span class="nc" id="L178">         Transformer transformer = tFactory.newTransformer(stylesheet);</span>
+<span class="nc" id="L179">         ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+<span class="nc" id="L180">         StreamResult outputTarget = new StreamResult(baos);</span>
+
+<span class="nc" id="L182">         transformer.transform(xmlSource, outputTarget);</span>
+
+<span class="nc" id="L184">         return new XMLSignatureInput(baos.toByteArray());</span>
+<span class="nc" id="L185">      } catch (InvalidCanonicalizerException ex) {</span>
+<span class="nc" id="L186">         Object exArgs[] = { ex.getMessage() };</span>
+
+<span class="nc" id="L188">         throw new TransformationException(&quot;generic.EmptyMessage&quot;, exArgs, ex);</span>
+<span class="nc" id="L189">      } catch (XMLSecurityException ex) {</span>
+<span class="nc" id="L190">         Object exArgs[] = { ex.getMessage() };</span>
+
+<span class="nc" id="L192">         throw new TransformationException(&quot;generic.EmptyMessage&quot;, exArgs, ex);</span>
+<span class="nc" id="L193">      } catch (TransformerConfigurationException ex) {</span>
+<span class="nc" id="L194">         Object exArgs[] = { ex.getMessage() };</span>
+
+<span class="nc" id="L196">         throw new TransformationException(&quot;generic.EmptyMessage&quot;, exArgs, ex);</span>
+<span class="nc" id="L197">      } catch (TransformerException ex) {</span>
+<span class="nc" id="L198">         Object exArgs[] = { ex.getMessage() };</span>
+
+<span class="nc" id="L200">         throw new TransformationException(&quot;generic.EmptyMessage&quot;, exArgs, ex);</span>
+      }
+   }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

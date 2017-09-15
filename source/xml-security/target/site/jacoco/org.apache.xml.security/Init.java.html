@@ -1,0 +1,781 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Init.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security</a> &gt; <span class="el_source">Init.java</span></div><h1>Init.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security;
+
+
+
+import java.io.*;
+import java.lang.reflect.Method;
+import java.util.*;
+import javax.xml.parsers.*;
+import org.apache.xpath.XPathAPI;
+import org.apache.xpath.compiler.FunctionTable;
+import org.apache.xpath.compiler.FuncLoader;
+import org.apache.xpath.functions.Function;
+import org.w3c.dom.*;
+import org.apache.xml.security.algorithms.encryption.EncryptionMethod;
+import org.apache.xml.security.algorithms.SignatureAlgorithm;
+import org.apache.xml.security.algorithms.encryption.EncryptionMethod;
+import org.apache.xml.security.algorithms.JCEMapper;
+import org.apache.xml.security.c14n.Canonicalizer;
+import org.apache.xml.security.transforms.params.XPathContainer;
+import org.apache.xml.security.exceptions.XMLSecurityException;
+import org.apache.xml.security.transforms.Transform;
+import org.apache.xml.security.transforms.implementations.FuncHere;
+import org.apache.xml.security.utils.*;
+import org.apache.xml.security.utils.resolver.ResourceResolver;
+import org.apache.xml.security.keys.KeyInfo;
+import org.apache.xml.security.keys.ContentHandlerAlreadyRegisteredException;
+import org.apache.xml.security.keys.keyresolver.KeyResolver;
+
+
+/**
+ * This class does the configuration of the library. This includes creating
+ * the mapping of Canonicalization and Transform algorithms. Initialization is
+ * done by calling {@link Init#init} which should be done in any static block
+ * of the files of this library. We ensure that this call is only executed once.
+ *
+ * @author $Author: dohy $
+ */
+<span class="nc" id="L96">public class Init {</span>
+
+   /** {@link org.apache.log4j} logging facility */
+<span class="fc" id="L99">   static org.apache.log4j.Category cat =</span>
+      org.apache.log4j.Category.getInstance(Init.class.getName());
+
+   /** Field _initialized */
+<span class="fc" id="L103">   private static boolean _alreadyInitialized = false;</span>
+
+   /**
+    * Method isInitialized
+    *
+    * @return
+    */
+   public static final boolean isInitialized() {
+<span class="nc" id="L111">      return Init._alreadyInitialized;</span>
+   }
+
+   /**
+    * Method init
+    *
+    */
+   public synchronized static void init() {
+
+<span class="fc bfc" id="L120" title="All 2 branches covered.">      if (!_alreadyInitialized) {</span>
+<span class="fc" id="L121">         _alreadyInitialized = true;</span>
+
+         try {
+<span class="fc" id="L124">            long XX_init_start = System.currentTimeMillis();</span>
+<span class="fc" id="L125">            long XX_prng_start = System.currentTimeMillis();</span>
+
+<span class="fc" id="L127">            PRNG.init(new java.security.SecureRandom());</span>
+
+<span class="fc" id="L129">            long XX_prng_end = System.currentTimeMillis();</span>
+
+            /* read library configuration file */
+<span class="fc" id="L132">            long XX_parsing_start = System.currentTimeMillis();</span>
+<span class="fc" id="L133">            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();</span>
+
+<span class="fc" id="L135">            dbf.setNamespaceAware(true);</span>
+<span class="fc" id="L136">            dbf.setValidating(false);</span>
+
+<span class="fc" id="L138">            DocumentBuilder db = dbf.newDocumentBuilder();</span>
+<span class="fc" id="L139">            InputStream is =</span>
+               Class.forName(&quot;org.apache.xml.security.Init&quot;)
+                  .getResourceAsStream(&quot;resource/config.xml&quot;);
+<span class="fc" id="L142">            Document doc = db.parse(is);</span>
+<span class="fc" id="L143">            long XX_parsing_end = System.currentTimeMillis();</span>
+<span class="fc" id="L144">            Element context = doc.createElementNS(null, &quot;nscontext&quot;);</span>
+
+<span class="fc" id="L146">            context.setAttributeNS(</span>
+               Constants.NamespaceSpecNS, &quot;xmlns:x&quot;,
+               &quot;http://www.xmlsecurity.org/NS/#configuration&quot;);
+<span class="fc" id="L149">            context.setAttributeNS(Constants.NamespaceSpecNS, &quot;xmlns:log4j&quot;,</span>
+                                   &quot;http://jakarta.apache.org/log4j/&quot;);
+
+<span class="fc" id="L152">            long XX_configure_log4j_start = System.currentTimeMillis();</span>
+
+            {
+
+               /* configure logging */
+<span class="fc" id="L157">               Element log4jElem = (Element) XPathAPI.selectSingleNode(doc,</span>
+                                      &quot;//log4j:configuration[1]&quot;, context);
+
+               try {
+<span class="fc" id="L161">                  Attr logfile = (Attr) XPathAPI.selectSingleNode(</span>
+                     log4jElem,
+                     &quot;./x:appender[@name='STDOUT']/x:param[@name='File']/@value&quot;,
+                     context);
+
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">                  if (logfile != null) {</span>
+<span class="nc" id="L167">                     String logFileName = logfile.getNodeValue();</span>
+<span class="nc" id="L168">                     File f = new File(logFileName);</span>
+
+<span class="nc bnc" id="L170" title="All 2 branches missed.">                     if (f.exists()) {</span>
+<span class="nc" id="L171">                        f.delete();</span>
+                     }
+                  }
+<span class="pc" id="L174">               } catch (Exception ex) {}</span>
+
+<span class="fc" id="L176">               org.apache.log4j.xml.DOMConfigurator.configure(log4jElem);</span>
+<span class="fc" id="L177">               cat.info(&quot;Logging is working&quot;);</span>
+<span class="fc" id="L178">               cat.info(&quot;Date: &quot;</span>
+                        + new Date(System.currentTimeMillis()).toString());
+<span class="fc" id="L180">               cat.info(&quot;Version: &quot; + Version.getVersion());</span>
+            }
+
+<span class="fc" id="L183">            long XX_configure_log4j_end = System.currentTimeMillis();</span>
+<span class="fc" id="L184">            long XX_configure_i18n_start = System.currentTimeMillis();</span>
+
+            {
+
+               /* configure internationalization */
+<span class="fc" id="L189">               Attr langAttr = (Attr) XPathAPI.selectSingleNode(</span>
+                  doc,
+                  &quot;/x:Configuration/x:ResourceBundles/@defaultLanguageCode&quot;,
+                  context);
+<span class="fc" id="L193">               Attr countryAttr = (Attr) XPathAPI.selectSingleNode(</span>
+                  doc,
+                  &quot;/x:Configuration/x:ResourceBundles/@defaultCountryCode&quot;,
+                  context);
+<span class="pc bpc" id="L197" title="1 of 2 branches missed.">               String languageCode = (langAttr == null)</span>
+                                     ? null
+                                     : langAttr.getNodeValue();
+<span class="pc bpc" id="L200" title="1 of 2 branches missed.">               String countryCode = (countryAttr == null)</span>
+                                    ? null
+                                    : countryAttr.getNodeValue();
+
+<span class="fc" id="L204">               I18n.init(languageCode, countryCode);</span>
+            }
+
+<span class="fc" id="L207">            long XX_configure_i18n_end = System.currentTimeMillis();</span>
+
+            /**
+             * Try to register our here() implementation as internal function.
+             */
+<span class="fc" id="L212">            long XX_configure_reg_here_start = System.currentTimeMillis();</span>
+
+            {
+<span class="fc" id="L215">               FunctionTable.installFunction(&quot;here&quot;, new FuncHere());</span>
+<span class="fc" id="L216">               cat.debug(</span>
+                  &quot;Registered class &quot; + FuncHere.class.getName()
+                  + &quot; for XPath function 'here()' function in internal table&quot;);
+
+               /* The following tweak by &quot;Eric Olson&quot; &lt;ego@alum.mit.edu&gt;
+                * is to enable xml-security to play with JDK 1.4 which
+                * unfortunately bundles an old version of Xalan
+                */
+<span class="fc" id="L224">               FuncLoader funcHereLoader = new FuncHereLoader();</span>
+
+<span class="fc bfc" id="L226" title="All 2 branches covered.">               for (int i = 0; i &lt; FunctionTable.m_functions.length; i++) {</span>
+<span class="fc" id="L227">                  FuncLoader loader = FunctionTable.m_functions[i];</span>
+
+<span class="fc bfc" id="L229" title="All 2 branches covered.">                  if (loader != null) {</span>
+<span class="fc" id="L230">                     cat.debug(&quot;Func &quot; + i + &quot; &quot; + loader.getName());</span>
+
+<span class="fc bfc" id="L232" title="All 2 branches covered.">                     if (loader.getName().equals(funcHereLoader.getName())) {</span>
+<span class="fc" id="L233">                        FunctionTable.m_functions[i] = funcHereLoader;</span>
+                     }
+                  }
+               }
+            }
+
+<span class="fc" id="L239">            long XX_configure_reg_here_end = System.currentTimeMillis();</span>
+<span class="fc" id="L240">            long XX_configure_reg_c14n_start = System.currentTimeMillis();</span>
+
+            {
+<span class="fc" id="L243">               Canonicalizer.init();</span>
+
+<span class="fc" id="L245">               NodeList c14nElem = XPathAPI.selectNodeList(</span>
+                  doc,
+                  &quot;/x:Configuration/x:CanonicalizationMethods/x:CanonicalizationMethod&quot;,
+                  context);
+
+<span class="fc bfc" id="L250" title="All 2 branches covered.">               for (int i = 0; i &lt; c14nElem.getLength(); i++) {</span>
+<span class="fc" id="L251">                  String URI = ((Element) c14nElem.item(i)).getAttributeNS(null,</span>
+                                  &quot;URI&quot;);
+<span class="fc" id="L253">                  String JAVACLASS =</span>
+                     ((Element) c14nElem.item(i)).getAttributeNS(null,
+                        &quot;JAVACLASS&quot;);
+<span class="fc" id="L256">                  boolean registerClass = true;</span>
+
+                  try {
+<span class="fc" id="L259">                     Class c = Class.forName(JAVACLASS);</span>
+<span class="fc" id="L260">                     Method methods[] = c.getMethods();</span>
+
+<span class="fc bfc" id="L262" title="All 2 branches covered.">                     for (int j = 0; j &lt; methods.length; j++) {</span>
+<span class="fc" id="L263">                        Method currMeth = methods[j];</span>
+
+<span class="fc bfc" id="L265" title="All 2 branches covered.">                        if (currMeth.getDeclaringClass().getName()</span>
+                                .equals(JAVACLASS)) {
+<span class="fc" id="L267">                           cat.debug(currMeth.getDeclaringClass());</span>
+                        }
+                     }
+<span class="nc" id="L270">                  } catch (ClassNotFoundException e) {</span>
+<span class="nc" id="L271">                     Object exArgs[] = { URI, JAVACLASS };</span>
+
+<span class="nc" id="L273">                     cat.fatal(I18n.translate(&quot;algorithm.classDoesNotExist&quot;,</span>
+                                              exArgs));
+
+<span class="nc" id="L276">                     registerClass = false;</span>
+<span class="fc" id="L277">                  }</span>
+
+<span class="pc bpc" id="L279" title="1 of 2 branches missed.">                  if (registerClass) {</span>
+<span class="fc" id="L280">                     cat.debug(&quot;Canonicalizer.register(&quot; + URI + &quot;, &quot;</span>
+                               + JAVACLASS + &quot;)&quot;);
+<span class="fc" id="L282">                     Canonicalizer.register(URI, JAVACLASS);</span>
+                  }
+               }
+            }
+
+<span class="fc" id="L287">            long XX_configure_reg_c14n_end = System.currentTimeMillis();</span>
+<span class="fc" id="L288">            long XX_configure_reg_transforms_start = System.currentTimeMillis();</span>
+
+            {
+<span class="fc" id="L291">               Transform.init();</span>
+
+<span class="fc" id="L293">               NodeList tranElem = XPathAPI.selectNodeList(</span>
+                  doc,
+                  &quot;/x:Configuration/x:TransformAlgorithms/x:TransformAlgorithm&quot;,
+                  context);
+
+<span class="fc bfc" id="L298" title="All 2 branches covered.">               for (int i = 0; i &lt; tranElem.getLength(); i++) {</span>
+<span class="fc" id="L299">                  String URI = ((Element) tranElem.item(i)).getAttributeNS(null,</span>
+                                  &quot;URI&quot;);
+<span class="fc" id="L301">                  String JAVACLASS =</span>
+                     ((Element) tranElem.item(i)).getAttributeNS(null,
+                        &quot;JAVACLASS&quot;);
+<span class="fc" id="L304">                  boolean registerClass = true;</span>
+
+                  try {
+<span class="fc" id="L307">                     Class c = Class.forName(JAVACLASS);</span>
+<span class="nc" id="L308">                  } catch (ClassNotFoundException e) {</span>
+<span class="nc" id="L309">                     Object exArgs[] = { URI, JAVACLASS };</span>
+
+<span class="nc" id="L311">                     cat.fatal(I18n.translate(&quot;algorithm.classDoesNotExist&quot;,</span>
+                                              exArgs));
+
+<span class="nc" id="L314">                     registerClass = false;</span>
+<span class="fc" id="L315">                  }</span>
+
+<span class="pc bpc" id="L317" title="1 of 2 branches missed.">                  if (registerClass) {</span>
+<span class="fc" id="L318">                     cat.debug(&quot;Transform.register(&quot; + URI + &quot;, &quot; + JAVACLASS</span>
+                               + &quot;)&quot;);
+<span class="fc" id="L320">                     Transform.register(URI, JAVACLASS);</span>
+                  }
+               }
+            }
+
+<span class="fc" id="L325">            long XX_configure_reg_transforms_end = System.currentTimeMillis();</span>
+<span class="fc" id="L326">            long XX_configure_reg_jcemapper_start = System.currentTimeMillis();</span>
+
+            {
+<span class="fc" id="L329">               Element jcemapperElem = (Element) XPathAPI.selectSingleNode(</span>
+                  doc, &quot;/x:Configuration/x:JCEAlgorithmMappings&quot;, context);
+
+<span class="fc" id="L332">               JCEMapper.init(jcemapperElem);</span>
+            }
+
+<span class="fc" id="L335">            long XX_configure_reg_jcemapper_end = System.currentTimeMillis();</span>
+<span class="fc" id="L336">            long XX_configure_reg_sigalgos_start = System.currentTimeMillis();</span>
+
+            {
+<span class="fc" id="L339">               SignatureAlgorithm.providerInit();</span>
+
+<span class="fc" id="L341">               NodeList sigElems = XPathAPI.selectNodeList(</span>
+                  doc,
+                  &quot;/x:Configuration/x:SignatureAlgorithms/x:SignatureAlgorithm&quot;,
+                  context);
+
+<span class="fc bfc" id="L346" title="All 2 branches covered.">               for (int i = 0; i &lt; sigElems.getLength(); i++) {</span>
+<span class="fc" id="L347">                  String URI = ((Element) sigElems.item(i)).getAttributeNS(null,</span>
+                                  &quot;URI&quot;);
+<span class="fc" id="L349">                  String JAVACLASS =</span>
+                     ((Element) sigElems.item(i)).getAttributeNS(null,
+                        &quot;JAVACLASS&quot;);
+
+                  /** @todo handle registering */
+<span class="fc" id="L354">                  boolean registerClass = true;</span>
+
+                  try {
+<span class="fc" id="L357">                     Class c = Class.forName(JAVACLASS);</span>
+<span class="fc" id="L358">                     Method methods[] = c.getMethods();</span>
+
+<span class="fc bfc" id="L360" title="All 2 branches covered.">                     for (int j = 0; j &lt; methods.length; j++) {</span>
+<span class="fc" id="L361">                        Method currMeth = methods[j];</span>
+
+<span class="fc bfc" id="L363" title="All 2 branches covered.">                        if (currMeth.getDeclaringClass().getName()</span>
+                                .equals(JAVACLASS)) {
+<span class="fc" id="L365">                           cat.debug(currMeth.getDeclaringClass());</span>
+                        }
+                     }
+<span class="nc" id="L368">                  } catch (ClassNotFoundException e) {</span>
+<span class="nc" id="L369">                     Object exArgs[] = { URI, JAVACLASS };</span>
+
+<span class="nc" id="L371">                     cat.fatal(I18n.translate(&quot;algorithm.classDoesNotExist&quot;,</span>
+                                              exArgs));
+
+<span class="nc" id="L374">                     registerClass = false;</span>
+<span class="fc" id="L375">                  }</span>
+
+<span class="pc bpc" id="L377" title="1 of 2 branches missed.">                  if (registerClass) {</span>
+<span class="fc" id="L378">                     cat.debug(&quot;SignatureAlgorithm.register(&quot; + URI + &quot;, &quot;</span>
+                               + JAVACLASS + &quot;)&quot;);
+<span class="fc" id="L380">                     SignatureAlgorithm.register(URI, JAVACLASS);</span>
+                  }
+               }
+            }
+
+<span class="fc" id="L385">            long XX_configure_reg_sigalgos_end = System.currentTimeMillis();</span>
+<span class="fc" id="L386">            long XX_configure_reg_resourceresolver_start =</span>
+               System.currentTimeMillis();
+
+            {
+<span class="fc" id="L390">               ResourceResolver.init();</span>
+
+<span class="fc" id="L392">               NodeList resolverElem = XPathAPI.selectNodeList(</span>
+                  doc, &quot;/x:Configuration/x:ResourceResolvers/x:Resolver&quot;,
+                  context);
+
+<span class="fc bfc" id="L396" title="All 2 branches covered.">               for (int i = 0; i &lt; resolverElem.getLength(); i++) {</span>
+<span class="fc" id="L397">                  String JAVACLASS =</span>
+                     ((Element) resolverElem.item(i)).getAttributeNS(null,
+                        &quot;JAVACLASS&quot;);
+<span class="fc" id="L400">                  String Description =</span>
+                     ((Element) resolverElem.item(i)).getAttributeNS(null,
+                        &quot;DESCRIPTION&quot;);
+
+<span class="pc bpc" id="L404" title="2 of 4 branches missed.">                  if ((Description != null) &amp;&amp; (Description.length() &gt; 0)) {</span>
+<span class="fc" id="L405">                     cat.debug(&quot;Register Resolver: &quot; + JAVACLASS + &quot;: &quot;</span>
+                               + Description);
+                  } else {
+<span class="nc" id="L408">                     cat.debug(&quot;Register Resolver: &quot; + JAVACLASS</span>
+                               + &quot;: For unknown purposes&quot;);
+                  }
+
+<span class="fc" id="L412">                  ResourceResolver.register(JAVACLASS);</span>
+               }
+            }
+
+<span class="fc" id="L416">            long XX_configure_reg_resourceresolver_end =</span>
+               System.currentTimeMillis();
+<span class="fc" id="L418">            long XX_configure_reg_keyInfo_start = System.currentTimeMillis();</span>
+
+            {
+               try {
+<span class="fc" id="L422">                  KeyInfo.init();</span>
+
+<span class="fc" id="L424">                  Init._contentHandlerHash = new HashMap(10);</span>
+
+                  {
+<span class="fc" id="L427">                     NodeList keyElem = XPathAPI.selectNodeList(</span>
+                        doc, &quot;/x:Configuration/x:KeyInfo/x:ContentHandler&quot;,
+                        context);
+
+<span class="fc bfc" id="L431" title="All 2 branches covered.">                     for (int i = 0; i &lt; keyElem.getLength(); i++) {</span>
+<span class="fc" id="L432">                        String namespace =</span>
+                           ((Element) keyElem.item(i)).getAttributeNS(null,
+                              &quot;NAMESPACE&quot;);
+<span class="fc" id="L435">                        String localname =</span>
+                           ((Element) keyElem.item(i)).getAttributeNS(null,
+                              &quot;LOCALNAME&quot;);
+<span class="fc" id="L438">                        String JAVACLASS =</span>
+                           ((Element) keyElem.item(i)).getAttributeNS(null,
+                              &quot;JAVACLASS&quot;);
+
+<span class="fc" id="L442">                        cat.debug(&quot;KeyInfoContent: &quot; + namespace + &quot; &quot;</span>
+                                  + localname + &quot; &quot; + JAVACLASS);
+<span class="fc" id="L444">                        Init.registerKeyInfoContentHandler(namespace,</span>
+                                                           localname,
+                                                           JAVACLASS);
+                     }
+                  }
+<span class="nc" id="L449">               } catch (Exception e) {</span>
+<span class="nc" id="L450">                  e.printStackTrace();</span>
+
+<span class="nc" id="L452">                  throw e;</span>
+<span class="fc" id="L453">               }</span>
+            }
+
+<span class="fc" id="L456">            long XX_configure_reg_keyInfo_end = System.currentTimeMillis();</span>
+<span class="fc" id="L457">            long XX_configure_reg_keyResolver_start =</span>
+               System.currentTimeMillis();
+
+            {
+<span class="fc" id="L461">               KeyResolver.init();</span>
+
+<span class="fc" id="L463">               NodeList resolverElem = XPathAPI.selectNodeList(</span>
+                  doc, &quot;/x:Configuration/x:KeyResolver/x:Resolver&quot;, context);
+
+<span class="fc bfc" id="L466" title="All 2 branches covered.">               for (int i = 0; i &lt; resolverElem.getLength(); i++) {</span>
+<span class="fc" id="L467">                  String JAVACLASS =</span>
+                     ((Element) resolverElem.item(i)).getAttributeNS(null,
+                        &quot;JAVACLASS&quot;);
+<span class="fc" id="L470">                  String Description =</span>
+                     ((Element) resolverElem.item(i)).getAttributeNS(null,
+                        &quot;DESCRIPTION&quot;);
+
+<span class="pc bpc" id="L474" title="2 of 4 branches missed.">                  if ((Description != null) &amp;&amp; (Description.length() &gt; 0)) {</span>
+<span class="fc" id="L475">                     cat.debug(&quot;Register Resolver: &quot; + JAVACLASS + &quot;: &quot;</span>
+                               + Description);
+                  } else {
+<span class="nc" id="L478">                     cat.debug(&quot;Register Resolver: &quot; + JAVACLASS</span>
+                               + &quot;: For unknown purposes&quot;);
+                  }
+
+<span class="fc" id="L482">                  KeyResolver.register(JAVACLASS);</span>
+               }
+            }
+
+<span class="fc" id="L486">            long XX_configure_reg_keyResolver_end = System.currentTimeMillis();</span>
+<span class="fc" id="L487">            long XX_configure_reg_prefixes_start = System.currentTimeMillis();</span>
+
+            {
+<span class="fc" id="L490">               cat.debug(&quot;Now I try to bind prefixes:&quot;);</span>
+
+<span class="fc" id="L492">               NodeList nl = XPathAPI.selectNodeList(</span>
+                  doc, &quot;/x:Configuration/x:PrefixMappings/x:PrefixMapping&quot;,
+                  context);
+
+<span class="fc bfc" id="L496" title="All 2 branches covered.">               for (int i = 0; i &lt; nl.getLength(); i++) {</span>
+<span class="fc" id="L497">                  String namespace = ((Element) nl.item(i)).getAttributeNS(null,</span>
+                                        &quot;namespace&quot;);
+<span class="fc" id="L499">                  String prefix = ((Element) nl.item(i)).getAttributeNS(null,</span>
+                                     &quot;prefix&quot;);
+
+<span class="fc" id="L502">                  cat.debug(&quot;Now I try to bind &quot; + prefix + &quot; to &quot; + namespace);</span>
+<span class="fc" id="L503">                  org.apache.xml.security.utils.ElementProxy</span>
+                     .setDefaultPrefix(namespace, prefix);
+               }
+            }
+
+<span class="fc" id="L508">            long XX_configure_reg_prefixes_end = System.currentTimeMillis();</span>
+            //J-
+<span class="fc" id="L510">            long XX_configure_reg_encryption_start = System.currentTimeMillis();</span>
+<span class="fc" id="L511">            EncryptionMethod.providerInit();</span>
+<span class="fc" id="L512">            EncryptionMethod.register(EncryptionConstants.ALGO_ID_KEYWRAP_TRIPLEDES,     &quot;org.apache.xml.security.algorithms.encryption.implementations.BC.KeyWrapImpl_TRIPLEDES_BC&quot;);</span>
+<span class="fc" id="L513">            EncryptionMethod.register(EncryptionConstants.ALGO_ID_KEYWRAP_AES128,        &quot;org.apache.xml.security.algorithms.encryption.implementations.BC.KeyWrapImpl_AES128_BC&quot;);</span>
+<span class="fc" id="L514">            EncryptionMethod.register(EncryptionConstants.ALGO_ID_KEYWRAP_AES192,        &quot;org.apache.xml.security.algorithms.encryption.implementations.BC.KeyWrapImpl_AES192_BC&quot;);</span>
+<span class="fc" id="L515">            EncryptionMethod.register(EncryptionConstants.ALGO_ID_KEYWRAP_AES256,        &quot;org.apache.xml.security.algorithms.encryption.implementations.BC.KeyWrapImpl_AES256_BC&quot;);</span>
+<span class="fc" id="L516">            EncryptionMethod.register(EncryptionConstants.ALGO_ID_BLOCKCIPHER_TRIPLEDES, &quot;org.apache.xml.security.algorithms.encryption.implementations.BC.BlockEncryptionImpl_TRIPLEDES_BC&quot;);</span>
+<span class="fc" id="L517">            EncryptionMethod.register(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128,    &quot;org.apache.xml.security.algorithms.encryption.implementations.BC.BlockEncryptionImpl_AES128_BC&quot;);</span>
+<span class="fc" id="L518">            EncryptionMethod.register(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES192,    &quot;org.apache.xml.security.algorithms.encryption.implementations.BC.BlockEncryptionImpl_AES192_BC&quot;);</span>
+<span class="fc" id="L519">            EncryptionMethod.register(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256,    &quot;org.apache.xml.security.algorithms.encryption.implementations.BC.BlockEncryptionImpl_AES256_BC&quot;);</span>
+<span class="fc" id="L520">            EncryptionMethod.register(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP,  &quot;org.apache.xml.security.algorithms.encryption.implementations.BC.KeyTransportImpl_RSAOAEP_BC&quot;);</span>
+<span class="fc" id="L521">            EncryptionMethod.register(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSA15,    &quot;org.apache.xml.security.algorithms.encryption.implementations.BC.KeyTransportImpl_RSAPKCS15_BC&quot;);</span>
+<span class="fc" id="L522">            long XX_configure_reg_encryption_end = System.currentTimeMillis();</span>
+            //J+
+<span class="fc" id="L524">            long XX_init_end = System.currentTimeMillis();</span>
+
+            //J-
+<span class="fc" id="L527">            cat.debug(&quot;XX_init                             &quot; + ((int)(XX_init_end - XX_init_start)) + &quot; ms&quot;);</span>
+<span class="fc" id="L528">            cat.debug(&quot;  XX_configure_reg_encryption       &quot; + ((int)(XX_configure_reg_encryption_end- XX_configure_reg_encryption_start)) + &quot; ms&quot;);</span>
+<span class="fc" id="L529">            cat.debug(&quot;  XX_prng                           &quot; + ((int)(XX_prng_end - XX_prng_start)) + &quot; ms&quot;);</span>
+<span class="fc" id="L530">            cat.debug(&quot;  XX_parsing                        &quot; + ((int)(XX_parsing_end - XX_parsing_start)) + &quot; ms&quot;);</span>
+<span class="fc" id="L531">            cat.debug(&quot;  XX_configure_i18n                 &quot; + ((int)(XX_configure_i18n_end- XX_configure_i18n_start)) + &quot; ms&quot;);</span>
+<span class="fc" id="L532">            cat.debug(&quot;  XX_configure_log4j                &quot; + ((int)(XX_configure_log4j_end- XX_configure_log4j_start)) + &quot; ms&quot;);</span>
+<span class="fc" id="L533">            cat.debug(&quot;  XX_configure_reg_c14n             &quot; + ((int)(XX_configure_reg_c14n_end- XX_configure_reg_c14n_start)) + &quot; ms&quot;);</span>
+<span class="fc" id="L534">            cat.debug(&quot;  XX_configure_reg_here             &quot; + ((int)(XX_configure_reg_here_end- XX_configure_reg_here_start)) + &quot; ms&quot;);</span>
+<span class="fc" id="L535">            cat.debug(&quot;  XX_configure_reg_jcemapper        &quot; + ((int)(XX_configure_reg_jcemapper_end- XX_configure_reg_jcemapper_start)) + &quot; ms&quot;);</span>
+<span class="fc" id="L536">            cat.debug(&quot;  XX_configure_reg_keyInfo          &quot; + ((int)(XX_configure_reg_keyInfo_end- XX_configure_reg_keyInfo_start)) + &quot; ms&quot;);</span>
+<span class="fc" id="L537">            cat.debug(&quot;  XX_configure_reg_keyResolver      &quot; + ((int)(XX_configure_reg_keyResolver_end- XX_configure_reg_keyResolver_start)) + &quot; ms&quot;);</span>
+<span class="fc" id="L538">            cat.debug(&quot;  XX_configure_reg_prefixes         &quot; + ((int)(XX_configure_reg_prefixes_end- XX_configure_reg_prefixes_start)) + &quot; ms&quot;);</span>
+<span class="fc" id="L539">            cat.debug(&quot;  XX_configure_reg_resourceresolver &quot; + ((int)(XX_configure_reg_resourceresolver_end- XX_configure_reg_resourceresolver_start)) + &quot; ms&quot;);</span>
+<span class="fc" id="L540">            cat.debug(&quot;  XX_configure_reg_sigalgos         &quot; + ((int)(XX_configure_reg_sigalgos_end- XX_configure_reg_sigalgos_start)) + &quot; ms&quot;);</span>
+<span class="fc" id="L541">            cat.debug(&quot;  XX_configure_reg_transforms       &quot; + ((int)(XX_configure_reg_transforms_end- XX_configure_reg_transforms_start)) + &quot; ms&quot;);</span>
+            //J+
+<span class="nc" id="L543">         } catch (Exception e) {</span>
+<span class="nc" id="L544">            cat.fatal(&quot;Bad: &quot;, e);</span>
+<span class="nc" id="L545">            e.printStackTrace();</span>
+<span class="fc" id="L546">         }</span>
+      }
+<span class="fc" id="L548">   }</span>
+
+   /**
+    * This method customizes the library with user supplied configuration.
+    * This includes access to keystores etc.
+    * By default, this method tries to find the configurationfile in
+    * the System.getProperty(&quot;user.home&quot;) directory.
+    *
+    * @throws XMLSecurityException
+    */
+   public static void readUserConfiguration() throws XMLSecurityException {
+
+      try {
+<span class="nc" id="L561">         String filename = System.getProperty(&quot;user.home&quot;) + &quot;/&quot;</span>
+                           + Constants.configurationFileNew;
+<span class="nc" id="L563">         InputStream is = new FileInputStream(filename);</span>
+
+<span class="nc" id="L565">         Init.readUserConfiguration(is);</span>
+<span class="nc" id="L566">      } catch (IOException ex) {</span>
+<span class="nc" id="L567">         throw new XMLSecurityException(&quot;generic.EmptyMessage&quot;, ex);</span>
+<span class="nc" id="L568">      }</span>
+<span class="nc" id="L569">   }</span>
+
+   /**
+    * This method customizes the library with user supplied configuration.
+    * This includes access to keystores etc.
+    *
+    * @param fileURI
+    * @throws XMLSecurityException
+    */
+   public static void readUserConfiguration(String fileURI)
+           throws XMLSecurityException {
+
+      try {
+<span class="nc" id="L582">         InputStream is = null;</span>
+
+         // first try to interpret fileURI as filename in the local file system
+<span class="nc" id="L585">         File f = new File(fileURI);</span>
+
+<span class="nc bnc" id="L587" title="All 2 branches missed.">         if (f.exists()) {</span>
+<span class="nc" id="L588">            is = new FileInputStream(f);</span>
+         } else {
+
+            // then treat it as USI
+<span class="nc" id="L592">            is = new java.net.URL(fileURI).openStream();</span>
+         }
+
+<span class="nc" id="L595">         Init.readUserConfiguration(is);</span>
+<span class="nc" id="L596">      } catch (IOException ex) {</span>
+<span class="nc" id="L597">         throw new XMLSecurityException(&quot;generic.EmptyMessage&quot;, ex);</span>
+<span class="nc" id="L598">      }</span>
+<span class="nc" id="L599">   }</span>
+
+   /**
+    * Method readUserConfiguration
+    *
+    * @param is
+    * @throws XMLSecurityException
+    */
+   public static void readUserConfiguration(InputStream is)
+           throws XMLSecurityException {
+
+      try {
+
+         /* read library configuration file */
+<span class="nc" id="L613">         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();</span>
+
+<span class="nc" id="L615">         dbf.setNamespaceAware(true);</span>
+<span class="nc" id="L616">         dbf.setValidating(false);</span>
+
+<span class="nc" id="L618">         DocumentBuilder db = dbf.newDocumentBuilder();</span>
+<span class="nc" id="L619">         Document doc = db.parse(is);</span>
+<span class="nc" id="L620">         Element context = XMLUtils.createDSctx(</span>
+            doc, &quot;x&quot;, &quot;http://www.xmlsecurity.org/NS/#configuration&quot;);
+
+         {
+<span class="nc" id="L624">            NodeList nl =</span>
+               XPathAPI.selectNodeList(doc, &quot;/x:AppConfiguration/x:KeyStore&quot;,
+                                       context);
+
+<span class="nc bnc" id="L628" title="All 2 branches missed.">            for (int i = 0; i &lt; nl.getLength(); i++) {</span>
+<span class="nc" id="L629">               Element e = (Element) nl.item(i);</span>
+<span class="nc" id="L630">               String URI = e.getAttributeNS(null, &quot;URI&quot;);</span>
+<span class="nc" id="L631">               String keyStoreType = e.getAttributeNS(null, &quot;Type&quot;);</span>
+<span class="nc" id="L632">               String defaultKeyAlias = e.getAttributeNS(null,</span>
+                                                         &quot;DefaultKeyAlias&quot;);
+<span class="nc" id="L634">               String storePass = e.getAttributeNS(null, &quot;StorePass&quot;);</span>
+<span class="nc" id="L635">               String KeyPass = e.getAttributeNS(null, &quot;KeyPass&quot;);</span>
+
+               // org.apache.xml.security.keys.keyStorage.KeyStorage.registerStore(URI, JAVACLASS, LOCATION, DEFAULTKEYOBJECT, CONTEXT);
+            }
+         }
+<span class="nc" id="L640">      } catch (Exception ex) {</span>
+<span class="nc" id="L641">         throw new XMLSecurityException(&quot;generic.EmptyMessage&quot;, ex);</span>
+<span class="nc" id="L642">      }</span>
+<span class="nc" id="L643">   }</span>
+
+   /** Field _contentHandlerHash */
+   public static HashMap _contentHandlerHash;
+
+   /**
+    * Method registerKeyinfoContentHandler
+    *
+    * @param namespace
+    * @param localname
+    * @param implementingClass
+    * @throws ContentHandlerAlreadyRegisteredException
+    */
+   public static void registerKeyInfoContentHandler(
+           String namespace, String localname, String implementingClass)
+              throws ContentHandlerAlreadyRegisteredException {
+
+<span class="fc" id="L660">      String namespacequali = Init.qualifyNamespace(namespace, localname);</span>
+
+      // are we already registered?
+<span class="pc bpc" id="L663" title="1 of 2 branches missed.">      if (Init._contentHandlerHash.containsKey(namespacequali)) {</span>
+<span class="nc" id="L664">         cat.error(&quot;Already registered&quot;);</span>
+
+<span class="nc" id="L666">         Object exArgs[] = { namespacequali,</span>
+                             ((String) Init._contentHandlerHash
+                                .get(namespacequali)) };
+
+<span class="nc" id="L670">         throw new ContentHandlerAlreadyRegisteredException(</span>
+            &quot;algorithm.alreadyRegistered&quot;, exArgs);
+      }
+
+<span class="fc" id="L674">      synchronized (Init._contentHandlerHash) {</span>
+<span class="fc" id="L675">         Init._contentHandlerHash.put(namespacequali, implementingClass);</span>
+<span class="fc" id="L676">         cat.debug(&quot;Init._contentHandlerHash.put(\&quot;&quot; + namespacequali</span>
+                   + &quot;\&quot;, \&quot;&quot; + implementingClass + &quot;\&quot;)&quot;);
+<span class="fc" id="L678">         cat.debug(&quot;Init._contentHandlerHash.size()=&quot;</span>
+                   + Init._contentHandlerHash.size());
+<span class="pc" id="L680">      }</span>
+<span class="fc" id="L681">   }</span>
+
+   /**
+    * Method qualifyNamespace
+    *
+    * @param namespace
+    * @param localname
+    * @return
+    */
+   private static String qualifyNamespace(String namespace, String localname) {
+<span class="fc" id="L691">      return &quot;{&quot; + namespace + &quot;}&quot; + localname;</span>
+   }
+
+   /**
+    * Method getContentHandlerClass
+    *
+    * @param namespace
+    * @param localname
+    * @return
+    */
+   public static String getKeyInfoContentHandler(String namespace,
+           String localname) {
+
+      /*
+      Iterator i = KeyInfo._contentHandlerHash.keySet().iterator();
+      while (i.hasNext()) {
+         String key = (String) i.next();
+         if (key.equals(URI)) {
+            return (String) KeyInfo._contentHandlerHash.get(key);
+         }
+      }
+      return null;
+      */
+<span class="nc" id="L714">      String namespacequali = Init.qualifyNamespace(namespace, localname);</span>
+
+<span class="nc" id="L716">      cat.debug(&quot;Asked for handler for &quot; + namespacequali);</span>
+
+<span class="nc bnc" id="L718" title="All 2 branches missed.">      if (Init._contentHandlerHash == null) {</span>
+<span class="nc" id="L719">         cat.debug(&quot;But I can't help (hash==null) &quot;);</span>
+
+<span class="nc" id="L721">         return null;</span>
+      }
+
+<span class="nc bnc" id="L724" title="All 2 branches missed.">      if (Init._contentHandlerHash.size() == 0) {</span>
+<span class="nc" id="L725">         cat.debug(&quot;But I can't help (size()==0)&quot;);</span>
+
+<span class="nc" id="L727">         return null;</span>
+      }
+
+<span class="nc" id="L730">      Set keyset = Init._contentHandlerHash.keySet();</span>
+<span class="nc" id="L731">      Iterator i = keyset.iterator();</span>
+
+<span class="nc bnc" id="L733" title="All 2 branches missed.">      while (i.hasNext()) {</span>
+<span class="nc" id="L734">         String key = (String) i.next();</span>
+
+<span class="nc bnc" id="L736" title="All 2 branches missed.">         if (key.equals(namespacequali)) {</span>
+<span class="nc" id="L737">            return (String) Init._contentHandlerHash.get(key);</span>
+         }
+<span class="nc" id="L739">      }</span>
+
+<span class="nc" id="L741">      return null;</span>
+   }
+
+   /**
+    * Class FuncHereLoader
+    *
+    * @author $Author: dohy $
+    * @version $Revision: 1.1.1.1 $
+    */
+<span class="nc" id="L750">   public static class FuncHereLoader extends FuncLoader {</span>
+
+      /**
+       * Constructor FuncHereLoader
+       *
+       */
+      public FuncHereLoader() {
+<span class="fc" id="L757">         super(FuncHere.class.getName(), 0);</span>
+<span class="fc" id="L758">      }</span>
+
+      /**
+       * Method getFunction
+       *
+       * @return
+       * @throws javax.xml.transform.TransformerException
+       */
+      public Function getFunction()
+              throws javax.xml.transform.TransformerException {
+<span class="fc" id="L768">         return new FuncHere();</span>
+      }
+
+      /**
+       * Method getName
+       *
+       * @return
+       */
+      public String getName() {
+<span class="fc" id="L777">         return FuncHere.class.getName();</span>
+      }
+   }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

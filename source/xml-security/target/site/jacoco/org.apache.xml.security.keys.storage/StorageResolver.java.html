@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StorageResolver.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.keys.storage</a> &gt; <span class="el_source">StorageResolver.java</span></div><h1>StorageResolver.java</h1><pre class="source lang-java linenums">
+/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.keys.storage;
+
+
+
+import java.util.Vector;
+import java.util.Iterator;
+import java.security.KeyStore;
+import java.security.cert.X509Certificate;
+import org.apache.xml.security.keys.storage.implementations.*;
+import org.apache.xml.security.utils.*;
+
+
+/**
+ * This class collects customized resolvers for Certificates.
+ *
+ * @author $Author: dohy $
+ */
+public class StorageResolver {
+
+   /** Field cat */
+<span class="nc" id="L80">   static org.apache.log4j.Category cat =</span>
+      org.apache.log4j.Category.getInstance(StorageResolver.class.getName());
+
+   /** Field _storageResolvers */
+<span class="nc" id="L84">   Vector _storageResolvers = new Vector();</span>
+
+   /** Field _iterator */
+<span class="nc" id="L87">   Iterator _iterator = null;</span>
+
+   /**
+    * Constructor StorageResolver
+    *
+    */
+<span class="nc" id="L93">   public StorageResolver() {}</span>
+
+   /**
+    * Constructor StorageResolver
+    *
+    * @param resolver
+    */
+<span class="nc" id="L100">   public StorageResolver(StorageResolverSpi resolver) {</span>
+<span class="nc" id="L101">      this.add(resolver);</span>
+<span class="nc" id="L102">   }</span>
+
+   /**
+    * Method addResolver
+    *
+    * @param resolver
+    */
+   public void add(StorageResolverSpi resolver) {
+
+<span class="nc" id="L111">      this._storageResolvers.add(resolver);</span>
+
+<span class="nc" id="L113">      this._iterator = null;</span>
+<span class="nc" id="L114">   }</span>
+
+   /**
+    * Constructor StorageResolver
+    *
+    * @param keyStore
+    */
+<span class="nc" id="L121">   public StorageResolver(KeyStore keyStore) {</span>
+<span class="nc" id="L122">      this.add(keyStore);</span>
+<span class="nc" id="L123">   }</span>
+
+   /**
+    * Method addKeyStore
+    *
+    * @param keyStore
+    */
+   public void add(KeyStore keyStore) {
+
+      try {
+<span class="nc" id="L133">         this.add(new KeyStoreResolver(keyStore));</span>
+<span class="nc" id="L134">      } catch (StorageResolverException ex) {</span>
+<span class="nc" id="L135">         cat.error(&quot;Could not add KeyStore because of: &quot;, ex);</span>
+<span class="nc" id="L136">      }</span>
+<span class="nc" id="L137">   }</span>
+
+   /**
+    * Constructor StorageResolver
+    *
+    * @param x509certificate
+    */
+<span class="nc" id="L144">   public StorageResolver(X509Certificate x509certificate) {</span>
+<span class="nc" id="L145">      this.add(x509certificate);</span>
+<span class="nc" id="L146">   }</span>
+
+   /**
+    * Method addCertificate
+    *
+    * @param x509certificate
+    */
+   public void add(X509Certificate x509certificate) {
+<span class="nc" id="L154">      this.add(new SingleCertificateResolver(x509certificate));</span>
+<span class="nc" id="L155">   }</span>
+
+   /**
+    * Method getIterator
+    *
+    * @return
+    */
+   public Iterator getIterator() {
+
+<span class="nc bnc" id="L164" title="All 2 branches missed.">      if (this._iterator == null) {</span>
+<span class="nc" id="L165">         this._iterator = new StorageResolverIterator(this._storageResolvers);</span>
+      }
+
+<span class="nc" id="L168">      return this._iterator;</span>
+   }
+
+   /**
+    * Method hasNext
+    *
+    * @return
+    */
+   public boolean hasNext() {
+
+<span class="nc bnc" id="L178" title="All 2 branches missed.">      if (this._iterator == null) {</span>
+<span class="nc" id="L179">         this._iterator = new StorageResolverIterator(this._storageResolvers);</span>
+      }
+
+<span class="nc" id="L182">      return this._iterator.hasNext();</span>
+   }
+
+   /**
+    * Method next
+    *
+    * @return
+    */
+   public X509Certificate next() {
+<span class="nc" id="L191">      return (X509Certificate) this._iterator.next();</span>
+   }
+
+   /**
+    * Class StorageResolverIterator
+    *
+    * @author $Author: dohy $
+    * @version $Revision: 1.1.1.1 $
+    */
+   class StorageResolverIterator implements Iterator {
+
+      /** Field _resolvers */
+<span class="nc" id="L203">      Vector _resolvers = null;</span>
+
+      /** Field _currentResolver */
+<span class="nc" id="L206">      int _currentResolver = 0;</span>
+
+      /**
+       * Constructor FilesystemIterator
+       *
+       * @param resolvers
+       */
+<span class="nc" id="L213">      public StorageResolverIterator(Vector resolvers) {</span>
+<span class="nc" id="L214">         this._resolvers = resolvers;</span>
+<span class="nc" id="L215">         this._currentResolver = 0;</span>
+<span class="nc" id="L216">      }</span>
+
+      /**
+       * Method hasNext
+       *
+       * @return
+       */
+      public boolean hasNext() {
+
+<span class="nc bnc" id="L225" title="All 2 branches missed.">         if (this._resolvers == null) {</span>
+<span class="nc" id="L226">            return false;</span>
+         }
+
+<span class="nc bnc" id="L229" title="All 2 branches missed.">         while (this._currentResolver &lt; this._resolvers.size()) {</span>
+<span class="nc" id="L230">            StorageResolverSpi current =</span>
+               (StorageResolverSpi) this._resolvers
+                  .elementAt(this._currentResolver);
+
+<span class="nc bnc" id="L234" title="All 2 branches missed.">            if (current == null) {</span>
+<span class="nc" id="L235">               continue;</span>
+            }
+
+<span class="nc bnc" id="L238" title="All 2 branches missed.">            if (current.getIterator().hasNext()) {</span>
+<span class="nc" id="L239">               return true;</span>
+            } else {
+<span class="nc" id="L241">               this._currentResolver++;</span>
+            }
+<span class="nc" id="L243">         }</span>
+
+<span class="nc" id="L245">         return false;</span>
+      }
+
+      /**
+       * Method next
+       *
+       * @return
+       */
+      public Object next() {
+
+<span class="nc bnc" id="L255" title="All 2 branches missed.">         if (this._resolvers == null) {</span>
+<span class="nc" id="L256">            return null;</span>
+         }
+
+<span class="nc bnc" id="L259" title="All 2 branches missed.">         while (this._currentResolver &lt; this._resolvers.size()) {</span>
+<span class="nc" id="L260">            StorageResolverSpi current =</span>
+               (StorageResolverSpi) this._resolvers
+                  .elementAt(this._currentResolver);
+
+<span class="nc bnc" id="L264" title="All 2 branches missed.">            if (current == null) {</span>
+<span class="nc" id="L265">               continue;</span>
+            }
+
+<span class="nc bnc" id="L268" title="All 2 branches missed.">            if (current.getIterator().hasNext()) {</span>
+<span class="nc" id="L269">               return current.getIterator().next();</span>
+            } else {
+<span class="nc" id="L271">               this._currentResolver++;</span>
+            }
+<span class="nc" id="L273">         }</span>
+
+<span class="nc" id="L275">         return null;</span>
+      }
+
+      /**
+       * Method remove
+       *
+       */
+      public void remove() {
+<span class="nc" id="L283">         throw new UnsupportedOperationException(</span>
+            &quot;Can't remove keys from KeyStore&quot;);
+      }
+   }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

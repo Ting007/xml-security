@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>XPathFilterCHGPContainer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.transforms.params</a> &gt; <span class="el_source">XPathFilterCHGPContainer.java</span></div><h1>XPathFilterCHGPContainer.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.transforms.params;
+
+
+
+import org.w3c.dom.*;
+import org.apache.xml.security.utils.*;
+import org.apache.xml.security.exceptions.*;
+import org.apache.xml.security.transforms.TransformParam;
+import org.apache.xml.security.transforms.TransformationException;
+import org.apache.xml.security.transforms.Transforms;
+
+
+/**
+ * Implements the parameters for a custom Transform which has a better performance
+ * thatn the xfilter2.
+ *
+ * @author $Author: dohy $
+ */
+public class XPathFilterCHGPContainer extends ElementProxy
+        implements TransformParam {
+
+   /** Field _ATT_FILTER_VALUE_INTERSECT */
+   private static final String _TAG_INCLUDE_BUT_SEARCH = &quot;IncludeButSearch&quot;;
+
+   /** Field _ATT_FILTER_VALUE_SUBTRACT */
+   private static final String _TAG_EXCLUDE_BUT_SEARCH = &quot;ExcludeButSearch&quot;;
+
+   /** Field _ATT_FILTER_VALUE_UNION */
+   private static final String _TAG_EXCLUDE = &quot;Exclude&quot;;
+
+   /** Field _TAG_XPATHCHGP */
+   public static final String _TAG_XPATHCHGP = &quot;XPathAlternative&quot;;
+
+   /** Field _ATT_INCLUDESLASH */
+   public static final String _ATT_INCLUDESLASH = &quot;IncludeSlashPolicy&quot;;
+
+   /** Field IncludeSlash           */
+   public static final boolean IncludeSlash = true;
+
+   /** Field ExcludeSlash           */
+   public static final boolean ExcludeSlash = false;
+
+   /**
+    * Constructor XPathFilterCHGPContainer
+    *
+    */
+<span class="nc" id="L105">   private XPathFilterCHGPContainer() {</span>
+
+      // no instantiation
+<span class="nc" id="L108">   }</span>
+
+   /**
+    * Constructor XPathFilterCHGPContainer
+    *
+    * @param doc
+    * @param includeSlashPolicy
+    * @param includeButSearch
+    * @param excludeButSearch
+    * @param exclude
+    */
+   private XPathFilterCHGPContainer(Document doc, boolean includeSlashPolicy,
+                                    String includeButSearch,
+                                    String excludeButSearch, String exclude) {
+
+<span class="nc" id="L123">      super(doc);</span>
+
+<span class="nc bnc" id="L125" title="All 2 branches missed.">      if (includeSlashPolicy) {</span>
+<span class="nc" id="L126">         this._constructionElement</span>
+            .setAttributeNS(null, XPathFilterCHGPContainer._ATT_INCLUDESLASH, &quot;true&quot;);
+      } else {
+<span class="nc" id="L129">         this._constructionElement</span>
+            .setAttributeNS(null, XPathFilterCHGPContainer._ATT_INCLUDESLASH, &quot;false&quot;);
+      }
+
+<span class="nc bnc" id="L133" title="All 4 branches missed.">      if ((includeButSearch != null)</span>
+              &amp;&amp; (includeButSearch.trim().length() &gt; 0)) {
+<span class="nc" id="L135">         Element includeButSearchElem =</span>
+            this.createElementForFamily(doc, this.getBaseNamespace(),
+                                        XPathFilterCHGPContainer
+                                           ._TAG_INCLUDE_BUT_SEARCH);
+
+<span class="nc" id="L140">         includeButSearchElem</span>
+            .appendChild(this._doc
+               .createTextNode(indentXPathText(includeButSearch)));
+<span class="nc" id="L143">         this._constructionElement.appendChild(doc.createTextNode(&quot;\n&quot;));</span>
+<span class="nc" id="L144">         this._constructionElement.appendChild(includeButSearchElem);</span>
+      }
+
+<span class="nc bnc" id="L147" title="All 4 branches missed.">      if ((excludeButSearch != null)</span>
+              &amp;&amp; (excludeButSearch.trim().length() &gt; 0)) {
+<span class="nc" id="L149">         Element excludeButSearchElem =</span>
+            this.createElementForFamily(doc, this.getBaseNamespace(),
+                                        XPathFilterCHGPContainer
+                                           ._TAG_EXCLUDE_BUT_SEARCH);
+
+<span class="nc" id="L154">         excludeButSearchElem</span>
+            .appendChild(this._doc
+               .createTextNode(indentXPathText(excludeButSearch)));
+<span class="nc" id="L157">         this._constructionElement.appendChild(doc.createTextNode(&quot;\n&quot;));</span>
+<span class="nc" id="L158">         this._constructionElement.appendChild(excludeButSearchElem);</span>
+      }
+
+<span class="nc bnc" id="L161" title="All 4 branches missed.">      if ((exclude != null) &amp;&amp; (exclude.trim().length() &gt; 0)) {</span>
+<span class="nc" id="L162">         Element excludeElem = this.createElementForFamily(doc,</span>
+                                  this.getBaseNamespace(),
+                                  XPathFilterCHGPContainer._TAG_EXCLUDE);
+
+<span class="nc" id="L166">         excludeElem</span>
+            .appendChild(this._doc.createTextNode(indentXPathText(exclude)));
+<span class="nc" id="L168">         this._constructionElement.appendChild(doc.createTextNode(&quot;\n&quot;));</span>
+<span class="nc" id="L169">         this._constructionElement.appendChild(excludeElem);</span>
+      }
+
+<span class="nc" id="L172">      this._constructionElement.appendChild(doc.createTextNode(&quot;\n&quot;));</span>
+<span class="nc" id="L173">   }</span>
+
+   /**
+    * Method indentXPathText
+    *
+    * @param xp
+    * @return
+    */
+   static String indentXPathText(String xp) {
+
+<span class="nc bnc" id="L183" title="All 4 branches missed.">      if ((xp.length() &gt; 2) &amp;&amp; (!Character.isWhitespace(xp.charAt(0)))) {</span>
+<span class="nc" id="L184">         return &quot;\n&quot; + xp + &quot;\n&quot;;</span>
+      } else {
+<span class="nc" id="L186">         return xp;</span>
+      }
+   }
+
+   /**
+    * Constructor XPathFilterCHGPContainer
+    *
+    * @param element
+    * @param BaseURI
+    * @throws XMLSecurityException
+    */
+   private XPathFilterCHGPContainer(Element element, String BaseURI)
+           throws XMLSecurityException {
+<span class="nc" id="L199">      super(element, BaseURI);</span>
+<span class="nc" id="L200">   }</span>
+
+   /**
+    * Creates a new XPathFilterCHGPContainer; needed for generation.
+    *
+    * @param doc
+    * @param includeSlashPolicy
+    * @param includeButSearch
+    * @param excludeButSearch
+    * @param exclude
+    * @return
+    */
+   public static XPathFilterCHGPContainer getInstance(Document doc,
+           boolean includeSlashPolicy, String includeButSearch,
+           String excludeButSearch, String exclude) {
+
+<span class="nc" id="L216">      return new XPathFilterCHGPContainer(doc, includeSlashPolicy,</span>
+                                          includeButSearch, excludeButSearch,
+                                          exclude);
+   }
+
+   /**
+    * Creates a XPathFilterCHGPContainer from an existing Element; needed for verification.
+    *
+    * @param element
+    * @param BaseURI
+    * @return
+    * @throws XMLSecurityException
+    */
+   public static XPathFilterCHGPContainer getInstance(
+           Element element, String BaseURI) throws XMLSecurityException {
+<span class="nc" id="L231">      return new XPathFilterCHGPContainer(element, BaseURI);</span>
+   }
+
+   /**
+    * Method getXStr
+    *
+    * @param type
+    * @return
+    */
+   private String getXStr(String type) {
+
+<span class="nc bnc" id="L242" title="All 2 branches missed.">      if (this.length(this.getBaseNamespace(), type) != 1) {</span>
+<span class="nc" id="L243">         return &quot;&quot;;</span>
+      }
+
+<span class="nc" id="L246">      Element xElem = this.getChildElementLocalName(0, this.getBaseNamespace(),</span>
+                         type);
+
+<span class="nc" id="L249">      return XMLUtils.getFullTextChildrenFromElement(xElem);</span>
+   }
+
+   /**
+    * Method getIncludeButSearch
+    *
+    * @return
+    */
+   public String getIncludeButSearch() {
+<span class="nc" id="L258">      return this.getXStr(XPathFilterCHGPContainer._TAG_INCLUDE_BUT_SEARCH);</span>
+   }
+
+   /**
+    * Method getExcludeButSearch
+    *
+    * @return
+    */
+   public String getExcludeButSearch() {
+<span class="nc" id="L267">      return this.getXStr(XPathFilterCHGPContainer._TAG_EXCLUDE_BUT_SEARCH);</span>
+   }
+
+   /**
+    * Method getExclude
+    *
+    * @return
+    */
+   public String getExclude() {
+<span class="nc" id="L276">      return this.getXStr(XPathFilterCHGPContainer._TAG_EXCLUDE);</span>
+   }
+
+   /**
+    * Method getIncludeSlashPolicy
+    *
+    * @return
+    */
+   public boolean getIncludeSlashPolicy() {
+
+<span class="nc" id="L286">      return this._constructionElement</span>
+         .getAttributeNS(null, XPathFilterCHGPContainer._ATT_INCLUDESLASH)
+         .equals(&quot;true&quot;);
+   }
+
+   /**
+    * Returns the first Text node which contains information from the XPath
+    * Filter String. We must use this stupid hook to enable the here() function
+    * to work.
+    *
+    * @todo I dunno whether this crashes: &lt;XPath&gt; he&lt;!-- comment --&gt;re()/ds:Signature[1]&lt;/XPath&gt;
+    * @param type
+    * @return the first Text node which contains information from the XPath 2 Filter String
+    */
+   private Node getHereContextNode(String type) {
+
+<span class="nc bnc" id="L302" title="All 2 branches missed.">      if (this.length(this.getBaseNamespace(), type) != 1) {</span>
+<span class="nc" id="L303">         return null;</span>
+      }
+
+<span class="nc" id="L306">      Element xElem = this.getChildElementLocalName(0, this.getBaseNamespace(),</span>
+                         type);
+<span class="nc" id="L308">      NodeList children = xElem.getChildNodes();</span>
+<span class="nc" id="L309">      int length = children.getLength();</span>
+
+<span class="nc bnc" id="L311" title="All 2 branches missed.">      for (int i = 0; i &lt; length; i++) {</span>
+<span class="nc bnc" id="L312" title="All 2 branches missed.">         if (children.item(i).getNodeType() == Node.TEXT_NODE) {</span>
+<span class="nc" id="L313">            return children.item(i);</span>
+         }
+      }
+
+<span class="nc" id="L317">      return null;</span>
+   }
+
+   /**
+    * Method getHereContextNodeIncludeButSearch
+    *
+    * @return
+    */
+   public Node getHereContextNodeIncludeButSearch() {
+<span class="nc" id="L326">      return this</span>
+         .getHereContextNode(XPathFilterCHGPContainer._TAG_INCLUDE_BUT_SEARCH);
+   }
+
+   /**
+    * Method getHereContextNodeExcludeButSearch
+    *
+    * @return
+    */
+   public Node getHereContextNodeExcludeButSearch() {
+<span class="nc" id="L336">      return this</span>
+         .getHereContextNode(XPathFilterCHGPContainer._TAG_EXCLUDE_BUT_SEARCH);
+   }
+
+   /**
+    * Method getHereContextNodeExclude
+    *
+    * @return
+    */
+   public Node getHereContextNodeExclude() {
+<span class="nc" id="L346">      return this.getHereContextNode(XPathFilterCHGPContainer._TAG_EXCLUDE);</span>
+   }
+
+   /**
+    * Method getBaseLocalName
+    *
+    * @return
+    */
+   public final String getBaseLocalName() {
+<span class="nc" id="L355">      return XPathFilterCHGPContainer._TAG_XPATHCHGP;</span>
+   }
+
+   /**
+    * Method getBaseNamespace
+    *
+    * @return
+    */
+   public final String getBaseNamespace() {
+<span class="nc" id="L364">      return Transforms.TRANSFORM_XPATHFILTERCHGP;</span>
+   }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

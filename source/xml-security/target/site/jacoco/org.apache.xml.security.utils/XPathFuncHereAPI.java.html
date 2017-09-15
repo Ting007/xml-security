@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>XPathFuncHereAPI.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.utils</a> &gt; <span class="el_source">XPathFuncHereAPI.java</span></div><h1>XPathFuncHereAPI.java</h1><pre class="source lang-java linenums">
+/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.utils;
+
+
+
+import javax.xml.transform.TransformerException;
+import org.w3c.dom.Node;
+import org.w3c.dom.Document;
+import org.w3c.dom.traversal.NodeIterator;
+import org.w3c.dom.NodeList;
+import org.apache.xpath.XPathContext;
+import org.apache.xpath.XPath;
+import org.apache.xpath.compiler.XPathParser;
+import org.apache.xpath.XPathContext;
+import org.apache.xml.utils.PrefixResolverDefault;
+import org.apache.xml.utils.PrefixResolver;
+import org.apache.xpath.objects.XObject;
+import org.apache.xml.dtm.DTM;
+import org.apache.xml.dtm.ref.DTMNodeIterator;
+import org.apache.xml.dtm.ref.DTMNodeList;
+import org.apache.xml.dtm.ref.DTMManagerDefault;
+import org.w3c.dom.*;
+import org.apache.xml.security.transforms.implementations.FuncHereContext;
+
+
+/**
+ * This class does the same as {@link XPathAPI} except that the XPath strings
+ * are not supplied as Strings but as {@link Text}, {@link Attr}ibute or
+ * {ProcessingInstruction} nodes which contain the XPath string. This enables
+ * us to use the &lt;CODE&gt;here()&lt;/CODE&gt; function.
+ * &lt;BR&gt;
+ * The methods in this class are convenience methods into the low-level XPath API.
+ * These functions tend to be a little slow, since a number of objects must be
+ * created for each evaluation.  A faster way is to precompile the
+ * XPaths using the low-level API, and then just use the XPaths
+ * over and over.
+ *
+ * @author $Author: dohy $
+ * @see &lt;a href=&quot;http://www.w3.org/TR/xpath&quot;&gt;XPath Specification&lt;/a&gt;
+ */
+<span class="nc" id="L99">public class XPathFuncHereAPI {</span>
+
+   /**
+    * Use an XPath string to select a single node. XPath namespace
+    * prefixes are resolved from the context node, which may not
+    * be what you want (see the next method).
+    *
+    * @param contextNode The node to start searching from.
+    * @param xpathnode A Node containing a valid XPath string.
+    * @return The first node found that matches the XPath, or null.
+    *
+    * @throws TransformerException
+    */
+   public static Node selectSingleNode(Node contextNode, Node xpathnode)
+           throws TransformerException {
+<span class="nc" id="L114">      return selectSingleNode(contextNode, xpathnode, contextNode);</span>
+   }
+
+   /**
+    * Use an XPath string to select a single node.
+    * XPath namespace prefixes are resolved from the namespaceNode.
+    *
+    * @param contextNode The node to start searching from.
+    * @param xpathnode
+    * @param namespaceNode The node from which prefixes in the XPath will be resolved to namespaces.
+    * @return The first node found that matches the XPath, or null.
+    *
+    * @throws TransformerException
+    */
+   public static Node selectSingleNode(
+           Node contextNode, Node xpathnode, Node namespaceNode)
+              throws TransformerException {
+
+      // Have the XObject return its result as a NodeSetDTM.
+<span class="nc" id="L133">      NodeIterator nl = selectNodeIterator(contextNode, xpathnode,</span>
+                                           namespaceNode);
+
+      // Return the first node, or null
+<span class="nc" id="L137">      return nl.nextNode();</span>
+   }
+
+   /**
+    *  Use an XPath string to select a nodelist.
+    *  XPath namespace prefixes are resolved from the contextNode.
+    *
+    *  @param contextNode The node to start searching from.
+    * @param xpathnode
+    *  @return A NodeIterator, should never be null.
+    *
+    * @throws TransformerException
+    */
+   public static NodeIterator selectNodeIterator(
+           Node contextNode, Node xpathnode) throws TransformerException {
+<span class="nc" id="L152">      return selectNodeIterator(contextNode, xpathnode, contextNode);</span>
+   }
+
+   /**
+    *  Use an XPath string to select a nodelist.
+    *  XPath namespace prefixes are resolved from the namespaceNode.
+    *
+    *  @param contextNode The node to start searching from.
+    * @param xpathnode
+    *  @param namespaceNode The node from which prefixes in the XPath will be resolved to namespaces.
+    *  @return A NodeIterator, should never be null.
+    *
+    * @throws TransformerException
+    */
+   public static NodeIterator selectNodeIterator(
+           Node contextNode, Node xpathnode, Node namespaceNode)
+              throws TransformerException {
+
+      // Execute the XPath, and have it return the result
+<span class="nc" id="L171">      XObject list = eval(contextNode, xpathnode, namespaceNode);</span>
+
+      // Have the XObject return its result as a NodeSetDTM.
+<span class="nc" id="L174">      return list.nodeset();</span>
+   }
+
+   /**
+    *  Use an XPath string to select a nodelist.
+    *  XPath namespace prefixes are resolved from the contextNode.
+    *
+    *  @param contextNode The node to start searching from.
+    * @param xpathnode
+    *  @return A NodeIterator, should never be null.
+    *
+    * @throws TransformerException
+    */
+   public static NodeList selectNodeList(Node contextNode, Node xpathnode)
+           throws TransformerException {
+<span class="nc" id="L189">      return selectNodeList(contextNode, xpathnode, contextNode);</span>
+   }
+
+   /**
+    *  Use an XPath string to select a nodelist.
+    *  XPath namespace prefixes are resolved from the namespaceNode.
+    *
+    *  @param contextNode The node to start searching from.
+    * @param xpathnode
+    *  @param namespaceNode The node from which prefixes in the XPath will be resolved to namespaces.
+    *  @return A NodeIterator, should never be null.
+    *
+    * @throws TransformerException
+    */
+   public static NodeList selectNodeList(
+           Node contextNode, Node xpathnode, Node namespaceNode)
+              throws TransformerException {
+
+      // Execute the XPath, and have it return the result
+<span class="nc" id="L208">      XObject list = eval(contextNode, xpathnode, namespaceNode);</span>
+
+      // Return a NodeList.
+<span class="nc" id="L211">      return list.nodelist();</span>
+   }
+
+   /**
+    *  Evaluate XPath string to an XObject.  Using this method,
+    *  XPath namespace prefixes will be resolved from the namespaceNode.
+    *  @param contextNode The node to start searching from.
+    * @param xpathnode
+    *  @return An XObject, which can be used to obtain a string, number, nodelist, etc, should never be null.
+    *  @see org.apache.xpath.objects.XObject
+    *  @see org.apache.xpath.objects.XNull
+    *  @see org.apache.xpath.objects.XBoolean
+    *  @see org.apache.xpath.objects.XNumber
+    *  @see org.apache.xpath.objects.XString
+    *  @see org.apache.xpath.objects.XRTreeFrag
+    *
+    * @throws TransformerException
+    */
+   public static XObject eval(Node contextNode, Node xpathnode)
+           throws TransformerException {
+<span class="nc" id="L231">      return eval(contextNode, xpathnode, contextNode);</span>
+   }
+
+   /**
+    *  Evaluate XPath string to an XObject.
+    *  XPath namespace prefixes are resolved from the namespaceNode.
+    *  The implementation of this is a little slow, since it creates
+    *  a number of objects each time it is called.  This could be optimized
+    *  to keep the same objects around, but then thread-safety issues would arise.
+    *
+    *  @param contextNode The node to start searching from.
+    * @param xpathnode
+    *  @param namespaceNode The node from which prefixes in the XPath will be resolved to namespaces.
+    *  @return An XObject, which can be used to obtain a string, number, nodelist, etc, should never be null.
+    *  @see org.apache.xpath.objects.XObject
+    *  @see org.apache.xpath.objects.XNull
+    *  @see org.apache.xpath.objects.XBoolean
+    *  @see org.apache.xpath.objects.XNumber
+    *  @see org.apache.xpath.objects.XString
+    *  @see org.apache.xpath.objects.XRTreeFrag
+    *
+    * @throws TransformerException
+    */
+   public static XObject eval(
+           Node contextNode, Node xpathnode, Node namespaceNode)
+              throws TransformerException {
+
+      // Since we don't have a XML Parser involved here, install some default support
+      // for things like namespaces, etc.
+      // (Changed from: XPathContext xpathSupport = new XPathContext();
+      //    because XPathContext is weak in a number of areas... perhaps
+      //    XPathContext should be done away with.)
+<span class="nc" id="L263">      FuncHereContext xpathSupport = new FuncHereContext(xpathnode);</span>
+
+      // Create an object to resolve namespace prefixes.
+      // XPath namespaces are resolved from the input context node's document element
+      // if it is a root node, or else the current context node (for lack of a better
+      // resolution space, given the simplicity of this sample code).
+<span class="nc bnc" id="L269" title="All 2 branches missed.">      PrefixResolverDefault prefixResolver =</span>
+         new PrefixResolverDefault((namespaceNode.getNodeType()
+                                    == Node.DOCUMENT_NODE)
+                                   ? ((Document) namespaceNode)
+                                      .getDocumentElement()
+                                   : namespaceNode);
+<span class="nc" id="L275">      String str = getStrFromNode(xpathnode);</span>
+
+      // Create the XPath object.
+<span class="nc" id="L278">      XPath xpath = new XPath(str, null, prefixResolver, XPath.SELECT, null);</span>
+
+      // Execute the XPath, and have it return the result
+      // return xpath.execute(xpathSupport, contextNode, prefixResolver);
+<span class="nc" id="L282">      int ctxtNode = xpathSupport.getDTMHandleFromNode(contextNode);</span>
+
+<span class="nc" id="L284">      return xpath.execute(xpathSupport, ctxtNode, prefixResolver);</span>
+   }
+
+   /**
+    *   Evaluate XPath string to an XObject.
+    *   XPath namespace prefixes are resolved from the namespaceNode.
+    *   The implementation of this is a little slow, since it creates
+    *   a number of objects each time it is called.  This could be optimized
+    *   to keep the same objects around, but then thread-safety issues would arise.
+    *
+    *   @param contextNode The node to start searching from.
+    * @param xpathnode
+    *   @param prefixResolver Will be called if the parser encounters namespace
+    *                         prefixes, to resolve the prefixes to URLs.
+    *   @return An XObject, which can be used to obtain a string, number, nodelist, etc, should never be null.
+    *   @see org.apache.xpath.objects.XObject
+    *   @see org.apache.xpath.objects.XNull
+    *   @see org.apache.xpath.objects.XBoolean
+    *   @see org.apache.xpath.objects.XNumber
+    *   @see org.apache.xpath.objects.XString
+    *   @see org.apache.xpath.objects.XRTreeFrag
+    *
+    * @throws TransformerException
+    */
+   public static XObject eval(
+           Node contextNode, Node xpathnode, PrefixResolver prefixResolver)
+              throws TransformerException {
+
+<span class="nc" id="L312">      String str = getStrFromNode(xpathnode);</span>
+
+      // Since we don't have a XML Parser involved here, install some default support
+      // for things like namespaces, etc.
+      // (Changed from: XPathContext xpathSupport = new XPathContext();
+      //    because XPathContext is weak in a number of areas... perhaps
+      //    XPathContext should be done away with.)
+      // Create the XPath object.
+<span class="nc" id="L320">      XPath xpath = new XPath(str, null, prefixResolver, XPath.SELECT, null);</span>
+
+      // Execute the XPath, and have it return the result
+<span class="nc" id="L323">      FuncHereContext xpathSupport = new FuncHereContext(xpathnode);</span>
+<span class="nc" id="L324">      int ctxtNode = xpathSupport.getDTMHandleFromNode(contextNode);</span>
+
+<span class="nc" id="L326">      return xpath.execute(xpathSupport, ctxtNode, prefixResolver);</span>
+   }
+
+   /**
+    * Method getStrFromNode
+    *
+    * @param xpathnode
+    * @return
+    */
+   private static String getStrFromNode(Node xpathnode) {
+
+<span class="nc bnc" id="L337" title="All 2 branches missed.">      if (xpathnode.getNodeType() == Node.TEXT_NODE) {</span>
+<span class="nc" id="L338">         return ((Text) xpathnode).getData();</span>
+<span class="nc bnc" id="L339" title="All 2 branches missed.">      } else if (xpathnode.getNodeType() == Node.ATTRIBUTE_NODE) {</span>
+<span class="nc" id="L340">         return ((Attr) xpathnode).getNodeValue();</span>
+<span class="nc bnc" id="L341" title="All 2 branches missed.">      } else if (xpathnode.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE) {</span>
+<span class="nc" id="L342">         return ((ProcessingInstruction) xpathnode).getNodeValue();</span>
+      }
+
+<span class="nc" id="L345">      return &quot;&quot;;</span>
+   }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RetrievalMethodResolver.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.keys.keyresolver.implementations</a> &gt; <span class="el_source">RetrievalMethodResolver.java</span></div><h1>RetrievalMethodResolver.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.keys.keyresolver.implementations;
+
+
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.security.*;
+import java.security.spec.*;
+import java.security.PublicKey;
+import java.security.cert.*;
+import javax.xml.transform.TransformerException;
+import org.apache.xpath.XPathAPI;
+import org.w3c.dom.*;
+import org.apache.xml.security.exceptions.XMLSecurityException;
+import org.apache.xml.security.keys.content.*;
+import org.apache.xml.security.keys.content.keyvalues.*;
+import org.apache.xml.security.keys.content.x509.*;
+import org.apache.xml.security.keys.keyresolver.*;
+import org.apache.xml.security.keys.storage.*;
+import org.apache.xml.security.signature.*;
+import org.apache.xml.security.transforms.*;
+import org.apache.xml.security.utils.*;
+import org.apache.xml.security.utils.resolver.*;
+
+
+/**
+ * The RetrievalMethodResolver can retrieve public keys and certificates from
+ * other locations. The location is specified using the ds:RetrievalMethod
+ * element which points to the location. This includes the handling of raw
+ * (binary) X.509 certificate which are not encapsulated in an XML structure.
+ * If the retrieval process encounters an element which the
+ * RetrievalMethodResolver cannot handle itself, resolving of the extracted
+ * element is delegated back to the KeyResolver mechanism.
+ *
+ * @author $Author: dohy $
+ */
+<span class="fc" id="L95">public class RetrievalMethodResolver extends KeyResolverSpi {</span>
+
+   /** {@link org.apache.log4j} logging facility */
+<span class="fc" id="L98">   static org.apache.log4j.Category cat =</span>
+      org.apache.log4j.Category
+         .getInstance(RetrievalMethodResolver.class.getName());
+
+   /**
+    * Method engineCanResolve
+    *
+    * @param element
+    * @param BaseURI
+    * @param storage
+    * @return
+    */
+   public boolean engineCanResolve(Element element, String BaseURI,
+                                   StorageResolver storage) {
+
+      try {
+<span class="fc" id="L114">         XMLUtils.guaranteeThatElementInSignatureSpace(element,</span>
+                 Constants._TAG_RETRIEVALMETHOD);
+<span class="fc" id="L116">      } catch (XMLSignatureException ex) {</span>
+<span class="fc" id="L117">         return false;</span>
+<span class="fc" id="L118">      }</span>
+
+<span class="fc" id="L120">      return true;</span>
+   }
+
+   /**
+    * Method engineResolvePublicKey
+    *
+    * @param element
+    * @param BaseURI
+    * @param storage
+    * @return
+    * @throws KeyResolverException
+    */
+   public PublicKey engineResolvePublicKey(
+           Element element, String BaseURI, StorageResolver storage)
+              throws KeyResolverException {
+
+      try {
+<span class="nc" id="L137">         RetrievalMethod rm = new RetrievalMethod(element, BaseURI);</span>
+<span class="nc" id="L138">         Attr uri = rm.getURIAttr();</span>
+
+         // type can be null because it's optional
+<span class="nc" id="L141">         String type = rm.getType();</span>
+<span class="nc" id="L142">         Transforms transforms = rm.getTransforms();</span>
+<span class="nc" id="L143">         ResourceResolver resRes = ResourceResolver.getInstance(uri, BaseURI);</span>
+
+<span class="nc bnc" id="L145" title="All 2 branches missed.">         if (resRes != null) {</span>
+<span class="nc" id="L146">            XMLSignatureInput resource = resRes.resolve(uri, BaseURI);</span>
+
+<span class="nc" id="L148">            cat.debug(&quot;Before applying Transforms, resource has &quot;</span>
+                      + resource.getBytes().length + &quot;bytes&quot;);
+
+<span class="nc bnc" id="L151" title="All 2 branches missed.">            if (transforms != null) {</span>
+<span class="nc" id="L152">               cat.debug(&quot;We have Transforms&quot;);</span>
+
+<span class="nc" id="L154">               resource = transforms.performTransforms(resource);</span>
+            }
+
+<span class="nc" id="L157">            cat.debug(&quot;After applying Transforms, resource has &quot;</span>
+                      + resource.getBytes().length + &quot;bytes&quot;);
+<span class="nc" id="L159">            cat.debug(&quot;Resolved to resource &quot; + resource.getSourceURI());</span>
+
+<span class="nc" id="L161">            byte inputBytes[] = resource.getBytes();</span>
+
+<span class="nc bnc" id="L163" title="All 4 branches missed.">            if ((type != null) &amp;&amp; type.equals(RetrievalMethod.TYPE_RAWX509)) {</span>
+
+               // if the resource stores a raw certificate, we have to handle it
+<span class="nc" id="L166">               CertificateFactory certFact =</span>
+                  CertificateFactory
+                     .getInstance(XMLX509Certificate.JCA_CERT_ID);
+<span class="nc" id="L169">               X509Certificate cert =</span>
+                  (X509Certificate) certFact
+                     .generateCertificate(new ByteArrayInputStream(inputBytes));
+
+<span class="nc bnc" id="L173" title="All 2 branches missed.">               if (cert != null) {</span>
+<span class="nc" id="L174">                  return cert.getPublicKey();</span>
+               }
+<span class="nc" id="L176">            } else {</span>
+
+               // otherwise, we parse the resource, create an Element and delegate
+<span class="nc" id="L179">               cat.debug(&quot;we have to parse &quot; + inputBytes.length + &quot; bytes&quot;);</span>
+
+<span class="nc" id="L181">               Element e = this.getDocFromBytes(inputBytes);</span>
+
+<span class="nc" id="L183">               cat.debug(&quot;Now we have a {&quot; + e.getNamespaceURI() + &quot;}&quot;</span>
+                         + e.getLocalName() + &quot; Element&quot;);
+
+<span class="nc bnc" id="L186" title="All 2 branches missed.">               if (e != null) {</span>
+<span class="nc" id="L187">                  KeyResolver newKeyResolver = KeyResolver.getInstance(e,</span>
+                                                  BaseURI, storage);
+
+<span class="nc bnc" id="L190" title="All 2 branches missed.">                  if (newKeyResolver != null) {</span>
+<span class="nc" id="L191">                     return newKeyResolver.resolvePublicKey(e, BaseURI,</span>
+                                                            storage);
+                  }
+               }
+            }
+         }
+<span class="nc" id="L197">      } catch (XMLSecurityException ex) {</span>
+<span class="nc" id="L198">         cat.debug(&quot;XMLSecurityException&quot;, ex);</span>
+<span class="nc" id="L199">      } catch (CertificateException ex) {</span>
+<span class="nc" id="L200">         cat.debug(&quot;CertificateException&quot;, ex);</span>
+<span class="nc" id="L201">      } catch (IOException ex) {</span>
+<span class="nc" id="L202">         cat.debug(&quot;IOException&quot;, ex);</span>
+<span class="nc" id="L203">      }</span>
+
+<span class="nc" id="L205">      return null;</span>
+   }
+
+   /**
+    * Method engineResolveX509Certificate
+    *
+    * @param element
+    * @param BaseURI
+    * @param storage
+    * @return
+    * @throws KeyResolverException
+    */
+   public X509Certificate engineResolveX509Certificate(
+           Element element, String BaseURI, StorageResolver storage)
+              throws KeyResolverException {
+
+      try {
+<span class="fc" id="L222">         RetrievalMethod rm = new RetrievalMethod(element, BaseURI);</span>
+<span class="fc" id="L223">         Attr uri = rm.getURIAttr();</span>
+<span class="fc" id="L224">         String type = rm.getType();</span>
+<span class="fc" id="L225">         Transforms transforms = rm.getTransforms();</span>
+
+<span class="fc" id="L227">         cat.debug(&quot;Asked to resolve URI &quot; + uri);</span>
+
+<span class="fc" id="L229">         ResourceResolver resRes = ResourceResolver.getInstance(uri, BaseURI);</span>
+
+<span class="pc bpc" id="L231" title="1 of 2 branches missed.">         if (resRes != null) {</span>
+<span class="fc" id="L232">            XMLSignatureInput resource = resRes.resolve(uri, BaseURI);</span>
+
+<span class="fc" id="L234">            cat.debug(&quot;Before applying Transforms, resource has &quot;</span>
+                      + resource.getBytes().length + &quot;bytes&quot;);
+
+<span class="pc bpc" id="L237" title="1 of 2 branches missed.">            if (transforms != null) {</span>
+<span class="fc" id="L238">               cat.debug(&quot;We have Transforms&quot;);</span>
+
+<span class="fc" id="L240">               resource = transforms.performTransforms(resource);</span>
+            }
+
+<span class="fc" id="L243">            cat.debug(&quot;After applying Transforms, resource has &quot;</span>
+                      + resource.getBytes().length + &quot;bytes&quot;);
+<span class="fc" id="L245">            cat.debug(&quot;Resolved to resource &quot; + resource.getSourceURI());</span>
+
+<span class="fc" id="L247">            byte inputBytes[] = resource.getBytes();</span>
+
+<span class="pc bpc" id="L249" title="2 of 4 branches missed.">            if ((rm.getType() != null)</span>
+                    &amp;&amp; rm.getType().equals(RetrievalMethod.TYPE_RAWX509)) {
+
+               // if the resource stores a raw certificate, we have to handle it
+<span class="nc" id="L253">               CertificateFactory certFact =</span>
+                  CertificateFactory
+                     .getInstance(XMLX509Certificate.JCA_CERT_ID);
+<span class="nc" id="L256">               X509Certificate cert =</span>
+                  (X509Certificate) certFact
+                     .generateCertificate(new ByteArrayInputStream(inputBytes));
+
+<span class="nc bnc" id="L260" title="All 2 branches missed.">               if (cert != null) {</span>
+<span class="nc" id="L261">                  return cert;</span>
+               }
+<span class="nc" id="L263">            } else {</span>
+
+               // otherwise, we parse the resource, create an Element and delegate
+<span class="fc" id="L266">               cat.debug(&quot;we have to parse &quot; + inputBytes.length + &quot; bytes&quot;);</span>
+
+<span class="fc" id="L268">               Element e = this.getDocFromBytes(inputBytes);</span>
+
+<span class="fc" id="L270">               cat.debug(&quot;Now we have a {&quot; + e.getNamespaceURI() + &quot;}&quot;</span>
+                         + e.getLocalName() + &quot; Element&quot;);
+
+<span class="pc bpc" id="L273" title="1 of 2 branches missed.">               if (e != null) {</span>
+<span class="fc" id="L274">                  KeyResolver newKeyResolver = KeyResolver.getInstance(e,</span>
+                                                  BaseURI, storage);
+
+<span class="pc bpc" id="L277" title="1 of 2 branches missed.">                  if (newKeyResolver != null) {</span>
+<span class="fc" id="L278">                     return newKeyResolver.resolveX509Certificate(e, BaseURI,</span>
+                             storage);
+                  }
+               }
+            }
+         }
+<span class="nc" id="L284">      } catch (XMLSecurityException ex) {</span>
+<span class="nc" id="L285">         cat.debug(&quot;XMLSecurityException&quot;, ex);</span>
+<span class="nc" id="L286">      } catch (CertificateException ex) {</span>
+<span class="nc" id="L287">         cat.debug(&quot;CertificateException&quot;, ex);</span>
+<span class="nc" id="L288">      } catch (IOException ex) {</span>
+<span class="nc" id="L289">         cat.debug(&quot;IOException&quot;, ex);</span>
+<span class="nc" id="L290">      }</span>
+
+<span class="nc" id="L292">      return null;</span>
+   }
+
+   /**
+    * Parses a byte array and returns the parsed Element.
+    *
+    * @param bytes
+    * @return
+    * @throws KeyResolverException if something goes wrong
+    */
+   Element getDocFromBytes(byte[] bytes) throws KeyResolverException {
+
+      try {
+<span class="fc" id="L305">         javax.xml.parsers.DocumentBuilderFactory dbf =</span>
+            javax.xml.parsers.DocumentBuilderFactory.newInstance();
+
+<span class="fc" id="L308">         dbf.setNamespaceAware(true);</span>
+
+<span class="fc" id="L310">         javax.xml.parsers.DocumentBuilder db = dbf.newDocumentBuilder();</span>
+<span class="fc" id="L311">         org.w3c.dom.Document doc =</span>
+            db.parse(new java.io.ByteArrayInputStream(bytes));
+
+<span class="fc" id="L314">         return doc.getDocumentElement();</span>
+<span class="nc" id="L315">      } catch (org.xml.sax.SAXException ex) {</span>
+<span class="nc" id="L316">         throw new KeyResolverException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L317">      } catch (java.io.IOException ex) {</span>
+<span class="nc" id="L318">         throw new KeyResolverException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L319">      } catch (javax.xml.parsers.ParserConfigurationException ex) {</span>
+<span class="nc" id="L320">         throw new KeyResolverException(&quot;empty&quot;, ex);</span>
+      }
+   }
+
+   /**
+    * Method engineResolveSecretKey
+    *
+    * @param element
+    * @param BaseURI
+    * @param storage
+    * @return
+    * @throws KeyResolverException
+    */
+   public javax.crypto.SecretKey engineResolveSecretKey(
+           Element element, String BaseURI, StorageResolver storage)
+              throws KeyResolverException {
+<span class="nc" id="L336">      return null;</span>
+   }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

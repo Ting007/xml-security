@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ResolverFragment.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.utils.resolver.implementations</a> &gt; <span class="el_source">ResolverFragment.java</span></div><h1>ResolverFragment.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.utils.resolver.implementations;
+
+
+
+import java.net.*;
+import java.io.*;
+import java.util.*;
+import org.w3c.dom.*;
+import org.apache.xml.utils.URI;
+import org.apache.xpath.CachedXPathAPI;
+import org.apache.xml.security.c14n.*;
+import org.apache.xml.security.signature.XMLSignatureInput;
+import org.apache.xml.security.utils.*;
+import org.apache.xml.security.utils.resolver.*;
+
+
+/**
+ * This resolver is used for resolving same-document URIs like URI=&quot;&quot; of URI=&quot;#id&quot;.
+ *
+ * @author $Author: dohy $
+ * @see &lt;A HREF=&quot;http://www.w3.org/TR/xmldsig-core/#sec-ReferenceProcessingModel&quot;&gt;The Reference processing model in the XML Signature spec&lt;/A&gt;
+ * @see &lt;A HREF=&quot;http://www.w3.org/TR/xmldsig-core/#sec-Same-Document&quot;&gt;Same-Document URI-References in the XML Signature spec&lt;/A&gt;
+ * @see &lt;A HREF=&quot;http://www.ietf.org/rfc/rfc2396.txt&quot;&gt;Section 4.2 of RFC 2396&lt;/A&gt;
+ */
+<span class="fc" id="L83">public class ResolverFragment extends ResourceResolverSpi {</span>
+
+   /** {@link org.apache.log4j} logging facility */
+<span class="fc" id="L86">   static org.apache.log4j.Category cat =</span>
+      org.apache.log4j.Category.getInstance(ResolverFragment.class.getName());
+
+   /**
+    * Method engineResolve
+    *
+    * Wird das gleiche Dokument referenziert?
+    * Wird ein anderes Dokument referenziert?
+    *
+    * @param uri
+    * @param BaseURI
+    * @return
+    * @throws ResourceResolverException
+    */
+   public XMLSignatureInput engineResolve(Attr uri, String BaseURI)
+           throws ResourceResolverException {
+
+<span class="fc" id="L103">      String uriNodeValue = uri.getNodeValue();</span>
+<span class="fc" id="L104">      NodeList resultNodes = null;</span>
+<span class="fc" id="L105">      Document doc = uri.getOwnerDocument();</span>
+
+      // this must be done so that Xalan can catch ALL namespaces
+<span class="fc" id="L108">      XMLUtils.circumventBug2650(doc);</span>
+
+<span class="fc" id="L110">      CachedXPathAPI cXPathAPI = new CachedXPathAPI();</span>
+
+<span class="fc bfc" id="L112" title="All 2 branches covered.">      if (uriNodeValue.equals(&quot;&quot;)) {</span>
+
+         /*
+          * Identifies the node-set (minus any comment nodes) of the XML
+          * resource containing the signature
+          */
+
+         // cat.debug(&quot;ResolverFragment with empty URI (means complete document)&quot;);
+         try {
+<span class="fc" id="L121">            resultNodes =</span>
+               cXPathAPI.selectNodeList(doc,
+                                        Canonicalizer.XPATH_C14N_OMIT_COMMENTS);
+<span class="nc" id="L124">         } catch (javax.xml.transform.TransformerException ex) {</span>
+<span class="nc" id="L125">            throw new ResourceResolverException(&quot;generic.EmptyMessage&quot;, ex,</span>
+                                                uri, BaseURI);
+<span class="fc" id="L127">         }</span>
+      } else {
+
+         /*
+          * URI=&quot;#chapter1&quot;
+          * Identifies a node-set containing the element with ID attribute
+          * value 'chapter1' of the XML resource containing the signature.
+          * XML Signature (and its applications) modify this node-set to
+          * include the element plus all descendents including namespaces and
+          * attributes -- but not comments.
+          */
+<span class="fc" id="L138">         String id = uriNodeValue.substring(1);</span>
+
+         // Element selectedElem = doc.getElementById(id);
+<span class="fc" id="L141">         Element selectedElem = IdResolver.getElementById(doc, id);</span>
+
+         // cat.debug(&quot;Try to catch an Element with ID &quot; + id + &quot; and Element was &quot; + selectedElem);
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">         if (selectedElem == null) {</span>
+<span class="nc" id="L145">            resultNodes = new HelperNodeList();</span>
+         } else {
+            try {
+<span class="fc" id="L148">               resultNodes =</span>
+                  cXPathAPI
+                     .selectNodeList(selectedElem, Canonicalizer
+                        .XPATH_C14N_OMIT_COMMENTS_SINGLE_NODE);
+<span class="nc" id="L152">            } catch (javax.xml.transform.TransformerException ex) {</span>
+<span class="nc" id="L153">               throw new ResourceResolverException(&quot;generic.EmptyMessage&quot;, ex,</span>
+                                                   uri, BaseURI);
+<span class="fc" id="L155">            }</span>
+         }
+      }
+
+<span class="fc" id="L159">      Set resultSet = XMLUtils.convertNodelistToSet(resultNodes);</span>
+<span class="fc" id="L160">      XMLSignatureInput result = new XMLSignatureInput(resultSet, cXPathAPI);</span>
+
+      // cat.debug(&quot;We return a nodeset with &quot; + resultNodes.getLength() + &quot; nodes&quot;);
+<span class="fc" id="L163">      result.setMIMEType(&quot;text/xml&quot;);</span>
+
+      try {
+<span class="fc" id="L166">         URI uriNew = new URI(new URI(BaseURI), uri.getNodeValue());</span>
+
+<span class="fc" id="L168">         result.setSourceURI(uriNew.toString());</span>
+<span class="nc" id="L169">      } catch (URI.MalformedURIException ex) {</span>
+<span class="nc" id="L170">         result.setSourceURI(BaseURI);</span>
+<span class="fc" id="L171">      }</span>
+
+<span class="fc" id="L173">      return result;</span>
+   }
+
+   /**
+    * Method engineCanResolve
+    *
+    * @param uri
+    * @param BaseURI
+    * @return
+    */
+   public boolean engineCanResolve(Attr uri, String BaseURI) {
+
+<span class="pc bpc" id="L185" title="1 of 2 branches missed.">      if (uri == null) {</span>
+<span class="nc" id="L186">         return false;</span>
+      }
+
+<span class="fc" id="L189">      String uriNodeValue = uri.getNodeValue();</span>
+
+<span class="pc bpc" id="L191" title="1 of 6 branches missed.">      if (uriNodeValue.equals(&quot;&quot;)</span>
+              || (uriNodeValue.startsWith(&quot;#&quot;)
+                  &amp;&amp;!uriNodeValue.startsWith(&quot;#xpointer(&quot;))) {
+<span class="fc" id="L194">         return true;</span>
+      }
+
+<span class="fc" id="L197">      return false;</span>
+   }
+
+   /**
+    * Method isSameDocumentReference
+    *
+    * @param uri
+    * @param BaseURI
+    * @return
+    * @throws URI.MalformedURIException
+    */
+   private static boolean isSameDocumentReference(Attr uri, String BaseURI)
+           throws URI.MalformedURIException {
+
+<span class="nc" id="L211">      String uriNodeValue = uri.getNodeValue();</span>
+
+<span class="nc bnc" id="L213" title="All 4 branches missed.">      if (uriNodeValue.equals(&quot;&quot;) || uriNodeValue.startsWith(&quot;#&quot;)) {</span>
+<span class="nc" id="L214">         return true;</span>
+      } else {
+<span class="nc" id="L216">         return false;</span>
+      }
+   }
+
+   /**
+    * Method selectIdentifiedPortions
+    *
+    * @param uri
+    * @param BaseURI
+    * @param input
+    * @return
+    * @throws ResourceResolverException
+    * private static XMLSignatureInput selectIdentifiedPortions(
+    *       Attr uri, String BaseURI, XMLSignatureInput input)
+    *          throws ResourceResolverException {
+    *
+    *  try {
+    *     cat.debug(&quot;Got &quot; + input.getBytes().length
+    *               + &quot; bytes from source and  URI oif &quot; + input.getSourceURI());
+    *  } catch (Exception ex) {
+    *     throw new ResourceResolverException(&quot;generic.EmptyMessage&quot;, ex, uri,
+    *                                         BaseURI);
+    *  }
+    *
+    *  try {
+    *     URI fragmentURI = new URI(new URI(BaseURI), uri.getNodeValue());
+    *     String fragment = fragmentURI.getFragment();
+    *     javax.xml.parsers.DocumentBuilderFactory dbf =
+    *        javax.xml.parsers.DocumentBuilderFactory.newInstance();
+    *
+    *     dbf.setNamespaceAware(true);
+    *     dbf.setValidating(true);
+    *
+    *     javax.xml.parsers.DocumentBuilder db = dbf.newDocumentBuilder();
+    *     Document doc =
+    *        db.parse(new java.io.ByteArrayInputStream(input.getBytes()));
+    *
+    *     cat.debug(&quot;Owner Document &quot; + doc.getDocumentElement().getTagName());
+    *     cat.debug(&quot;try to select fragment &quot; + fragment);
+    *
+    *     // Element selectedElem = doc.getElementById(fragment);
+    *     Element selectedElem = IdResolver.getElementById(doc, fragment);
+    *
+    *     if (selectedElem != null) {
+    *        cat.debug(&quot;Selection hat geklappt!!!: &quot;
+    *                  + selectedElem.getTagName());
+    *     }
+    *
+    *     return input;
+    *  } catch (Exception ex) {
+    *     throw new ResourceResolverException(&quot;generic.EmptyMessage&quot;, ex, uri,
+    *                                         BaseURI);
+    *  }
+    * }
+    */
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

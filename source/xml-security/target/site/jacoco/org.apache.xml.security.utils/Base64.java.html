@@ -1,0 +1,681 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Base64.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.utils</a> &gt; <span class="el_source">Base64.java</span></div><h1>Base64.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.utils;
+
+
+
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.StringTokenizer;
+import java.math.BigInteger;
+import org.w3c.dom.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.StringReader;
+import org.w3c.dom.traversal.NodeIterator;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import org.xml.sax.SAXException;
+import org.xml.sax.InputSource;
+import org.apache.xpath.XPath;
+import org.apache.xpath.XPathAPI;
+import org.apache.xpath.NodeSet;
+import org.apache.xpath.objects.XObject;
+import org.apache.xml.utils.PrefixResolverDefault;
+import org.apache.xml.security.utils.Constants;
+import org.apache.xml.security.exceptions.Base64DecodingException;
+
+
+/**
+ * Implementation of MIME's Base64 encoding and decoding conversions.
+ * Optimized code. (raw version taken from oreilly.jonathan.util)
+ *
+ * @author Anli Shundi
+ * @author Christian Geuer-Pollmann
+ * @see &lt;A HREF=&quot;ftp://ftp.isi.edu/in-notes/rfc2045.txt&quot;&gt;RFC 2045&lt;/A&gt;
+ * @see org.apache.xml.security.transforms.implementations.TransformBase64Decode
+ */
+public class Base64 {
+
+   /** {@link org.apache.log4j} logging facility */
+<span class="fc" id="L101">   static org.apache.log4j.Category cat =</span>
+      org.apache.log4j.Category.getInstance(Base64.class.getName());
+
+   /** Field LINE_SEPARATOR */
+   public static final String LINE_SEPARATOR = &quot;\n&quot;;
+
+   /** Field BASE64DEFAULTLENGTH */
+   public static final int BASE64DEFAULTLENGTH = 76;
+
+   /** Field _base64length */
+<span class="fc" id="L111">   static int _base64length = Base64.BASE64DEFAULTLENGTH;</span>
+
+<span class="nc" id="L113">   private Base64() {</span>
+     // we don't allow instantiation
+<span class="nc" id="L115">   }</span>
+
+   /**
+    * Method setBase64WrapLength
+    *
+    * @param length
+    */
+   public static void setBase64WrapLength(int length) {
+<span class="nc" id="L123">      Base64._base64length = length;</span>
+<span class="nc" id="L124">   }</span>
+
+   /**
+    * Method getBase64WrapLength
+    *
+    * @return
+    */
+   public static int getBase64WrapLength() {
+<span class="fc" id="L132">      return Base64._base64length;</span>
+   }
+
+   /**
+    * Returns a byte-array representation of a &lt;code&gt;{@link BigInteger}&lt;code&gt;.
+    * No sign-bit is outputed.
+    *
+    * &lt;p&gt;&lt;b&gt;N.B.:&lt;/B&gt; &lt;code&gt;{@link BigInteger}&lt;code&gt;'s toByteArray
+    * retunrs eventually longer arrays because of the leading sign-bit.
+    *
+    * @param big &lt;code&gt;BigInteger&lt;code&gt; to be converted
+    * @param bitlen &lt;code&gt;int&lt;code&gt; the desired length in bits of the representation
+    * @return a byte array with &lt;code&gt;bitlen&lt;/code&gt; bits of &lt;code&gt;big&lt;/code&gt;
+    */
+   static byte[] getBytes(BigInteger big, int bitlen) {
+
+      //round bitlen
+<span class="nc" id="L149">      bitlen = ((bitlen + 7) &gt;&gt; 3) &lt;&lt; 3;</span>
+
+<span class="nc bnc" id="L151" title="All 2 branches missed.">      if (bitlen &lt; big.bitLength()) {</span>
+<span class="nc" id="L152">         throw new IllegalArgumentException(I18n</span>
+            .translate(&quot;utils.Base64.IllegalBitlength&quot;));
+      }
+
+<span class="nc" id="L156">      byte[] bigBytes = big.toByteArray();</span>
+
+<span class="nc bnc" id="L158" title="All 4 branches missed.">      if (((big.bitLength() % 8) != 0)</span>
+              &amp;&amp; (((big.bitLength() / 8) + 1) == (bitlen / 8))) {
+<span class="nc" id="L160">         return bigBytes;</span>
+      } else {
+
+         // some copying needed
+<span class="nc" id="L164">         int startSrc = 0;    // no need to skip anything</span>
+<span class="nc" id="L165">         int bigLen = bigBytes.length;    //valid length of the string</span>
+
+<span class="nc bnc" id="L167" title="All 2 branches missed.">         if ((big.bitLength() % 8) == 0) {    // correct values</span>
+<span class="nc" id="L168">            startSrc = 1;    // skip sign bit</span>
+
+<span class="nc" id="L170">            bigLen--;    // valid length of the string</span>
+         }
+
+<span class="nc" id="L173">         int startDst = bitlen / 8 - bigLen;    //pad with leading nulls</span>
+<span class="nc" id="L174">         byte[] resizedBytes = new byte[bitlen / 8];</span>
+
+<span class="nc" id="L176">         System.arraycopy(bigBytes, startSrc, resizedBytes, startDst, bigLen);</span>
+
+<span class="nc" id="L178">         return resizedBytes;</span>
+      }
+   }
+
+   /**
+    * Encode in Base64 the given &lt;code&gt;{@link BigInteger}&lt;code&gt;.
+    *
+    * @param big
+    * @return String with Base64 encoding
+    */
+   public static String encode(BigInteger big) {
+<span class="nc" id="L189">      return encode(getBytes(big, big.bitLength()));</span>
+   }
+
+   /**
+    * Returns a byte-array representation of a &lt;code&gt;{@link BigInteger}&lt;code&gt;.
+    * No sign-bit is outputed.
+    *
+    * &lt;p&gt;&lt;b&gt;N.B.:&lt;/B&gt; &lt;code&gt;{@link BigInteger}&lt;code&gt;'s toByteArray
+    * retunrs eventually longer arrays because of the leading sign-bit.
+    *
+    * @param big &lt;code&gt;BigInteger&lt;code&gt; to be converted
+    * @param bitlen &lt;code&gt;int&lt;code&gt; the desired length in bits of the representation
+    * @return a byte array with &lt;code&gt;bitlen&lt;/code&gt; bits of &lt;code&gt;big&lt;/code&gt;
+    */
+   public static byte[] encode(BigInteger big, int bitlen) {
+
+      //round bitlen
+<span class="nc" id="L206">      bitlen = ((bitlen + 7) &gt;&gt; 3) &lt;&lt; 3;</span>
+
+<span class="nc bnc" id="L208" title="All 2 branches missed.">      if (bitlen &lt; big.bitLength()) {</span>
+<span class="nc" id="L209">         throw new IllegalArgumentException(I18n</span>
+            .translate(&quot;utils.Base64.IllegalBitlength&quot;));
+      }
+
+<span class="nc" id="L213">      byte[] bigBytes = big.toByteArray();</span>
+
+<span class="nc bnc" id="L215" title="All 4 branches missed.">      if (((big.bitLength() % 8) != 0)</span>
+              &amp;&amp; (((big.bitLength() / 8) + 1) == (bitlen / 8))) {
+<span class="nc" id="L217">         return bigBytes;</span>
+      } else {
+
+         // some copying needed
+<span class="nc" id="L221">         int startSrc = 0;    // no need to skip anything</span>
+<span class="nc" id="L222">         int bigLen = bigBytes.length;    //valid length of the string</span>
+
+<span class="nc bnc" id="L224" title="All 2 branches missed.">         if ((big.bitLength() % 8) == 0) {    // correct values</span>
+<span class="nc" id="L225">            startSrc = 1;    // skip sign bit</span>
+
+<span class="nc" id="L227">            bigLen--;    // valid length of the string</span>
+         }
+
+<span class="nc" id="L230">         int startDst = bitlen / 8 - bigLen;    //pad with leading nulls</span>
+<span class="nc" id="L231">         byte[] resizedBytes = new byte[bitlen / 8];</span>
+
+<span class="nc" id="L233">         System.arraycopy(bigBytes, startSrc, resizedBytes, startDst, bigLen);</span>
+
+<span class="nc" id="L235">         return resizedBytes;</span>
+      }
+   }
+
+   /**
+    * Method decodeBigIntegerFromElement
+    *
+    * @param element
+    * @return
+    * @throws Base64DecodingException
+    */
+   public static BigInteger decodeBigIntegerFromElement(Element element)
+           throws Base64DecodingException {
+<span class="nc" id="L248">      return new BigInteger(1, Base64.decode(element));</span>
+   }
+
+   /**
+    * Method decodeBigIntegerFromText
+    *
+    * @param text
+    * @return
+    * @throws Base64DecodingException
+    */
+   public static BigInteger decodeBigIntegerFromText(Text text)
+           throws Base64DecodingException {
+<span class="fc" id="L260">      return new BigInteger(1, Base64.decode(text.getData()));</span>
+   }
+
+   /**
+    * This method takes an (empty) Element and a BigInteger and adds the
+    * base64 encoded BigInteger to the Element.
+    *
+    * @param element
+    * @param biginteger
+    */
+   public static void fillElementWithBigInteger(Element element,
+           BigInteger biginteger) {
+
+<span class="nc" id="L273">      String encodedInt = encode(biginteger);</span>
+
+<span class="nc bnc" id="L275" title="All 2 branches missed.">      if (encodedInt.length() &gt; 76) {</span>
+<span class="nc" id="L276">         encodedInt = &quot;\n&quot; + encodedInt + &quot;\n&quot;;</span>
+      }
+
+<span class="nc" id="L279">      Document doc = element.getOwnerDocument();</span>
+<span class="nc" id="L280">      Text text = doc.createTextNode(encodedInt);</span>
+
+<span class="nc" id="L282">      element.appendChild(text);</span>
+<span class="nc" id="L283">   }</span>
+
+   /**
+    * Method decode
+    *
+    * Takes the &lt;CODE&gt;Text&lt;/CODE&gt; children of the Element and interprets
+    * them as input for the &lt;CODE&gt;Base64.decode()&lt;/CODE&gt; function.
+    *
+    * @param element
+    * @return
+    * @todo not tested yet
+    * @throws Base64DecodingException
+    */
+   public static byte[] decode(Element element) throws Base64DecodingException {
+
+<span class="fc" id="L298">      NodeList nl = element.getChildNodes();</span>
+<span class="fc" id="L299">      StringBuffer sb = new StringBuffer();</span>
+
+<span class="fc bfc" id="L301" title="All 2 branches covered.">      for (int i = 0; i &lt; nl.getLength(); i++) {</span>
+<span class="pc bpc" id="L302" title="1 of 2 branches missed.">         if (nl.item(i).getNodeType() == Node.TEXT_NODE) {</span>
+<span class="fc" id="L303">            Text t = (Text) nl.item(i);</span>
+
+<span class="fc" id="L305">            sb.append(t.getData());</span>
+         }
+      }
+
+<span class="fc" id="L309">      return decode(sb.toString());</span>
+   }
+
+   /**
+    * Method encodeToElement
+    *
+    * @param doc
+    * @param localName
+    * @param bytes
+    * @return
+    */
+   public static Element encodeToElement(Document doc, String localName,
+                                         byte[] bytes) {
+
+<span class="nc" id="L323">      Element el = XMLUtils.createElementInSignatureSpace(doc, localName);</span>
+<span class="nc" id="L324">      Text text = doc.createTextNode(encode(bytes));</span>
+
+<span class="nc" id="L326">      el.appendChild(text);</span>
+
+<span class="nc" id="L328">      return el;</span>
+   }
+
+   /**
+    * Method decode
+    *
+    *
+    * @param base64
+    *
+    * @return
+    * @throws Base64DecodingException
+    */
+   public static byte[] decode(byte[] base64) throws Base64DecodingException {
+
+      try {
+<span class="fc" id="L343">         return decode(new String(base64, &quot;UTF-8&quot;));</span>
+<span class="nc" id="L344">      } catch (java.io.UnsupportedEncodingException ex) {</span>
+
+         // should never be reached because Encoding is valid and fixed
+<span class="nc" id="L347">         return new byte[0];</span>
+      }
+   }
+
+   /**
+    * &lt;p&gt;Decode a Base64-encoded string to a byte array&lt;/p&gt;
+    *
+    * @param base64 &lt;code&gt;String&lt;/code&gt; encoded string (single line only !!)
+    * @return Decoded data in a byte array
+    * @throws Base64DecodingException
+    */
+   public static byte[] decode(String base64) throws Base64DecodingException {
+
+      try {
+<span class="fc bfc" id="L361" title="All 2 branches covered.">         if (base64.length() &lt; 30) {</span>
+<span class="fc" id="L362">            cat.debug(&quot;I was asked to decode \&quot;&quot; + base64 + &quot;\&quot;&quot;);</span>
+         } else {
+<span class="fc" id="L364">            cat.debug(&quot;I was asked to decode \&quot;&quot; + base64.substring(0, 20)</span>
+                      + &quot;...\&quot;&quot;);
+         }
+
+         //strip whitespace from anywhere in the string.  Not the most memory
+         //efficient solution but elegant anyway :-)
+<span class="fc" id="L370">         StringTokenizer tok = new StringTokenizer(base64, &quot; \n\r\t&quot;, false);</span>
+<span class="fc" id="L371">         StringBuffer buf = new StringBuffer(base64.length());</span>
+
+<span class="fc bfc" id="L373" title="All 2 branches covered.">         while (tok.hasMoreElements()) {</span>
+<span class="fc" id="L374">            buf.append(tok.nextToken());</span>
+         }
+
+<span class="fc" id="L377">         base64 = buf.toString();</span>
+
+<span class="fc" id="L379">         int pad = 0;</span>
+
+<span class="fc" id="L381">         for (int i = base64.length() - 1;</span>
+<span class="pc bpc" id="L382" title="1 of 4 branches missed.">                 (i &gt; 0) &amp;&amp; (base64.charAt(i) == '='); i--) {</span>
+<span class="fc" id="L383">            pad++;</span>
+         }
+
+<span class="fc" id="L386">         int length = base64.length() / 4 * 3 - pad;</span>
+<span class="fc" id="L387">         byte[] raw = new byte[length];</span>
+
+<span class="fc bfc" id="L389" title="All 2 branches covered.">         for (int i = 0, rawIndex = 0; i &lt; base64.length();</span>
+<span class="fc" id="L390">                 i += 4, rawIndex += 3) {</span>
+<span class="fc" id="L391">            int block = (getValue(base64.charAt(i)) &lt;&lt; 18)</span>
+                        + (getValue(base64.charAt(i + 1)) &lt;&lt; 12)
+                        + (getValue(base64.charAt(i + 2)) &lt;&lt; 6)
+                        + (getValue(base64.charAt(i + 3)));
+
+<span class="fc bfc" id="L396" title="All 2 branches covered.">            for (int j = 2; j &gt;= 0; j--) {</span>
+<span class="fc bfc" id="L397" title="All 2 branches covered.">               if (rawIndex + j &lt; raw.length) {</span>
+<span class="fc" id="L398">                  raw[rawIndex + j] = (byte) (block &amp; 0xff);</span>
+               }
+
+<span class="fc" id="L401">               block &gt;&gt;= 8;</span>
+            }
+         }
+
+<span class="fc" id="L405">         return raw;</span>
+<span class="nc" id="L406">      } catch (IndexOutOfBoundsException ex) {</span>
+<span class="nc" id="L407">         throw new Base64DecodingException(&quot;utils.Base64.IllegalBitlength&quot;, ex);</span>
+      }
+   }
+
+   /**
+    * &lt;p&gt;Encode a byte array in Base64 format and return an optionally
+    * wrapped line&lt;/p&gt;
+    *
+    * @param raw &lt;code&gt;byte[]&lt;/code&gt; data to be encoded
+    * @param wrap &lt;code&gt;int&lt;code&gt; length of wrapped lines; No wrapping if less than 4.
+    * @return a &lt;code&gt;String&lt;/code&gt; with encoded data
+    */
+   public static String encode(byte[] raw, int wrap) {
+
+      //calculate length of encoded string
+<span class="fc" id="L422">      int encLen = ((raw.length + 2) / 3) * 4;</span>
+
+      //adjust for newlines
+<span class="pc bpc" id="L425" title="1 of 2 branches missed.">      if (wrap &gt; 3) {</span>
+<span class="fc" id="L426">         wrap -= wrap % 4;</span>
+<span class="fc" id="L427">         encLen += 2 * (encLen / wrap);</span>
+      } else {    //disable wrapping
+<span class="nc" id="L429">         wrap = Integer.MAX_VALUE;</span>
+      }
+
+<span class="fc" id="L432">      StringBuffer encoded = new StringBuffer(encLen);</span>
+<span class="fc" id="L433">      int len3 = (raw.length / 3) * 3;</span>
+<span class="fc" id="L434">      int outLen = 0;    //length of output line</span>
+
+<span class="fc bfc" id="L436" title="All 2 branches covered.">      for (int i = 0; i &lt; len3; i += 3, outLen += 4) {</span>
+<span class="pc bpc" id="L437" title="1 of 2 branches missed.">         if (outLen + 4 &gt; wrap) {</span>
+<span class="nc" id="L438">            encoded.append(LINE_SEPARATOR);</span>
+
+<span class="nc" id="L440">            outLen = 0;</span>
+         }
+
+<span class="fc" id="L443">         encoded.append(encodeFullBlock(raw, i));</span>
+      }
+
+<span class="pc bpc" id="L446" title="1 of 2 branches missed.">      if (outLen &gt;= wrap) {    //this will produce an extra newline if needed !? Sun had it this way...</span>
+<span class="nc" id="L447">         encoded.append(LINE_SEPARATOR);</span>
+      }
+
+<span class="pc bpc" id="L450" title="1 of 2 branches missed.">      if (len3 &lt; raw.length) {</span>
+<span class="fc" id="L451">         encoded.append(encodeBlock(raw, len3));</span>
+      }
+
+<span class="fc" id="L454">      return encoded.toString();</span>
+   }
+
+   /**
+    * Encode a byte array and fold lines at the standard 76th character.
+    *
+    * @param raw &lt;code&gt;byte[]&lt;code&gt; to be base64 encoded
+    * @return the &lt;code&gt;String&lt;code&gt; with encoded data
+    */
+   public static String encode(byte[] raw) {
+<span class="fc" id="L464">      return encode(raw, Base64.getBase64WrapLength());</span>
+   }
+
+   /**
+    * Base64 decode the lines from the reader and return an InputStream
+    * with the bytes.
+    *
+    *
+    * @param reader
+    * @return InputStream with the decoded bytes
+    * @Exception IOException passes what the reader throws
+    * @throws Base64DecodingException
+    * @throws IOException
+    */
+   public static byte[] decode(BufferedReader reader)
+           throws IOException, Base64DecodingException {
+
+<span class="nc" id="L481">      ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+      String line;
+
+<span class="nc bnc" id="L484" title="All 2 branches missed.">      while (null != (line = reader.readLine())) {</span>
+<span class="nc" id="L485">         byte[] bytes = decode(line);</span>
+
+<span class="nc" id="L487">         baos.write(bytes);</span>
+<span class="nc" id="L488">      }</span>
+
+<span class="nc" id="L490">      return baos.toByteArray();</span>
+   }
+
+   /**
+    * Method encodeBlock
+    *
+    * @param raw
+    * @param offset
+    * @return
+    */
+   protected static char[] encodeBlock(byte[] raw, int offset) {
+
+<span class="fc" id="L502">      int block = 0;</span>
+<span class="fc" id="L503">      int slack = raw.length - offset - 1;</span>
+<span class="pc bpc" id="L504" title="1 of 2 branches missed.">      int end = (slack &gt;= 2)</span>
+                ? 2
+                : slack;
+
+<span class="fc bfc" id="L508" title="All 2 branches covered.">      for (int i = 0; i &lt; 3; i++) {</span>
+<span class="fc bfc" id="L509" title="All 2 branches covered.">         byte b = (offset + i &lt; raw.length)</span>
+                  ? raw[offset + i]
+                  : 0;
+<span class="fc bfc" id="L512" title="All 2 branches covered.">         int neuter = (b &lt; 0)</span>
+                      ? b + 256
+                      : b;
+
+<span class="fc" id="L516">         block &lt;&lt;= 8;</span>
+<span class="fc" id="L517">         block += neuter;</span>
+      }
+
+<span class="fc" id="L520">      char[] base64 = new char[4];</span>
+
+<span class="fc bfc" id="L522" title="All 2 branches covered.">      for (int i = 3; i &gt;= 0; i--) {</span>
+<span class="fc" id="L523">         int sixBit = block &amp; 0x3f;</span>
+
+<span class="fc" id="L525">         base64[i] = getChar(sixBit);</span>
+<span class="fc" id="L526">         block &gt;&gt;= 6;</span>
+      }
+
+<span class="fc bfc" id="L529" title="All 2 branches covered.">      if (slack &lt; 1) {</span>
+<span class="fc" id="L530">         base64[2] = '=';</span>
+      }
+
+<span class="pc bpc" id="L533" title="1 of 2 branches missed.">      if (slack &lt; 2) {</span>
+<span class="fc" id="L534">         base64[3] = '=';</span>
+      }
+
+<span class="fc" id="L537">      return base64;</span>
+   }
+
+   /**
+    * Method encodeFullBlock
+    *
+    * @param raw
+    * @param offset
+    * @return
+    */
+   protected static char[] encodeFullBlock(byte[] raw, int offset) {
+
+<span class="fc" id="L549">      int block = 0;</span>
+
+<span class="fc bfc" id="L551" title="All 2 branches covered.">      for (int i = 0; i &lt; 3; i++) {</span>
+
+         //byte b = raw[offset + i];
+         //int neuter = (b &lt; 0) ? b + 256 : b;
+<span class="fc" id="L555">         block &lt;&lt;= 8;</span>
+<span class="fc" id="L556">         block += (0xff &amp; raw[offset + i]);</span>
+      }
+
+<span class="fc" id="L559">      block = ((raw[offset] &amp; 0xff) &lt;&lt; 16) + ((raw[offset + 1] &amp; 0xff) &lt;&lt; 8)</span>
+              + (raw[offset + 2] &amp; 0xff);
+
+<span class="fc" id="L562">      char[] base64 = new char[4];</span>
+
+<span class="fc bfc" id="L564" title="All 2 branches covered.">      for (int i = 3; i &gt;= 0; i--) {</span>
+<span class="fc" id="L565">         int sixBit = block &amp; 0x3f;</span>
+
+<span class="fc" id="L567">         base64[i] = getChar(sixBit);</span>
+<span class="fc" id="L568">         block &gt;&gt;= 6;</span>
+      }
+
+<span class="fc" id="L571">      return base64;</span>
+   }
+
+   /**
+    * Method getChar
+    *
+    * @param sixBit
+    * @return
+    */
+   protected static char getChar(int sixBit) {
+
+<span class="pc bpc" id="L582" title="1 of 4 branches missed.">      if ((sixBit &gt;= 0) &amp;&amp; (sixBit &lt; 26)) {</span>
+<span class="fc" id="L583">         return (char) ('A' + sixBit);</span>
+      }
+
+<span class="pc bpc" id="L586" title="1 of 4 branches missed.">      if ((sixBit &gt;= 26) &amp;&amp; (sixBit &lt; 52)) {</span>
+<span class="fc" id="L587">         return (char) ('a' + (sixBit - 26));</span>
+      }
+
+<span class="pc bpc" id="L590" title="1 of 4 branches missed.">      if ((sixBit &gt;= 52) &amp;&amp; (sixBit &lt; 62)) {</span>
+<span class="fc" id="L591">         return (char) ('0' + (sixBit - 52));</span>
+      }
+
+<span class="fc bfc" id="L594" title="All 2 branches covered.">      if (sixBit == 62) {</span>
+<span class="fc" id="L595">         return '+';</span>
+      }
+
+<span class="pc bpc" id="L598" title="1 of 2 branches missed.">      if (sixBit == 63) {</span>
+<span class="fc" id="L599">         return '/';</span>
+      }
+
+<span class="nc" id="L602">      return '?';</span>
+   }
+
+   /**
+    * Method getValue
+    *
+    * @param c
+    * @return
+    */
+   protected static int getValue(char c) {
+
+<span class="fc bfc" id="L613" title="All 4 branches covered.">      if ((c &gt;= 'A') &amp;&amp; (c &lt;= 'Z')) {</span>
+<span class="fc" id="L614">         return c - 'A';</span>
+      }
+
+<span class="pc bpc" id="L617" title="1 of 4 branches missed.">      if ((c &gt;= 'a') &amp;&amp; (c &lt;= 'z')) {</span>
+<span class="fc" id="L618">         return c - 'a' + 26;</span>
+      }
+
+<span class="fc bfc" id="L621" title="All 4 branches covered.">      if ((c &gt;= '0') &amp;&amp; (c &lt;= '9')) {</span>
+<span class="fc" id="L622">         return c - '0' + 52;</span>
+      }
+
+<span class="fc bfc" id="L625" title="All 2 branches covered.">      if (c == '+') {</span>
+<span class="fc" id="L626">         return 62;</span>
+      }
+
+<span class="fc bfc" id="L629" title="All 2 branches covered.">      if (c == '/') {</span>
+<span class="fc" id="L630">         return 63;</span>
+      }
+
+<span class="pc bpc" id="L633" title="1 of 2 branches missed.">      if (c == '=') {</span>
+<span class="fc" id="L634">         return 0;</span>
+      }
+
+<span class="nc" id="L637">      return -1;</span>
+   }
+
+   //        boolean bInWSpace = false;//?
+   //        for(int i=0, j=0, len=base64.length();  i &lt; len; i++) {
+   //            if( bInWSpace ) {
+   //                if( Character.isWhitespace(base64.charAt(i)) ) {
+   //                    skipLen++;
+   //                } else {
+   //                    //copy here &amp; reset
+   //                }
+   //            } else {
+   //                if( Character.isWhitespace(base64.charAt(i)) ) {
+   //                    bInWSpace = true;
+   //                    skipLen++;
+   //                } else {
+   //                    //copy here &amp; reset
+   //                }
+   //            }
+   //        }
+
+   /**
+    * Method main
+    *
+    *
+    * @param args
+    *
+    * @throws Exception
+    */
+   public static void main(String[] args) throws Exception {
+
+<span class="nc" id="L668">      DocumentBuilderFactory docBuilderFactory =</span>
+         DocumentBuilderFactory.newInstance();
+<span class="nc" id="L670">      DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();</span>
+<span class="nc" id="L671">      String testString1 =</span>
+         &quot;&lt;container&gt;&lt;base64 value=\&quot;Should be 'Hallo'\&quot;&gt;SGFsbG8=&lt;/base64&gt;&lt;/container&gt;&quot;;
+<span class="nc" id="L673">      InputSource inputSource = new InputSource(new StringReader(testString1));</span>
+<span class="nc" id="L674">      Document doc = docBuilder.parse(inputSource);</span>
+<span class="nc" id="L675">      Element base64Elem =</span>
+         (Element) doc.getDocumentElement().getChildNodes().item(0);
+
+<span class="nc" id="L678">      System.out.println(new String(decode(base64Elem)));</span>
+<span class="nc" id="L679">   }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

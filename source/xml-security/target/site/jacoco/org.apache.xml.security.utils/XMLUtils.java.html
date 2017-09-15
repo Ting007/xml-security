@@ -1,0 +1,1306 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>XMLUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.utils</a> &gt; <span class="el_source">XMLUtils.java</span></div><h1>XMLUtils.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.utils;
+
+
+
+import java.io.*;
+import java.util.*;
+import java.math.BigInteger;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import org.apache.xpath.objects.XObject;
+import org.w3c.dom.*;
+import org.apache.xml.security.c14n.*;
+import org.apache.xml.security.exceptions.*;
+import org.apache.xml.security.signature.XMLSignatureException;
+import org.apache.xml.security.utils.Base64;
+import org.apache.xml.security.utils.Constants;
+import org.apache.xml.security.utils.HelperNodeList;
+import org.apache.xpath.XPathAPI;
+import javax.xml.transform.TransformerException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
+
+/**
+ * DOM and XML accessibility and comfort functions.
+ *
+ * @author Christian Geuer-Pollmann
+ */
+public class XMLUtils {
+
+   /** {@link org.apache.log4j} logging facility */
+<span class="fc" id="L97">   static org.apache.log4j.Category cat =</span>
+      org.apache.log4j.Category.getInstance(XMLUtils.class.getName());
+
+   /**
+    * Constructor XMLUtils
+    *
+    */
+<span class="nc" id="L104">   private XMLUtils() {</span>
+
+      // we don't allow instantiation
+<span class="nc" id="L107">   }</span>
+
+   /**
+    * Method getXalanVersion
+    *
+    * @return
+    */
+   public static String getXalanVersion() {
+
+<span class="fc" id="L116">      String version = XMLUtils.getXalan1Version();</span>
+
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">      if (version != null) {</span>
+<span class="nc" id="L119">         return version;</span>
+      }
+
+<span class="fc" id="L122">      version = XMLUtils.getXalan20Version();</span>
+
+<span class="pc bpc" id="L124" title="1 of 2 branches missed.">      if (version != null) {</span>
+<span class="fc" id="L125">         return version;</span>
+      }
+
+<span class="nc" id="L128">      version = XMLUtils.getXalan2Version();</span>
+
+<span class="nc bnc" id="L130" title="All 2 branches missed.">      if (version != null) {</span>
+<span class="nc" id="L131">         return version;</span>
+      }
+
+<span class="nc" id="L134">      return &quot;Apache Xalan not installed&quot;;</span>
+
+      // return &quot;Apache &quot; + org.apache.xalan.processor.XSLProcessorVersion.S_VERSION;
+      // return &quot;Apache &quot; + org.apache.xalan.Version.getVersion();
+   }
+
+   /**
+    * Method getXercesVersion
+    *
+    * @return
+    */
+   public static String getXercesVersion() {
+
+<span class="fc" id="L147">      String version = XMLUtils.getXerces1Version();</span>
+
+<span class="pc bpc" id="L149" title="1 of 2 branches missed.">      if (version != null) {</span>
+<span class="nc" id="L150">         return version;</span>
+      }
+
+<span class="fc" id="L153">      version = XMLUtils.getXerces2Version();</span>
+
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">      if (version != null) {</span>
+<span class="fc" id="L156">         return version;</span>
+      }
+
+<span class="nc" id="L159">      return &quot;Apache Xerces not installed&quot;;</span>
+
+      // return &quot;Apache &quot; + org.apache.xerces.impl.Version.fVersion;
+      // return &quot;Apache &quot; + org.apache.xerces.framework.Version.fVersion;
+   }
+
+   /**
+    * Method getXalan1Version
+    *
+    * @return
+    */
+   private static String getXalan1Version() {
+
+      try {
+<span class="fc" id="L173">         final String XALAN1_VERSION_CLASS =</span>
+            &quot;org.apache.xalan.xslt.XSLProcessorVersion&quot;;
+<span class="nc" id="L175">         Class clazz = classForName(XALAN1_VERSION_CLASS);</span>
+
+         // Found Xalan-J 1.x, grab it's version fields
+<span class="nc" id="L178">         StringBuffer buf = new StringBuffer();</span>
+<span class="nc" id="L179">         Field f = clazz.getField(&quot;PRODUCT&quot;);</span>
+
+<span class="nc" id="L181">         buf.append(f.get(null));</span>
+<span class="nc" id="L182">         buf.append(';');</span>
+
+<span class="nc" id="L184">         f = clazz.getField(&quot;LANGUAGE&quot;);</span>
+
+<span class="nc" id="L186">         buf.append(f.get(null));</span>
+<span class="nc" id="L187">         buf.append(';');</span>
+
+<span class="nc" id="L189">         f = clazz.getField(&quot;S_VERSION&quot;);</span>
+
+<span class="nc" id="L191">         buf.append(f.get(null));</span>
+<span class="nc" id="L192">         buf.append(';');</span>
+
+<span class="nc" id="L194">         return buf.toString();</span>
+<span class="fc" id="L195">      } catch (Exception e1) {</span>
+<span class="fc" id="L196">         return null;</span>
+      }
+   }
+
+   /**
+    * Method getXalan20Version
+    *
+    * @return
+    */
+   private static String getXalan20Version() {
+
+      try {
+
+         // NOTE: This is the new Xalan 2.2+ version class
+<span class="fc" id="L210">         final String XALAN2_2_VERSION_CLASS = &quot;org.apache.xalan.Version&quot;;</span>
+<span class="fc" id="L211">         final String XALAN2_2_VERSION_METHOD = &quot;getVersion&quot;;</span>
+<span class="fc" id="L212">         final Class noArgs[] = new Class[0];</span>
+<span class="fc" id="L213">         Class clazz = classForName(XALAN2_2_VERSION_CLASS);</span>
+<span class="fc" id="L214">         Method method = clazz.getMethod(XALAN2_2_VERSION_METHOD, noArgs);</span>
+<span class="fc" id="L215">         Object returnValue = method.invoke(null, new Object[0]);</span>
+
+<span class="fc" id="L217">         return (String) returnValue;</span>
+<span class="nc" id="L218">      } catch (Exception e2) {</span>
+<span class="nc" id="L219">         return null;</span>
+      }
+   }
+
+   /**
+    * Method getXalan2Version
+    *
+    * @return
+    */
+   private static String getXalan2Version() {
+
+      try {
+
+         // NOTE: This is the old Xalan 2.0, 2.1, 2.2 version class,
+         //    is being replaced by class below
+<span class="nc" id="L234">         final String XALAN2_VERSION_CLASS =</span>
+            &quot;org.apache.xalan.processor.XSLProcessorVersion&quot;;
+<span class="nc" id="L236">         Class clazz = classForName(XALAN2_VERSION_CLASS);</span>
+
+         // Found Xalan-J 2.x, grab it's version fields
+<span class="nc" id="L239">         StringBuffer buf = new StringBuffer();</span>
+<span class="nc" id="L240">         Field f = clazz.getField(&quot;S_VERSION&quot;);</span>
+
+<span class="nc" id="L242">         buf.append(f.get(null));</span>
+
+<span class="nc" id="L244">         return buf.toString();</span>
+<span class="nc" id="L245">      } catch (Exception e2) {</span>
+<span class="nc" id="L246">         return null;</span>
+      }
+   }
+
+   /**
+    * Method getXerces1Version
+    *
+    * @return
+    */
+   private static String getXerces1Version() {
+
+      try {
+<span class="fc" id="L258">         final String XERCES1_VERSION_CLASS =</span>
+            &quot;org.apache.xerces.framework.Version&quot;;
+<span class="nc" id="L260">         Class clazz = classForName(XERCES1_VERSION_CLASS);</span>
+
+         // Found Xerces-J 1.x, grab it's version fields
+<span class="nc" id="L263">         Field f = clazz.getField(&quot;fVersion&quot;);</span>
+<span class="nc" id="L264">         String parserVersion = (String) f.get(null);</span>
+
+<span class="nc" id="L266">         return parserVersion;</span>
+<span class="fc" id="L267">      } catch (Exception e) {</span>
+<span class="fc" id="L268">         return null;</span>
+      }
+   }
+
+   /**
+    * Method getXerces2Version
+    *
+    * @return
+    */
+   private static String getXerces2Version() {
+
+      try {
+<span class="fc" id="L280">         final String XERCES2_VERSION_CLASS = &quot;org.apache.xerces.impl.Version&quot;;</span>
+<span class="fc" id="L281">         Class clazz = classForName(XERCES2_VERSION_CLASS);</span>
+
+         // Found Xerces-J 2.x, grab it's version fields
+<span class="fc" id="L284">         Field f = clazz.getField(&quot;fVersion&quot;);</span>
+<span class="fc" id="L285">         String parserVersion = (String) f.get(null);</span>
+
+<span class="fc" id="L287">         return parserVersion;</span>
+<span class="nc" id="L288">      } catch (Exception e) {</span>
+<span class="nc" id="L289">         return null;</span>
+      }
+   }
+
+   /**
+    * Worker method to load a class.
+    * Factor out loading classes for future use and JDK differences.
+    * Copied from javax.xml.*.FactoryFinder
+    * @param className name of class to load from
+    * an appropriate classLoader
+    * @return the class asked for
+    * @throws ClassNotFoundException
+    */
+   protected static Class classForName(String className)
+           throws ClassNotFoundException {
+
+<span class="fc" id="L305">      ClassLoader classLoader = findClassLoader();</span>
+
+<span class="pc bpc" id="L307" title="1 of 2 branches missed.">      if (classLoader == null) {</span>
+<span class="nc" id="L308">         return Class.forName(className);</span>
+      } else {
+<span class="fc" id="L310">         return classLoader.loadClass(className);</span>
+      }
+   }
+
+   /**
+    * Worker method to figure out which ClassLoader to use.
+    * For JDK 1.2 and later use the context ClassLoader.
+    * Copied from javax.xml.*.FactoryFinder
+    * @return the appropriate ClassLoader
+    * @throws ClassNotFoundException
+    */
+   protected static ClassLoader findClassLoader()
+           throws ClassNotFoundException {
+
+<span class="fc" id="L324">      ClassLoader classLoader = null;</span>
+<span class="fc" id="L325">      Method m = null;</span>
+
+      try {
+<span class="fc" id="L328">         m = Thread.class.getMethod(&quot;getContextClassLoader&quot;, null);</span>
+<span class="nc" id="L329">      } catch (NoSuchMethodException e) {</span>
+
+         // Assume that we are running JDK 1.1, use the current ClassLoader
+<span class="nc" id="L332">         return XMLUtils.class.getClassLoader();</span>
+<span class="fc" id="L333">      }</span>
+
+      try {
+<span class="fc" id="L336">         return (ClassLoader) m.invoke(Thread.currentThread(), null);</span>
+<span class="nc" id="L337">      } catch (Exception e) {</span>
+<span class="nc" id="L338">         throw new RuntimeException(e.toString());</span>
+      }
+   }
+
+   /**
+    * Method spitOutVersions
+    *
+    * @param cat
+    */
+   public static void spitOutVersions(org.apache.log4j.Category cat) {
+<span class="fc" id="L348">      cat.debug(XMLUtils.getXercesVersion());</span>
+<span class="fc" id="L349">      cat.debug(XMLUtils.getXalanVersion());</span>
+<span class="fc" id="L350">   }</span>
+
+   /** Field nodeTypeString */
+<span class="fc" id="L353">   private static String[] nodeTypeString = new String[]{ &quot;&quot;, &quot;ELEMENT&quot;,</span>
+                                                          &quot;ATTRIBUTE&quot;,
+                                                          &quot;TEXT_NODE&quot;,
+                                                          &quot;CDATA_SECTION&quot;,
+                                                          &quot;ENTITY_REFERENCE&quot;,
+                                                          &quot;ENTITY&quot;,
+                                                          &quot;PROCESSING_INSTRUCTION&quot;,
+                                                          &quot;COMMENT&quot;, &quot;DOCUMENT&quot;,
+                                                          &quot;DOCUMENT_TYPE&quot;,
+                                                          &quot;DOCUMENT_FRAGMENT&quot;,
+                                                          &quot;NOTATION&quot; };
+
+   /**
+    * Transforms &lt;code&gt;org.w3c.dom.Node.XXX_NODE&lt;/code&gt; NodeType values into
+    * Strings.
+    *
+    * @param nodeType as taken from the {@link org.w3c.dom.Node#getNodeType} function
+    * @return the String value.
+    * @see org.w3c.dom.Node#getNodeType
+    */
+   public static String getNodeTypeString(short nodeType) {
+
+<span class="nc bnc" id="L375" title="All 4 branches missed.">      if ((nodeType &gt; 0) &amp;&amp; (nodeType &lt; 13)) {</span>
+<span class="nc" id="L376">         return nodeTypeString[nodeType];</span>
+      } else {
+<span class="nc" id="L378">         return &quot;&quot;;</span>
+      }
+   }
+
+   /**
+    * Method getNodeTypeString
+    *
+    * @param n
+    * @return
+    */
+   public static String getNodeTypeString(Node n) {
+<span class="nc" id="L389">      return getNodeTypeString(n.getNodeType());</span>
+   }
+
+   /**
+    * Returns all ancestor elements of a given node up to the document element
+    *
+    * @param ctxNode
+    * @return
+    */
+   public static Vector getAncestorElements(Node ctxNode) {
+
+<span class="nc bnc" id="L400" title="All 2 branches missed.">      if (ctxNode.getNodeType() != Node.ELEMENT_NODE) {</span>
+<span class="nc" id="L401">         return null;</span>
+      }
+
+<span class="nc" id="L404">      Vector ancestorVector = new Vector();</span>
+<span class="nc" id="L405">      Node parent = ctxNode;</span>
+
+      while ((parent = parent.getParentNode()) != null
+<span class="nc bnc" id="L408" title="All 4 branches missed.">             &amp;&amp; (parent.getNodeType() == Node.ELEMENT_NODE)) {</span>
+<span class="nc" id="L409">         ancestorVector.add(parent);</span>
+      }
+
+<span class="nc" id="L412">      ancestorVector.trimToSize();</span>
+
+<span class="nc" id="L414">      return ancestorVector;</span>
+   }
+
+   /**
+    * Returns all ancestor elements of a given node up to the given root element
+    *
+    * @param ctxNode
+    * @param rootElement
+    * @return
+    */
+   public static Vector getAncestorElements(Node ctxNode, Node rootElement) {
+
+<span class="nc" id="L426">      Vector ancestorVector = new Vector();</span>
+
+<span class="nc bnc" id="L428" title="All 2 branches missed.">      if (ctxNode.getNodeType() != Node.ELEMENT_NODE) {</span>
+<span class="nc" id="L429">         return ancestorVector;</span>
+      }
+
+<span class="nc" id="L432">      Node parent = ctxNode;</span>
+<span class="nc" id="L433">      Node parentOfRoot = rootElement.getParentNode();</span>
+
+      while ((parent = parent.getParentNode()) != null
+             &amp;&amp; (parent.getNodeType() == Node.ELEMENT_NODE)
+<span class="nc bnc" id="L437" title="All 6 branches missed.">             &amp;&amp; (parent != parentOfRoot)) {</span>
+<span class="nc" id="L438">         ancestorVector.add(parent);</span>
+      }
+
+<span class="nc" id="L441">      ancestorVector.trimToSize();</span>
+
+<span class="nc" id="L443">      return ancestorVector;</span>
+   }
+
+   /**
+    * Method getDirectChildrenElements
+    *
+    * @param parentElement
+    * @return
+    */
+   public static NodeList getDirectChildrenElements(Element parentElement) {
+
+<span class="nc" id="L454">      NodeList allNodes = parentElement.getChildNodes();</span>
+<span class="nc" id="L455">      HelperNodeList selectedNodes = new HelperNodeList();</span>
+
+<span class="nc bnc" id="L457" title="All 2 branches missed.">      for (int i = 0; i &lt; allNodes.getLength(); i++) {</span>
+<span class="nc" id="L458">         Node currentNode = allNodes.item(i);</span>
+
+<span class="nc bnc" id="L460" title="All 2 branches missed.">         if ((currentNode.getNodeType() == Node.ELEMENT_NODE)) {</span>
+<span class="nc" id="L461">            selectedNodes.appendChild(currentNode);</span>
+         }
+      }
+
+<span class="nc" id="L465">      return selectedNodes;</span>
+   }
+
+   /**
+    * Method getDirectChild
+    *
+    * @param parentElement
+    * @param childLocalName
+    * @param childNamespaceURI
+    * @return
+    */
+   public static Element getDirectChild(Element parentElement,
+                                        String childLocalName,
+                                        String childNamespaceURI) {
+
+<span class="nc" id="L480">      NodeList nl = parentElement.getChildNodes();</span>
+<span class="nc" id="L481">      Vector results = new Vector();</span>
+
+<span class="nc bnc" id="L483" title="All 2 branches missed.">      for (int i = 0; i &lt; nl.getLength(); i++) {</span>
+<span class="nc" id="L484">         Node n = nl.item(i);</span>
+
+<span class="nc bnc" id="L486" title="All 2 branches missed.">         if (n.getNodeType() == Node.ELEMENT_NODE) {</span>
+<span class="nc bnc" id="L487" title="All 4 branches missed.">            if (((Element) n).getLocalName().equals(childLocalName)</span>
+                    &amp;&amp; ((Element) n).getNamespaceURI()
+                       .equals(childNamespaceURI)) {
+<span class="nc" id="L490">               results.add(n);</span>
+            }
+         }
+      }
+
+<span class="nc bnc" id="L495" title="All 2 branches missed.">      if (results.size() != 1) {</span>
+<span class="nc" id="L496">         return null;</span>
+      }
+
+<span class="nc" id="L499">      return (Element) results.elementAt(0);</span>
+   }
+
+   /**
+    * Outputs a DOM tree to a file.
+    *
+    * @param contextNode root node of the DOM tree
+    * @param filename the file name
+    * @throws java.io.FileNotFoundException
+    */
+   public static void outputDOM(Node contextNode, String filename)
+           throws java.io.FileNotFoundException {
+
+<span class="nc" id="L512">      OutputStream os = new FileOutputStream(filename);</span>
+
+<span class="nc" id="L514">      XMLUtils.outputDOM(contextNode, os);</span>
+<span class="nc" id="L515">   }</span>
+
+   /**
+    * Outputs a DOM tree to an {@link OutputStream}.
+    *
+    * @param contextNode root node of the DOM tree
+    * @param os the {@link OutputStream}
+    */
+   public static void outputDOM(Node contextNode, OutputStream os) {
+<span class="nc" id="L524">      XMLUtils.outputDOM(contextNode, os, false);</span>
+<span class="nc" id="L525">   }</span>
+
+   /**
+    * Outputs a DOM tree to an {@link OutputStream}. &lt;I&gt;If an Exception is
+    * thrown during execution, it's StackTrace is output to System.out, but the
+    * Exception is not re-thrown.&lt;/I&gt;
+    *
+    * @param contextNode root node of the DOM tree
+    * @param os the {@link OutputStream}
+    * @param addPreamble
+    */
+   public static void outputDOM(Node contextNode, OutputStream os,
+                                boolean addPreamble) {
+
+      try {
+<span class="nc bnc" id="L540" title="All 2 branches missed.">         if (addPreamble) {</span>
+<span class="nc" id="L541">            os.write(&quot;&lt;?xml version=\&quot;1.0\&quot; encoding=\&quot;UTF-8\&quot;?&gt;\n&quot;.getBytes());</span>
+         }
+
+<span class="nc" id="L544">         os.write(Canonicalizer</span>
+            .getInstance(Canonicalizer.ALGO_ID_C14N_WITH_COMMENTS)
+               .canonicalizeSubtree(contextNode));
+<span class="nc" id="L547">      } catch (IOException ex) {}</span>
+<span class="nc" id="L548">      catch (InvalidCanonicalizerException ex) {</span>
+<span class="nc" id="L549">         ex.printStackTrace();</span>
+<span class="nc" id="L550">      } catch (CanonicalizationException ex) {</span>
+<span class="nc" id="L551">         ex.printStackTrace();</span>
+<span class="nc" id="L552">      }</span>
+<span class="nc" id="L553">   }</span>
+
+   /**
+    * Serializes the &lt;CODE&gt;contextNode&lt;/CODE&gt; into the OutputStream, &lt;I&gt;but
+    * supresses all Exceptions&lt;/I&gt;.
+    * &lt;BR /&gt;
+    * NOTE: &lt;I&gt;This should only be used for debugging purposes,
+    * NOT in a production environment; this method ignores all exceptions,
+    * so you won't notice if something goes wrong. If you're asking what is to
+    * be used in a production environment, simply use the code inside the
+    * &lt;code&gt;try{}&lt;/code&gt; statement, but handle the Exceptions appropriately.&lt;/I&gt;
+    *
+    * @param contextNode
+    * @param os
+    */
+   public static void outputDOMc14nWithComments(Node contextNode,
+           OutputStream os) {
+
+      try {
+<span class="nc" id="L572">         os.write(Canonicalizer</span>
+            .getInstance(Canonicalizer.ALGO_ID_C14N_WITH_COMMENTS)
+               .canonicalizeSubtree(contextNode));
+<span class="nc" id="L575">      } catch (IOException ex) {</span>
+
+         // throw new RuntimeException(ex.getMessage());
+<span class="nc" id="L578">      } catch (InvalidCanonicalizerException ex) {</span>
+
+         // throw new RuntimeException(ex.getMessage());
+<span class="nc" id="L581">      } catch (CanonicalizationException ex) {</span>
+
+         // throw new RuntimeException(ex.getMessage());
+<span class="nc" id="L584">      }</span>
+<span class="nc" id="L585">   }</span>
+
+   /**
+    * Converts a single {@link Node} into a {@link NodeList} which contains only that {@link Node}
+    *
+    * @param node the Node
+    * @return the NodeList
+    */
+   public static NodeList elementToNodeList(Node node) {
+
+<span class="nc" id="L595">      HelperNodeList nl = new HelperNodeList();</span>
+
+<span class="nc" id="L597">      nl.appendChild(node);</span>
+
+<span class="nc" id="L599">      return (NodeList) nl;</span>
+   }
+
+   /**
+    * Creates Attributes {@link org.w3c.dom.Attr} in the given namespace
+    * (if possible). If the namespace is empty, only the QName is used.
+    *
+    * @param doc the generator (factory) Document
+    * @param QName the QName of the Attr
+    * @param Value the String value of the Attr
+    * @param NamespaceURI the namespace for the Attr
+    * @return the Attr
+    */
+   public static Attr createAttr(Document doc, String QName, String Value,
+                                 String NamespaceURI) {
+
+<span class="nc" id="L615">      Attr attr = doc.createAttributeNS(NamespaceURI, QName);</span>
+
+<span class="nc" id="L617">      attr.setNodeValue(Value);</span>
+
+<span class="nc" id="L619">      return attr;</span>
+   }
+
+   /**
+    * Sets the Attribute QName with Value in Element elem.
+    *
+    * @param elem the Element which has to contain the Attribute
+    * @param QName the QName of the Attribute
+    * @param Value the value of the Attribute
+    */
+   public static void setAttr(Element elem, String QName, String Value) {
+
+<span class="nc" id="L631">      Document doc = elem.getOwnerDocument();</span>
+<span class="nc" id="L632">      Attr attr = doc.createAttributeNS(Constants.SignatureSpecNS, QName);</span>
+
+<span class="nc" id="L634">      attr.setNodeValue(Value);</span>
+<span class="nc" id="L635">      elem.setAttributeNode(attr);</span>
+<span class="nc" id="L636">   }</span>
+
+   /**
+    * Creates an Element from a BigInteger. The BigInteger is base64-encoded
+    * and put into the Element with a given name.
+    *
+    * See
+    * &lt;A HREF=&quot;http://www.w3.org/TR/2001/CR-xmldsig-core-20010419/#sec-CryptoBinary&quot;&gt;Section
+    * 4.0.1 The ds:CryptoBinary Simple Type&lt;/A&gt;:
+    *
+    * This specification defines the ds:CryptoBinary simple type for
+    * representing arbitrary-length integers (e.g. &quot;bignums&quot;) in XML as
+    * octet strings. The integer value is first converted to a &quot;big
+    * endian&quot; bitstring. The bitstring is then padded with leading zero
+    * bits so that the total number of bits == 0 mod 8 (so that there are
+    * an integral number of octets). If the bitstring contains entire
+    * leading octets that are zero, these are removed (so the high-order
+    * octet is always non-zero). This octet string is then base64 [MIME]
+    * encoded. (The conversion from integer to octet string is equivalent
+    * to IEEE 1363's I2OSP [1363] with minimal length).
+    *
+    *
+    * @param doc the factory Document
+    * @param elementName the name of the Element
+    * @param bigInteger the BigInteger wo be inserted
+    * @return the Element
+    * @throws XMLSignatureException if bigInteger is not positive
+    */
+   public static Element createElementFromBigint(
+           Document doc, String elementName, BigInteger bigInteger)
+              throws XMLSignatureException {
+
+<span class="nc" id="L668">      Element element = doc.createElementNS(Constants.SignatureSpecNS,</span>
+                                            Constants.getSignatureSpecNSprefix()
+                                            + &quot;:&quot; + elementName);
+
+      /* bigInteger must be positive */
+<span class="nc bnc" id="L673" title="All 2 branches missed.">      if (bigInteger.signum() != 1) {</span>
+<span class="nc" id="L674">         throw new XMLSignatureException(&quot;signature.Util.BignumNonPositive&quot;);</span>
+      }
+
+<span class="nc" id="L677">      byte byteRepresentation[] = bigInteger.toByteArray();</span>
+
+<span class="nc bnc" id="L679" title="All 2 branches missed.">      while (byteRepresentation[0] == 0) {</span>
+<span class="nc" id="L680">         byte oldByteRepresentation[] = byteRepresentation;</span>
+
+<span class="nc" id="L682">         byteRepresentation = new byte[oldByteRepresentation.length - 1];</span>
+
+<span class="nc" id="L684">         System.arraycopy(oldByteRepresentation, 1, byteRepresentation, 0,</span>
+                          oldByteRepresentation.length - 1);
+<span class="nc" id="L686">      }</span>
+
+<span class="nc" id="L688">      Text text =</span>
+         doc.createTextNode(org.apache.xml.security.utils.Base64
+            .encode(byteRepresentation));
+
+<span class="nc" id="L692">      element.appendChild(text);</span>
+
+<span class="nc" id="L694">      return element;</span>
+   }
+
+   /**
+    * Method getFullTextChildrenFromElement
+    *
+    * @param element
+    * @return
+    */
+   public static String getFullTextChildrenFromElement(Element element) {
+
+<span class="nc" id="L705">      StringBuffer sb = new StringBuffer();</span>
+<span class="nc" id="L706">      NodeList children = element.getChildNodes();</span>
+<span class="nc" id="L707">      int iMax = children.getLength();</span>
+
+<span class="nc bnc" id="L709" title="All 2 branches missed.">      for (int i = 0; i &lt; iMax; i++) {</span>
+<span class="nc" id="L710">         Node curr = children.item(i);</span>
+
+<span class="nc bnc" id="L712" title="All 2 branches missed.">         if (curr.getNodeType() == Node.TEXT_NODE) {</span>
+<span class="nc" id="L713">            sb.append(((Text) curr).getData());</span>
+         }
+      }
+
+<span class="nc" id="L717">      return sb.toString();</span>
+   }
+
+   /**
+    * Fetches a base64-encoded BigInteger from an Element.
+    *
+    * @param element the Element
+    * @return the BigInteger
+    * @throws XMLSignatureException if Element has not exactly one Text child
+    */
+   public static BigInteger getBigintFromElement(Element element)
+           throws XMLSignatureException {
+
+      try {
+<span class="nc bnc" id="L731" title="All 2 branches missed.">         if (element.getChildNodes().getLength() != 1) {</span>
+<span class="nc" id="L732">            throw new XMLSignatureException(&quot;signature.Util.TooManyChilds&quot;);</span>
+         }
+
+<span class="nc" id="L735">         Node child = element.getFirstChild();</span>
+
+<span class="nc bnc" id="L737" title="All 4 branches missed.">         if ((child == null) || (child.getNodeType() != Node.TEXT_NODE)) {</span>
+<span class="nc" id="L738">            throw new XMLSignatureException(&quot;signature.Util.NonTextNode&quot;);</span>
+         }
+
+<span class="nc" id="L741">         Text text = (Text) child;</span>
+<span class="nc" id="L742">         String textData = text.getData();</span>
+<span class="nc" id="L743">         byte magnitude[] =</span>
+            org.apache.xml.security.utils.Base64.decode(textData);
+<span class="nc" id="L745">         int signum = 1;</span>
+<span class="nc" id="L746">         BigInteger bigInteger = new BigInteger(signum, magnitude);</span>
+
+<span class="nc" id="L748">         return bigInteger;</span>
+<span class="nc" id="L749">      } catch (Base64DecodingException ex) {</span>
+<span class="nc" id="L750">         throw new XMLSignatureException(&quot;empty&quot;, ex);</span>
+      }
+   }
+
+   /**
+    * Fetches base64-encoded byte[] data from an Element.
+    *
+    * @param element
+    * @return the byte[] data
+    * @throws XMLSignatureException if Element has not exactly one Text child
+    */
+   public static byte[] getBytesFromElement(Element element)
+           throws XMLSignatureException {
+
+      try {
+<span class="nc bnc" id="L765" title="All 2 branches missed.">         if (element.getChildNodes().getLength() != 1) {</span>
+<span class="nc" id="L766">            throw new XMLSignatureException(&quot;signature.Util.TooManyChilds&quot;);</span>
+         }
+
+<span class="nc" id="L769">         Node child = element.getFirstChild();</span>
+
+<span class="nc bnc" id="L771" title="All 4 branches missed.">         if ((child == null) || (child.getNodeType() != Node.TEXT_NODE)) {</span>
+<span class="nc" id="L772">            throw new XMLSignatureException(&quot;signature.Util.NonTextNode&quot;);</span>
+         }
+
+<span class="nc" id="L775">         Text text = (Text) child;</span>
+<span class="nc" id="L776">         String textData = text.getData();</span>
+<span class="nc" id="L777">         byte bytes[] = org.apache.xml.security.utils.Base64.decode(textData);</span>
+
+<span class="nc" id="L779">         return bytes;</span>
+<span class="nc" id="L780">      } catch (Base64DecodingException ex) {</span>
+<span class="nc" id="L781">         throw new XMLSignatureException(&quot;empty&quot;, ex);</span>
+      }
+   }
+
+   /**
+    * Creates an Element in the XML Signature specification namespace.
+    *
+    * @param doc the factory Document
+    * @param elementName the local name of the Element
+    * @return the Element
+    */
+   public static Element createElementInSignatureSpace(Document doc,
+           String elementName) {
+
+<span class="pc bpc" id="L795" title="1 of 2 branches missed.">      if (doc == null) {</span>
+<span class="nc" id="L796">         throw new RuntimeException(&quot;Document is null&quot;);</span>
+      }
+
+<span class="fc" id="L799">      String ds = Constants.getSignatureSpecNSprefix();</span>
+
+<span class="pc bpc" id="L801" title="2 of 4 branches missed.">      if ((ds == null) || (ds.length() == 0)) {</span>
+<span class="nc" id="L802">         Element element = doc.createElementNS(Constants.SignatureSpecNS,</span>
+                                               elementName);
+
+<span class="nc" id="L805">         element.setAttributeNS(Constants.NamespaceSpecNS, &quot;xmlns&quot;,</span>
+                                Constants.SignatureSpecNS);
+
+<span class="nc" id="L808">         return element;</span>
+      } else {
+<span class="fc" id="L810">         Element element = doc.createElementNS(Constants.SignatureSpecNS,</span>
+                                               ds + &quot;:&quot; + elementName);
+
+<span class="fc" id="L813">         element.setAttributeNS(Constants.NamespaceSpecNS, &quot;xmlns:&quot; + ds,</span>
+                                Constants.SignatureSpecNS);
+
+<span class="fc" id="L816">         return element;</span>
+      }
+   }
+
+   /**
+    * Creates an Element in the XML Encryption specification namespace.
+    *
+    * @param doc the factory Document
+    * @param elementName the local name of the Element
+    * @return the Element
+    */
+   public static Element createElementInEncryptionSpace(Document doc,
+           String elementName) {
+
+<span class="nc bnc" id="L830" title="All 2 branches missed.">      if (doc == null) {</span>
+<span class="nc" id="L831">         throw new RuntimeException(&quot;Document is null&quot;);</span>
+      }
+
+<span class="nc" id="L834">      String xenc = EncryptionConstants.getEncryptionSpecNSprefix();</span>
+
+<span class="nc bnc" id="L836" title="All 4 branches missed.">      if ((xenc == null) || (xenc.length() == 0)) {</span>
+<span class="nc" id="L837">         Element element =</span>
+            doc.createElementNS(EncryptionConstants.EncryptionSpecNS,
+                                elementName);
+
+<span class="nc" id="L841">         element.setAttributeNS(Constants.NamespaceSpecNS, &quot;xmlns&quot;,</span>
+                                Constants.SignatureSpecNS);
+
+<span class="nc" id="L844">         return element;</span>
+      } else {
+<span class="nc" id="L846">         Element element =</span>
+            doc.createElementNS(EncryptionConstants.EncryptionSpecNS,
+                                xenc + &quot;:&quot; + elementName);
+
+<span class="nc" id="L850">         element.setAttributeNS(Constants.NamespaceSpecNS, &quot;xmlns:&quot; + xenc,</span>
+                                EncryptionConstants.EncryptionSpecNS);
+
+<span class="nc" id="L853">         return element;</span>
+      }
+   }
+
+   /**
+    * Returns true if the element is in XML Signature namespace and the local
+    * name equals the supplied one.
+    *
+    * @param element
+    * @param localName
+    * @return true if the element is in XML Signature namespace and the local name equals the supplied one
+    */
+   public static boolean elementIsInSignatureSpace(Element element,
+           String localName) {
+
+<span class="pc bpc" id="L868" title="1 of 2 branches missed.">      if (element == null) {</span>
+<span class="nc" id="L869">         return false;</span>
+      }
+
+<span class="pc bpc" id="L872" title="1 of 2 branches missed.">      if (element.getNamespaceURI() == null) {</span>
+<span class="nc" id="L873">         return false;</span>
+      }
+
+<span class="pc bpc" id="L876" title="1 of 2 branches missed.">      if (!element.getNamespaceURI().equals(Constants.SignatureSpecNS)) {</span>
+<span class="nc" id="L877">         return false;</span>
+      }
+
+<span class="fc bfc" id="L880" title="All 2 branches covered.">      if (!element.getLocalName().equals(localName)) {</span>
+<span class="fc" id="L881">         return false;</span>
+      }
+
+<span class="fc" id="L884">      return true;</span>
+   }
+
+   /**
+    * Returns true if the element is in XML Encryption namespace and the local
+    * name equals the supplied one.
+    *
+    * @param element
+    * @param localName
+    * @return true if the element is in XML Encryption namespace and the local name equals the supplied one
+    */
+   public static boolean elementIsInEncryptionSpace(Element element,
+           String localName) {
+
+<span class="nc bnc" id="L898" title="All 2 branches missed.">      if (element == null) {</span>
+<span class="nc" id="L899">         return false;</span>
+      }
+
+<span class="nc bnc" id="L902" title="All 2 branches missed.">      if (element.getNamespaceURI() == null) {</span>
+<span class="nc" id="L903">         return false;</span>
+      }
+
+<span class="nc bnc" id="L906" title="All 2 branches missed.">      if (!element.getNamespaceURI()</span>
+              .equals(EncryptionConstants.EncryptionSpecNS)) {
+<span class="nc" id="L908">         return false;</span>
+      }
+
+<span class="nc bnc" id="L911" title="All 2 branches missed.">      if (!element.getLocalName().equals(localName)) {</span>
+<span class="nc" id="L912">         return false;</span>
+      }
+
+<span class="nc" id="L915">      return true;</span>
+   }
+
+   /**
+    * Verifies that the given Element is in the XML Signature namespace
+    * {@link org.apache.xml.security.utils.Constants#SignatureSpecNS} and that the
+    * local name of the Element matches the supplied on.
+    *
+    * @param element Element to be checked
+    * @param localName
+    * @throws XMLSignatureException if element is not in Signature namespace or if the local name does not match
+    * @see org.apache.xml.security.utils.Constants#SignatureSpecNS
+    */
+   public static void guaranteeThatElementInSignatureSpace(
+           Element element, String localName) throws XMLSignatureException {
+
+      /*
+      cat.debug(&quot;guaranteeThatElementInSignatureSpace(&quot; + element + &quot;, &quot;
+                + localName + &quot;)&quot;);
+      */
+<span class="pc bpc" id="L935" title="1 of 2 branches missed.">      if (element == null) {</span>
+<span class="nc" id="L936">         Object exArgs[] = { localName, null };</span>
+
+<span class="nc" id="L938">         throw new XMLSignatureException(&quot;xml.WrongElement&quot;, exArgs);</span>
+      }
+
+<span class="pc bpc" id="L941" title="2 of 6 branches missed.">      if ((localName == null) || localName.equals(&quot;&quot;)</span>
+              ||!elementIsInSignatureSpace(element, localName)) {
+<span class="fc" id="L943">         Object exArgs[] = { localName, element.getLocalName() };</span>
+
+<span class="fc" id="L945">         throw new XMLSignatureException(&quot;xml.WrongElement&quot;, exArgs);</span>
+      }
+<span class="fc" id="L947">   }</span>
+
+   /**
+    * Verifies that the given Element is in the XML Encryption namespace
+    * {@link org.apache.xml.security.utils.Constants#EncryptionSpecNS} and that the
+    * local name of the Element matches the supplied on.
+    *
+    * @param element Element to be checked
+    * @param localName
+    * @throws XMLSecurityException if element is not in Encryption namespace or if the local name does not match
+    * @see org.apache.xml.security.utils.Constants#EncryptionSpecNS
+    */
+   public static void guaranteeThatElementInEncryptionSpace(
+           Element element, String localName) throws XMLSecurityException {
+
+<span class="nc bnc" id="L962" title="All 2 branches missed.">      if (element == null) {</span>
+<span class="nc" id="L963">         Object exArgs[] = { localName, null };</span>
+
+<span class="nc" id="L965">         throw new XMLSecurityException(&quot;xml.WrongElement&quot;, exArgs);</span>
+      }
+
+<span class="nc bnc" id="L968" title="All 6 branches missed.">      if ((localName == null) || localName.equals(&quot;&quot;)</span>
+              ||!elementIsInEncryptionSpace(element, localName)) {
+<span class="nc" id="L970">         Object exArgs[] = { localName, element.getLocalName() };</span>
+
+<span class="nc" id="L972">         throw new XMLSecurityException(&quot;xml.WrongElement&quot;, exArgs);</span>
+      }
+<span class="nc" id="L974">   }</span>
+
+   /**
+    * This method returns the owner document of a particular node.
+    * This method is necessary because it &lt;I&gt;always&lt;/I&gt; returns a
+    * {@link Document}. {@link Node#getOwnerDocument} returns &lt;CODE&gt;null&lt;/CODE&gt;
+    * if the {@link Node} is a {@link Document}.
+    *
+    * @param node
+    * @return the owner document of the node
+    */
+   public static Document getOwnerDocument(Node node) {
+
+<span class="fc bfc" id="L987" title="All 2 branches covered.">      if (node.getNodeType() == Node.DOCUMENT_NODE) {</span>
+<span class="fc" id="L988">         return (Document) node;</span>
+      } else {
+         try {
+<span class="fc" id="L991">            return node.getOwnerDocument();</span>
+<span class="nc" id="L992">         } catch (NullPointerException npe) {</span>
+<span class="nc" id="L993">            throw new NullPointerException(I18n.translate(&quot;endorsed.jdk1.4.0&quot;)</span>
+                                           + &quot; Original message was \&quot;&quot;
+                                           + npe.getMessage() + &quot;\&quot;&quot;);
+         }
+      }
+   }
+
+   /** Field randomNS */
+<span class="fc" id="L1001">   private static String randomNS = null;</span>
+
+   /**
+    * Prefix for random namespaces.
+    *
+    * @see #getRandomNamespace
+    */
+   public static final String randomNSprefix =
+      &quot;http://www.xmlsecurity.org/NS#randomval&quot;;
+
+   /**
+    * This method creates a random String like
+    * &lt;CODE&gt;http://www.xmlsecurity.org/NS#randomval8dcc/C2qwxFukXjJhS7W1xvHHq4Z&lt;/CODE&gt;
+    * that will be used for registering the &lt;CODE&gt;here()&lt;/CODE&gt; function in a
+    * specific namespace. The random string is the Base64 encoded version of a
+    * 168 bit {@link java.security.SecureRandom} value.
+    * &lt;BR/&gt;
+    * This random namespace prefix prevents attackers from inserting malicious
+    * here() functions in our namespace. The method caches the valued for
+    * subsequent calls during the application run.
+    *
+    * @return the random namespace prefix String.
+    */
+   public static String getRandomNamespacePrefix() {
+
+<span class="nc bnc" id="L1026" title="All 2 branches missed.">      if (XMLUtils.randomNS == null) {</span>
+<span class="nc" id="L1027">         byte[] randomData = new byte[21];</span>
+<span class="nc" id="L1028">         java.security.SecureRandom sr = new java.security.SecureRandom();</span>
+
+<span class="nc" id="L1030">         sr.nextBytes(randomData);</span>
+
+<span class="nc" id="L1032">         String prefix =</span>
+            &quot;xmlsecurityOrgPref&quot;
+            + org.apache.xml.security.utils.Base64.encode(randomData);
+
+<span class="nc" id="L1036">         XMLUtils.randomNS = &quot;&quot;;</span>
+
+<span class="nc bnc" id="L1038" title="All 2 branches missed.">         for (int i = 0; i &lt; prefix.length(); i++) {</span>
+<span class="nc bnc" id="L1039" title="All 6 branches missed.">            if ((prefix.charAt(i) != '+') &amp;&amp; (prefix.charAt(i) != '/')</span>
+                    &amp;&amp; (prefix.charAt(i) != '=')) {
+<span class="nc" id="L1041">               XMLUtils.randomNS += prefix.charAt(i);</span>
+            }
+         }
+      }
+
+<span class="nc" id="L1046">      return XMLUtils.randomNS;</span>
+   }
+
+   /**
+    * Method createDSctx
+    *
+    * @param doc
+    * @param prefix
+    * @param namespace
+    * @return
+    */
+   public static Element createDSctx(Document doc, String prefix,
+                                     String namespace) {
+
+<span class="fc" id="L1060">      Element ctx = doc.createElementNS(null, &quot;namespaceContext&quot;);</span>
+
+<span class="fc" id="L1062">      ctx.setAttributeNS(Constants.NamespaceSpecNS, &quot;xmlns:&quot; + prefix.trim(),</span>
+                         namespace);
+
+<span class="fc" id="L1065">      return ctx;</span>
+   }
+
+   /**
+    * Method createDSctx
+    *
+    * @param doc
+    * @param prefix
+    * @return
+    */
+   public static Element createDSctx(Document doc, String prefix) {
+<span class="nc" id="L1076">      return XMLUtils.createDSctx(doc, prefix, Constants.SignatureSpecNS);</span>
+   }
+
+   /**
+    * Method indentSignature
+    *
+    * @param element
+    * @param indentString
+    * @param initialDepth
+    */
+   public static void indentSignature(Element element, String indentString,
+                                      int initialDepth) {
+
+      try {
+<span class="nc" id="L1090">         NodeList returns = XPathAPI.selectNodeList(element, &quot;.//text()&quot;);</span>
+
+<span class="nc bnc" id="L1092" title="All 2 branches missed.">         for (int i = 0; i &lt; returns.getLength(); i++) {</span>
+<span class="nc" id="L1093">            Text returnText = (Text) returns.item(i);</span>
+<span class="nc" id="L1094">            Element parent = (Element) returnText.getParentNode();</span>
+<span class="nc" id="L1095">            Document doc = returnText.getOwnerDocument();</span>
+<span class="nc" id="L1096">            int j = 0;</span>
+
+<span class="nc bnc" id="L1098" title="All 2 branches missed.">            while (parent != element) {</span>
+<span class="nc" id="L1099">               j++;</span>
+            }
+
+<span class="nc" id="L1102">            String newReturn = &quot;&quot;;</span>
+
+<span class="nc bnc" id="L1104" title="All 2 branches missed.">            for (int k = 0; k &lt; j; k++) {</span>
+<span class="nc" id="L1105">               newReturn += indentString;</span>
+            }
+
+<span class="nc" id="L1108">            Text newReturnText = doc.createTextNode(newReturn);</span>
+
+<span class="nc" id="L1110">            parent.replaceChild(newReturnText, returnText);</span>
+         }
+<span class="nc" id="L1112">      } catch (TransformerException ex) {}</span>
+<span class="nc" id="L1113">   }</span>
+
+   /**
+    * Method addReturnToElement
+    *
+    * @param elementProxy
+    */
+   public static void addReturnToElement(ElementProxy elementProxy) {
+
+<span class="nc" id="L1122">      Document doc = elementProxy._doc;</span>
+
+<span class="nc" id="L1124">      elementProxy.getElement().appendChild(doc.createTextNode(&quot;\n&quot;));</span>
+<span class="nc" id="L1125">   }</span>
+
+   /**
+    * Method addReturnToElement
+    *
+    * @param e
+    */
+   public static void addReturnToElement(Element e) {
+
+<span class="fc" id="L1134">      Document doc = e.getOwnerDocument();</span>
+
+<span class="fc" id="L1136">      e.appendChild(doc.createTextNode(&quot;\n&quot;));</span>
+<span class="fc" id="L1137">   }</span>
+
+   /**
+    * Method addReturnToNode
+    *
+    * @param n
+    */
+   public static void addReturnToNode(Node n) {
+
+<span class="nc" id="L1146">      Document doc = n.getOwnerDocument();</span>
+
+<span class="nc" id="L1148">      n.appendChild(doc.createTextNode(&quot;\n&quot;));</span>
+<span class="nc" id="L1149">   }</span>
+
+   /**
+    * Method convertNodelistToSet
+    *
+    * @param xpathNodeSet
+    * @return
+    */
+   public static Set convertNodelistToSet(NodeList xpathNodeSet) {
+
+<span class="pc bpc" id="L1159" title="1 of 2 branches missed.">      if (xpathNodeSet == null) {</span>
+<span class="nc" id="L1160">         return new HashSet();</span>
+      }
+
+<span class="fc" id="L1163">      int length = xpathNodeSet.getLength();</span>
+<span class="fc" id="L1164">      Set set = new HashSet(length);</span>
+
+<span class="fc bfc" id="L1166" title="All 2 branches covered.">      for (int i = 0; i &lt; length; i++) {</span>
+<span class="fc" id="L1167">         set.add(xpathNodeSet.item(i));</span>
+      }
+
+<span class="fc" id="L1170">      return set;</span>
+   }
+
+   /**
+    * Method convertSetToNodelist
+    *
+    * @param set
+    * @return
+    */
+   public static NodeList convertSetToNodelist(Set set) {
+
+<span class="nc" id="L1181">      HelperNodeList result = new HelperNodeList();</span>
+<span class="nc" id="L1182">      Iterator it = set.iterator();</span>
+
+<span class="nc bnc" id="L1184" title="All 2 branches missed.">      while (it.hasNext()) {</span>
+<span class="nc" id="L1185">         result.appendChild((Node) it.next());</span>
+      }
+
+<span class="nc" id="L1188">      return result;</span>
+   }
+
+   /**
+    * This method spreads all namespace attributes in a DOM document to their
+    * children. This is needed because the XML Signature XPath transform
+    * must evaluate the XPath against all nodes in the input, even against
+    * XPath namespace nodes. Through a bug in XalanJ2, the namespace nodes are
+    * not fully visible in the Xalan XPath model, so we have to do this by
+    * hand in DOM spaces so that the nodes become visible in XPath space.
+    *
+    * @param doc
+    * @see &lt;A HREF=&quot;http://nagoya.apache.org/bugzilla/show_bug.cgi?id=2650&quot;&gt;Namespace axis resolution is not XPath compliant &lt;/A&gt;
+    */
+   public static void circumventBug2650(Document doc) {
+<span class="fc" id="L1203">      XMLUtils.circumventBug2650recurse(doc);</span>
+<span class="fc" id="L1204">   }</span>
+
+   /**
+    * This is the work horse for {@link #circumventBug2650}.
+    *
+    * @param node
+    * @see &lt;A HREF=&quot;http://nagoya.apache.org/bugzilla/show_bug.cgi?id=2650&quot;&gt;Namespace axis resolution is not XPath compliant &lt;/A&gt;
+    */
+   private static void circumventBug2650recurse(Node node) {
+
+<span class="fc bfc" id="L1214" title="All 2 branches covered.">      if (node.getNodeType() == Node.ELEMENT_NODE) {</span>
+<span class="fc" id="L1215">         Element element = (Element) node;</span>
+<span class="fc" id="L1216">         NamedNodeMap attributes = element.getAttributes();</span>
+<span class="fc" id="L1217">         int attributesLength = attributes.getLength();</span>
+<span class="fc" id="L1218">         NodeList children = element.getChildNodes();</span>
+<span class="fc" id="L1219">         int childrenLength = children.getLength();</span>
+
+<span class="fc bfc" id="L1221" title="All 2 branches covered.">         for (int j = 0; j &lt; childrenLength; j++) {</span>
+<span class="fc" id="L1222">            Node child = children.item(j);</span>
+
+<span class="fc bfc" id="L1224" title="All 2 branches covered.">            if (child.getNodeType() == Node.ELEMENT_NODE) {</span>
+<span class="fc" id="L1225">               Element childElement = (Element) child;</span>
+
+<span class="fc bfc" id="L1227" title="All 2 branches covered.">               for (int i = 0; i &lt; attributesLength; i++) {</span>
+<span class="fc" id="L1228">                  Attr currentAttr = (Attr) attributes.item(i);</span>
+<span class="fc" id="L1229">                  String name = currentAttr.getNodeName();</span>
+
+<span class="fc bfc" id="L1231" title="All 2 branches covered.">                  if (name.startsWith(&quot;xmlns&quot;)) {</span>
+<span class="fc" id="L1232">                     String value = currentAttr.getNodeValue();</span>
+<span class="fc bfc" id="L1233" title="All 2 branches covered.">                     boolean mustBeDefinedInChild =</span>
+                        !childElement.hasAttribute(name);
+
+<span class="fc bfc" id="L1236" title="All 2 branches covered.">                     if (mustBeDefinedInChild) {</span>
+<span class="fc" id="L1237">                        childElement.setAttributeNS(Constants.NamespaceSpecNS,</span>
+                                                    name, value);
+                     }
+                  }
+               }
+            }
+         }
+      }
+
+<span class="fc bfc" id="L1246" title="All 2 branches covered.">      for (Node child = node.getFirstChild(); child != null;</span>
+<span class="fc" id="L1247">              child = child.getNextSibling()) {</span>
+<span class="fc bfc" id="L1248" title="All 2 branches covered.">         switch (child.getNodeType()) {</span>
+
+         case Node.ELEMENT_NODE :
+         case Node.ENTITY_REFERENCE_NODE :
+         case Node.DOCUMENT_NODE :
+<span class="fc" id="L1253">            circumventBug2650recurse(child);</span>
+         }
+      }
+<span class="fc" id="L1256">   }</span>
+
+   /**
+    * Method getXPath
+    *
+    * @param n
+    * @param result
+    * @return
+    */
+   private static String getXPath(Node n, String result) {
+
+<span class="nc bnc" id="L1267" title="All 2 branches missed.">      if (n == null) {</span>
+<span class="nc" id="L1268">         return result;</span>
+      }
+
+<span class="nc bnc" id="L1271" title="All 5 branches missed.">      switch (n.getNodeType()) {</span>
+
+      case Node.ATTRIBUTE_NODE :
+<span class="nc" id="L1274">         return getXPath(((Attr) n).getOwnerElement(),</span>
+                         &quot;/@&quot; + ((Attr) n).getNodeName() + &quot;=\&quot;&quot;
+                         + ((Attr) n).getNodeValue() + &quot;\&quot;&quot;);
+
+      case Node.ELEMENT_NODE :
+<span class="nc" id="L1279">         return getXPath(n.getParentNode(),</span>
+                         &quot;/&quot; + ((Element) n).getTagName() + result);
+
+      case Node.TEXT_NODE :
+<span class="nc" id="L1283">         return getXPath(n.getParentNode(), &quot;/#text&quot;);</span>
+
+      case Node.DOCUMENT_NODE :
+<span class="nc bnc" id="L1286" title="All 2 branches missed.">         if (result.length() &gt; 0) {</span>
+<span class="nc" id="L1287">            return result;</span>
+         } else {
+<span class="nc" id="L1289">            return &quot;/&quot;;</span>
+         }
+      }
+
+<span class="nc" id="L1293">      return result;</span>
+   }
+
+   /**
+    * Simple tool to return the position of a particular node in an XPath like String.
+    *
+    * @param n
+    * @return
+    */
+   public static String getXPath(Node n) {
+<span class="nc" id="L1303">      return getXPath(n, &quot;&quot;);</span>
+   }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

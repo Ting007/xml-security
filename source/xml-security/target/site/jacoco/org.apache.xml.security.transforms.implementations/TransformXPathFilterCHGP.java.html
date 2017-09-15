@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransformXPathFilterCHGP.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.transforms.implementations</a> &gt; <span class="el_source">TransformXPathFilterCHGP.java</span></div><h1>TransformXPathFilterCHGP.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.transforms.implementations;
+
+
+
+import java.util.*;
+import java.io.IOException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import org.xml.sax.SAXException;
+import org.w3c.dom.*;
+import org.w3c.dom.traversal.*;
+import org.apache.xml.security.signature.XMLSignatureInput;
+import org.apache.xml.security.c14n.*;
+import org.apache.xml.security.transforms.params.XPathFilterCHGPContainer;
+import org.apache.xml.security.transforms.*;
+import org.apache.xml.security.exceptions.*;
+import org.apache.xml.security.utils.*;
+import org.apache.xpath.CachedXPathAPI;
+import org.apache.xpath.objects.XObject;
+import org.apache.xml.utils.PrefixResolverDefault;
+import org.apache.xml.utils.PrefixResolver;
+import org.apache.xml.dtm.DTMManager;
+
+
+/**
+ * @author $Author: dohy $
+ */
+<span class="nc" id="L86">public class TransformXPathFilterCHGP extends TransformSpi {</span>
+
+   /** Field implementedTransformURI */
+   public static final String implementedTransformURI =
+      Transforms.TRANSFORM_XPATHFILTERCHGP;
+
+   //J-
+<span class="nc" id="L93">   public boolean wantsOctetStream ()   { return false; }</span>
+<span class="nc" id="L94">   public boolean wantsNodeSet ()       { return true; }</span>
+<span class="nc" id="L95">   public boolean returnsOctetStream () { return false; }</span>
+<span class="nc" id="L96">   public boolean returnsNodeSet ()     { return true; }</span>
+   //J+
+   //J-
+
+   // values for state and stateStack
+<span class="fc" id="L101">   static final Integer STATE_INCLUDE =            new Integer(0);</span>
+<span class="fc" id="L102">   static final Integer STATE_EXCLUDE_BUT_SEARCH = new Integer(1);</span>
+<span class="fc" id="L103">   static final Integer STATE_EXCLUDE =            new Integer(2); // this is never assigned. Just for clarity</span>
+
+   // the current state during the traversal
+<span class="nc" id="L106">   Integer state = TransformXPathFilterCHGP.STATE_EXCLUDE_BUT_SEARCH;</span>
+
+   // the state of the ancestors during the traversal
+<span class="nc" id="L109">   Stack stateStack = new Stack();</span>
+   //J+
+
+   /** all nodes which are in the input XPath node set */
+   Set inputSet;
+
+   /** all nodes which are tagged include-but-search */
+   Set includeSearchSet;
+
+   /** all nodes which are tagged exclude-but-search */
+   Set excludeSearchSet;
+
+   /** all nodes which are tagged exclude */
+   Set excludeSet;
+
+   /** the result XPath node set */
+   Set resultSet;
+
+   /**
+    * Method engineGetURI
+    *
+    * @return
+    */
+   protected String engineGetURI() {
+<span class="nc" id="L133">      return this.implementedTransformURI;</span>
+   }
+
+   /**
+    * Method enginePerformTransform
+    *
+    * @param input
+    * @return
+    * @throws TransformationException
+    */
+   protected XMLSignatureInput enginePerformTransform(XMLSignatureInput input)
+           throws TransformationException {
+
+      try {
+<span class="nc" id="L147">         this.inputSet = input.getNodeSet();</span>
+
+<span class="nc" id="L149">         CachedXPathFuncHereAPI xPathFuncHereAPI =</span>
+            new CachedXPathFuncHereAPI(input.getCachedXPathAPI());
+<span class="nc" id="L151">         CachedXPathAPI myXPathAPI =</span>
+            new CachedXPathAPI(input.getCachedXPathAPI());
+
+<span class="nc bnc" id="L154" title="All 2 branches missed.">         if (this.inputSet.size() == 0) {</span>
+<span class="nc" id="L155">            Object exArgs[] = { &quot;input node set contains no nodes&quot; };</span>
+
+<span class="nc" id="L157">            throw new TransformationException(&quot;empty&quot;, exArgs);</span>
+         }
+
+<span class="nc" id="L160">         Element transformElement = this._transformObject.getElement();</span>
+<span class="nc" id="L161">         Document doc = transformElement.getOwnerDocument();</span>
+
+         // create the XPathFilterCHGPContainer so that we easily can read it out
+<span class="nc" id="L164">         Element nscontext =</span>
+            XMLUtils.createDSctx(doc, &quot;dsig-xpathalt&quot;,
+                                 Transforms.TRANSFORM_XPATHFILTERCHGP);
+<span class="nc" id="L167">         Element xpathElement =</span>
+            (Element) myXPathAPI
+               .selectSingleNode(transformElement, &quot;./dsig-xpathalt:&quot;
+                                 + XPathFilterCHGPContainer
+                                    ._TAG_XPATHCHGP, nscontext);
+
+<span class="nc bnc" id="L173" title="All 2 branches missed.">         if (xpathElement == null) {</span>
+<span class="nc" id="L174">            Object exArgs[] = { &quot;{&quot; + this.implementedTransformURI + &quot;}XPath&quot;,</span>
+                                &quot;Transform&quot; };
+
+<span class="nc" id="L177">            throw new TransformationException(&quot;xml.WrongContent&quot;, exArgs);</span>
+         }
+
+<span class="nc" id="L180">         XPathFilterCHGPContainer xpathContainer =</span>
+            XPathFilterCHGPContainer.getInstance(xpathElement,
+                                                 input.getSourceURI());
+
+         // get the document (root node) for the traversal
+<span class="nc" id="L185">         Document inputDoc = null;</span>
+
+         {
+<span class="nc" id="L188">            Iterator it = this.inputSet.iterator();</span>
+
+<span class="nc bnc" id="L190" title="All 2 branches missed.">            if (it.hasNext()) {</span>
+<span class="nc" id="L191">               inputDoc = XMLUtils.getOwnerDocument((Node) it.next());</span>
+            }
+         }
+
+         {
+
+            // 'tag' the include-but-search nodes
+<span class="nc" id="L198">            Node includeButSearchCtxNode =</span>
+               xpathContainer.getHereContextNodeIncludeButSearch();
+<span class="nc" id="L200">            NodeList includeButSearchNodes = null;</span>
+
+<span class="nc bnc" id="L202" title="All 2 branches missed.">            if (includeButSearchCtxNode != null) {</span>
+<span class="nc" id="L203">               includeButSearchNodes = xPathFuncHereAPI.selectNodeList(doc,</span>
+                       includeButSearchCtxNode, xpathContainer.getElement());
+            }
+
+<span class="nc" id="L207">            this.includeSearchSet = nodeListToSet(includeButSearchNodes);</span>
+         }
+
+         {
+
+            // 'tag' the exclude-but-search nodes
+<span class="nc" id="L213">            Node excludeButSearchCtxNode =</span>
+               xpathContainer.getHereContextNodeExcludeButSearch();
+<span class="nc" id="L215">            NodeList excludeButSearchNodes = null;</span>
+
+<span class="nc bnc" id="L217" title="All 2 branches missed.">            if (excludeButSearchCtxNode != null) {</span>
+<span class="nc" id="L218">               excludeButSearchNodes = xPathFuncHereAPI.selectNodeList(doc,</span>
+                       excludeButSearchCtxNode, xpathContainer.getElement());
+            }
+
+<span class="nc" id="L222">            this.excludeSearchSet = nodeListToSet(excludeButSearchNodes);</span>
+         }
+
+         {
+
+            // 'tag' the exclude nodes
+<span class="nc" id="L228">            Node excludeCtxNode = xpathContainer.getHereContextNodeExclude();</span>
+<span class="nc" id="L229">            NodeList excludeNodes = null;</span>
+
+<span class="nc bnc" id="L231" title="All 2 branches missed.">            if (excludeCtxNode != null) {</span>
+<span class="nc" id="L232">               excludeNodes = xPathFuncHereAPI.selectNodeList(doc,</span>
+                       excludeCtxNode, xpathContainer.getElement());
+            }
+
+<span class="nc" id="L236">            this.excludeSet = nodeListToSet(excludeNodes);</span>
+         }
+
+<span class="nc bnc" id="L239" title="All 2 branches missed.">         if (xpathContainer.getIncludeSlashPolicy()</span>
+                 == XPathFilterCHGPContainer.IncludeSlash) {
+<span class="nc" id="L241">            this.includeSearchSet.add(inputDoc);</span>
+         } else {
+<span class="nc" id="L243">            this.excludeSearchSet.add(inputDoc);</span>
+         }
+
+         // create empty set for results
+<span class="nc" id="L247">         this.resultSet = new HashSet();</span>
+
+         {
+<span class="nc" id="L250">            DocumentTraversal dt = ((DocumentTraversal) inputDoc);</span>
+<span class="nc" id="L251">            Node rootNode = (Node) inputDoc;</span>
+
+            // we accept all nodes
+<span class="nc" id="L254">            NodeFilter nodefilter =</span>
+               new org.apache.xml.security.c14n.helper.AlwaysAcceptNodeFilter();
+<span class="nc" id="L256">            TreeWalker treewalker = dt.createTreeWalker(rootNode,</span>
+                                                        NodeFilter.SHOW_ALL,
+                                                        nodefilter, true);
+
+            /* do the magic here
+             *
+             * We make a traversal of the full DOM tree and check all nodes
+             * which are in the inputSet whether we put them into the resultSet.
+             *
+             */
+<span class="nc" id="L266">            process(treewalker);</span>
+         }
+
+<span class="nc" id="L269">         XMLSignatureInput result = new XMLSignatureInput(resultSet,</span>
+                                       input.getCachedXPathAPI());
+
+<span class="nc" id="L272">         result.setSourceURI(input.getSourceURI());</span>
+
+<span class="nc" id="L274">         return result;</span>
+<span class="nc" id="L275">      } catch (TransformerException ex) {</span>
+<span class="nc" id="L276">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L277">      } catch (DOMException ex) {</span>
+<span class="nc" id="L278">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L279">      } catch (IOException ex) {</span>
+<span class="nc" id="L280">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L281">      } catch (CanonicalizationException ex) {</span>
+<span class="nc" id="L282">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L283">      } catch (InvalidCanonicalizerException ex) {</span>
+<span class="nc" id="L284">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L285">      } catch (ParserConfigurationException ex) {</span>
+<span class="nc" id="L286">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L287">      } catch (XMLSecurityException ex) {</span>
+<span class="nc" id="L288">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L289">      } catch (SAXException ex) {</span>
+<span class="nc" id="L290">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+      }
+   }
+
+   /**
+    * Method process
+    *
+    * @param treewalker
+    */
+   private void process(TreeWalker treewalker) {
+
+<span class="nc" id="L301">      Node currentNode = treewalker.getCurrentNode();</span>
+
+<span class="nc bnc" id="L303" title="All 2 branches missed.">      if (this.excludeSet.contains(currentNode)) {</span>
+
+         /* THIS is what allows optimization: if the subtree cannot contain any
+          * nodes which are to be included, we do not descend.
+          *
+          * It would also work to move all nodes from the exclude set to the
+          * excludeButSearch set. But it would be waste of time.
+          */
+<span class="nc" id="L311">         treewalker.setCurrentNode(currentNode);</span>
+
+<span class="nc" id="L313">         return;</span>
+<span class="nc bnc" id="L314" title="All 2 branches missed.">      } else if (this.includeSearchSet.contains(currentNode)) {</span>
+<span class="nc" id="L315">         this.state = TransformXPathFilterCHGP.STATE_INCLUDE;</span>
+<span class="nc bnc" id="L316" title="All 2 branches missed.">      } else if (this.excludeSearchSet.contains(currentNode)) {</span>
+<span class="nc" id="L317">         this.state = TransformXPathFilterCHGP.STATE_EXCLUDE_BUT_SEARCH;</span>
+      }
+
+      /* This works actually as a filter: We can only decide to not include
+       * nodes in the result; We do not include nodes which haven't been
+       * in the inputSet (no union operation).
+       */
+<span class="nc bnc" id="L324" title="All 4 branches missed.">      if (this.inputSet.contains(currentNode)</span>
+              &amp;&amp; (this.state == TransformXPathFilterCHGP.STATE_INCLUDE)) {
+<span class="nc" id="L326">         this.resultSet.add(currentNode);</span>
+
+         // the treewalker does not descend into the attributes, so we must check them by hand
+<span class="nc bnc" id="L329" title="All 2 branches missed.">         if (currentNode.getNodeType() == Node.ELEMENT_NODE) {</span>
+<span class="nc" id="L330">            NamedNodeMap nnm = ((Element) currentNode).getAttributes();</span>
+
+<span class="nc bnc" id="L332" title="All 2 branches missed.">            for (int i = 0; i &lt; nnm.getLength(); i++) {</span>
+<span class="nc" id="L333">               Node attr = nnm.item(i);</span>
+
+               // if the node was in the input XPath node set AND
+               // is NOT deselected by this transform
+<span class="nc bnc" id="L337" title="All 6 branches missed.">               if (this.inputSet.contains(attr)</span>
+                       &amp;&amp;!this.excludeSearchSet.contains(attr)
+                       &amp;&amp;!this.excludeSet.contains(attr)) {
+<span class="nc" id="L340">                  this.resultSet.add(attr);</span>
+               }
+            }
+         }
+      }
+
+<span class="nc bnc" id="L346" title="All 2 branches missed.">      for (Node node1 = treewalker.firstChild(); node1 != null;</span>
+<span class="nc" id="L347">              node1 = treewalker.nextSibling()) {</span>
+
+         // store state before descend
+<span class="nc" id="L350">         this.stateStack.push(this.state);</span>
+
+         // descend
+<span class="nc" id="L353">         process(treewalker);</span>
+
+         // restore state after descend
+<span class="nc" id="L356">         this.state = (Integer) this.stateStack.pop();</span>
+      }
+
+<span class="nc" id="L359">      treewalker.setCurrentNode(currentNode);</span>
+<span class="nc" id="L360">   }</span>
+
+   /**
+    * Copies all nodes from a given {@link NodeList} into a {@link Set}
+    *
+    * @param nl
+    * @return
+    */
+   private static Set nodeListToSet(NodeList nl) {
+
+<span class="nc" id="L370">      Set set = new HashSet();</span>
+<span class="nc bnc" id="L371" title="All 2 branches missed.">      int iMax = ((nl == null)</span>
+                  ? 0
+                  : nl.getLength());
+
+<span class="nc bnc" id="L375" title="All 2 branches missed.">      for (int i = 0; i &lt; iMax; i++) {</span>
+<span class="nc" id="L376">         set.add(nl.item(i));</span>
+      }
+
+<span class="nc" id="L379">      return set;</span>
+   }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

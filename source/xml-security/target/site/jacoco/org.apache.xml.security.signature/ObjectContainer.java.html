@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ObjectContainer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.signature</a> &gt; <span class="el_source">ObjectContainer.java</span></div><h1>ObjectContainer.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.signature;
+
+
+
+import java.io.IOException;
+import org.w3c.dom.*;
+import org.apache.xml.security.algorithms.SignatureAlgorithm;
+import org.apache.xml.security.c14n.Canonicalizer;
+import org.apache.xml.security.c14n.CanonicalizationException;
+import org.apache.xml.security.signature.MissingResourceFailureException;
+import org.apache.xml.security.exceptions.*;
+import org.apache.xml.security.signature.XMLSignatureException;
+import org.apache.xml.security.signature.Reference;
+import org.apache.xml.security.signature.XMLSignatureInput;
+import org.apache.xml.security.transforms.Transforms;
+import org.apache.xml.security.utils.*;
+
+
+/**
+ * Handles &lt;code&gt;&amp;lt;ds:Object&amp;gt;&lt;/code&gt; elements
+ * &lt;code&gt;Object&lt;code&gt; {@link Element} supply facility which can contain any kind data
+ *
+ *
+ * @author Christian Geuer-Pollmann
+ * @todo if we remove childen, the boolean values are not updated
+ */
+public class ObjectContainer extends SignatureElementProxy {
+
+   /** {@link org.apache.log4j} logging facility */
+<span class="nc" id="L88">   static org.apache.log4j.Category cat =</span>
+      org.apache.log4j.Category.getInstance(ObjectContainer.class.getName());
+
+   /**
+    * Constructs {@link ObjectContainer}
+    *
+    * @param doc the {@link Document} in which &lt;code&gt;Object&lt;/code&gt; element is placed
+    */
+   public ObjectContainer(Document doc) {
+
+<span class="nc" id="L98">      super(doc);</span>
+<span class="nc" id="L99">   }</span>
+
+   /**
+    * Constructs {@link ObjectContainer} from {@link Element}
+    *
+    * @param element is &lt;code&gt;Object&lt;/code&gt; element
+    * @param BaseURI the URI of the resource where the XML instance was stored
+    * @throws XMLSecurityException
+    */
+   public ObjectContainer(Element element, String BaseURI)
+           throws XMLSecurityException {
+
+<span class="nc" id="L111">      super(element, BaseURI);</span>
+<span class="nc" id="L112">   }</span>
+
+   /**
+    * Sets the &lt;code&gt;Id&lt;/code&gt; attribute
+    *
+    * @param Id &lt;code&gt;Id&lt;/code&gt; attribute
+    */
+   public void setId(String Id) {
+
+<span class="nc bnc" id="L121" title="All 4 branches missed.">      if ((this._state == MODE_SIGN) &amp;&amp; (Id != null)) {</span>
+<span class="nc" id="L122">         this._constructionElement.setAttributeNS(null, Constants._ATT_ID, Id);</span>
+<span class="nc" id="L123">         IdResolver.registerElementById(this._constructionElement, Id);</span>
+      }
+<span class="nc" id="L125">   }</span>
+
+   /**
+    * Returns the &lt;code&gt;Id&lt;/code&gt; attribute
+    *
+    * @return the &lt;code&gt;Id&lt;/code&gt; attribute
+    */
+   public String getId() {
+<span class="nc" id="L133">      return this._constructionElement.getAttributeNS(null, Constants._ATT_ID);</span>
+   }
+
+   /**
+    * Sets the &lt;code&gt;MimeType&lt;/code&gt; attribute
+    *
+    * @param MimeType the &lt;code&gt;MimeType&lt;/code&gt; attribute
+    */
+   public void setMimeType(String MimeType) {
+
+<span class="nc bnc" id="L143" title="All 4 branches missed.">      if ((this._state == MODE_SIGN) &amp;&amp; (MimeType != null)) {</span>
+<span class="nc" id="L144">         this._constructionElement.setAttributeNS(null, Constants._ATT_MIMETYPE,</span>
+                                                MimeType);
+      }
+<span class="nc" id="L147">   }</span>
+
+   /**
+    * Returns the &lt;code&gt;MimeType&lt;/code&gt; attribute
+    *
+    * @return the &lt;code&gt;MimeType&lt;/code&gt; attribute
+    */
+   public String getMimeType() {
+<span class="nc" id="L155">      return this._constructionElement.getAttributeNS(null, Constants._ATT_MIMETYPE);</span>
+   }
+
+   /**
+    * Sets the &lt;code&gt;Encoding&lt;/code&gt; attribute
+    *
+    * @param Encoding the &lt;code&gt;Encoding&lt;/code&gt; attribute
+    */
+   public void setEncoding(String Encoding) {
+
+<span class="nc bnc" id="L165" title="All 4 branches missed.">      if ((this._state == MODE_SIGN) &amp;&amp; (Encoding != null)) {</span>
+<span class="nc" id="L166">         this._constructionElement.setAttributeNS(null, Constants._ATT_ENCODING,</span>
+                                                Encoding);
+      }
+<span class="nc" id="L169">   }</span>
+
+   /**
+    * Returns the &lt;code&gt;Encoding&lt;/code&gt; attribute
+    *
+    * @return the &lt;code&gt;Encoding&lt;/code&gt; attribute
+    */
+   public String getEncoding() {
+<span class="nc" id="L177">      return this._constructionElement.getAttributeNS(null, Constants._ATT_ENCODING);</span>
+   }
+
+   /**
+    * Adds childe Node
+    *
+    * @param node childe Node
+    * @return
+    */
+   public Node appendChild(Node node) {
+
+<span class="nc" id="L188">      Node result = null;</span>
+
+<span class="nc bnc" id="L190" title="All 2 branches missed.">      if (this._state == MODE_SIGN) {</span>
+<span class="nc" id="L191">         result = this._constructionElement.appendChild(node);</span>
+      }
+
+<span class="nc" id="L194">      return result;</span>
+   }
+
+   public String getBaseLocalName() {
+<span class="nc" id="L198">      return Constants._TAG_OBJECT;</span>
+   }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

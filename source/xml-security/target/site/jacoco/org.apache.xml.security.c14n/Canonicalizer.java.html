@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Canonicalizer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.c14n</a> &gt; <span class="el_source">Canonicalizer.java</span></div><h1>Canonicalizer.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.c14n;
+
+
+
+import java.io.ByteArrayInputStream;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import javax.xml.parsers.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
+import org.w3c.dom.*;
+import org.apache.xml.security.exceptions.*;
+import org.apache.xml.security.signature.XMLSignatureInput;
+import org.apache.xml.security.utils.Constants;
+import org.apache.xml.security.utils.JavaUtils;
+
+
+/**
+ *
+ *
+ * @author Christian Geuer-Pollmann
+ */
+public class Canonicalizer {
+
+   //J-
+   /** The output encoding of canonicalized data */
+   public static final String ENCODING = &quot;UTF8&quot;;
+
+   private static final String XPATH_NO_COMMENTS = &quot;[not(self::comment())]&quot;;
+   public static final String XPATH_C14N_WITH_COMMENTS = &quot;(//. | //@* | //namespace::*)&quot;;
+   public static final String XPATH_C14N_OMIT_COMMENTS = XPATH_C14N_WITH_COMMENTS + XPATH_NO_COMMENTS;
+   public static final String XPATH_C14N_WITH_COMMENTS_SINGLE_NODE = &quot;(.//. | .//@* | .//namespace::*)&quot;;
+   public static final String XPATH_C14N_OMIT_COMMENTS_SINGLE_NODE = XPATH_C14N_WITH_COMMENTS_SINGLE_NODE + XPATH_NO_COMMENTS;
+
+   public static final String ALGO_ID_C14N_OMIT_COMMENTS = &quot;http://www.w3.org/TR/2001/REC-xml-c14n-20010315&quot;;
+   public static final String ALGO_ID_C14N_WITH_COMMENTS = ALGO_ID_C14N_OMIT_COMMENTS + &quot;#WithComments&quot;;
+   public static final String ALGO_ID_C14N_EXCL_OMIT_COMMENTS = &quot;http://www.w3.org/2001/10/xml-exc-c14n#&quot;;
+   public static final String ALGO_ID_C14N_EXCL_WITH_COMMENTS = ALGO_ID_C14N_EXCL_OMIT_COMMENTS + &quot;WithComments&quot;;
+
+<span class="fc" id="L102">   static boolean _alreadyInitialized = false;</span>
+<span class="fc" id="L103">   static Map _canonicalizerHash = null;</span>
+
+<span class="fc" id="L105">   protected CanonicalizerSpi canonicalizerSpi = null;</span>
+   //J+
+
+   /**
+    * Method init
+    *
+    */
+   public static void init() {
+
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">      if (!Canonicalizer._alreadyInitialized) {</span>
+<span class="fc" id="L115">         Canonicalizer._canonicalizerHash = new HashMap(10);</span>
+<span class="fc" id="L116">         Canonicalizer._alreadyInitialized = true;</span>
+      }
+<span class="fc" id="L118">   }</span>
+
+   /**
+    * Constructor Canonicalizer
+    *
+    * @param algorithmURI
+    * @throws InvalidCanonicalizerException
+    */
+   private Canonicalizer(String algorithmURI)
+<span class="fc" id="L127">           throws InvalidCanonicalizerException {</span>
+
+      try {
+<span class="fc" id="L130">         String implementingClass = getImplementingClass(algorithmURI);</span>
+
+<span class="fc" id="L132">         this.canonicalizerSpi =</span>
+            (CanonicalizerSpi) Class.forName(implementingClass).newInstance();
+<span class="nc" id="L134">      } catch (Exception e) {</span>
+<span class="nc" id="L135">         Object exArgs[] = { algorithmURI };</span>
+
+<span class="nc" id="L137">         throw new InvalidCanonicalizerException(</span>
+            &quot;signature.Canonicalizer.UnknownCanonicalizer&quot;, exArgs);
+<span class="fc" id="L139">      }</span>
+<span class="fc" id="L140">   }</span>
+
+   /**
+    * Method getInstance
+    *
+    * @param algorithmURI
+    * @return
+    * @throws InvalidCanonicalizerException
+    */
+   public static final Canonicalizer getInstance(String algorithmURI)
+           throws InvalidCanonicalizerException {
+
+<span class="fc" id="L152">      Canonicalizer c14nizer = new Canonicalizer(algorithmURI);</span>
+
+<span class="fc" id="L154">      return c14nizer;</span>
+   }
+
+   /**
+    * Method register
+    *
+    * @param algorithmURI
+    * @param implementingClass
+    * @throws AlgorithmAlreadyRegisteredException
+    */
+   public static void register(String algorithmURI, String implementingClass)
+           throws AlgorithmAlreadyRegisteredException {
+
+      // check whether URI is already registered
+<span class="fc" id="L168">      String registeredClass = getImplementingClass(algorithmURI);</span>
+
+<span class="pc bpc" id="L170" title="3 of 4 branches missed.">      if ((registeredClass != null) &amp;&amp; (registeredClass.length() != 0)) {</span>
+<span class="nc" id="L171">         Object exArgs[] = { algorithmURI, registeredClass };</span>
+
+<span class="nc" id="L173">         throw new AlgorithmAlreadyRegisteredException(</span>
+            &quot;algorithm.alreadyRegistered&quot;, exArgs);
+      }
+
+<span class="fc" id="L177">      _canonicalizerHash.put(algorithmURI, implementingClass);</span>
+<span class="fc" id="L178">   }</span>
+
+   /**
+    * Method getURI
+    *
+    * @return
+    */
+   public final String getURI() {
+<span class="nc" id="L186">      return this.canonicalizerSpi.engineGetURI();</span>
+   }
+
+   /**
+    * Method getIncludeComments
+    *
+    * @return
+    */
+   public boolean getIncludeComments() {
+<span class="nc" id="L195">      return this.canonicalizerSpi.engineGetIncludeComments();</span>
+   }
+
+   /**
+    * This method tries to canonicalize the given bytes. It's possible to even
+    * canonicalize non-wellformed sequences if they are well-formed after being
+    * wrapped with a &lt;CODE&gt;&amp;gt;a&amp;lt;...&amp;gt;/a&amp;lt;&lt;/CODE&gt;.
+    *
+    * @param inputBytes
+    * @return
+    * @throws CanonicalizationException
+    * @throws java.io.IOException
+    * @throws javax.xml.parsers.ParserConfigurationException
+    * @throws org.xml.sax.SAXException
+    */
+   public byte[] canonicalize(byte[] inputBytes)
+           throws javax.xml.parsers.ParserConfigurationException,
+                  java.io.IOException, org.xml.sax.SAXException,
+                  CanonicalizationException {
+
+<span class="fc" id="L215">      ByteArrayInputStream bais = new ByteArrayInputStream(inputBytes);</span>
+<span class="fc" id="L216">      InputSource in = new InputSource(bais);</span>
+<span class="fc" id="L217">      DocumentBuilderFactory dfactory = DocumentBuilderFactory.newInstance();</span>
+
+<span class="fc" id="L219">      dfactory.setNamespaceAware(true);</span>
+
+      // needs to validate for ID attribute nomalization
+<span class="fc" id="L222">      dfactory.setValidating(true);</span>
+
+<span class="fc" id="L224">      DocumentBuilder db = dfactory.newDocumentBuilder();</span>
+
+      /*
+       * for some of the test vectors from the specification,
+       * there has to be a validatin parser for ID attributes, default
+       * attribute values, NMTOKENS, etc.
+       * Unfortunaltely, the test vectors do use different DTDs or
+       * even no DTD. So Xerces 1.3.1 fires many warnings about using
+       * ErrorHandlers.
+       *
+       * Text from the spec:
+       *
+       * The input octet stream MUST contain a well-formed XML document,
+       * but the input need not be validated. However, the attribute
+       * value normalization and entity reference resolution MUST be
+       * performed in accordance with the behaviors of a validating
+       * XML processor. As well, nodes for default attributes (declared
+       * in the ATTLIST with an AttValue but not specified) are created
+       * in each element. Thus, the declarations in the document type
+       * declaration are used to help create the canonical form, even
+       * though the document type declaration is not retained in the
+       * canonical form.
+       *
+       */
+<span class="fc" id="L248">      db.setErrorHandler(new org.apache.xml.security.utils</span>
+         .IgnoreAllErrorHandler());
+
+<span class="fc" id="L251">      Document document = db.parse(in);</span>
+<span class="fc" id="L252">      byte result[] = this.canonicalizeSubtree(document);</span>
+
+<span class="fc" id="L254">      return result;</span>
+   }
+
+   /**
+    * Canonicalizes the subtree rooted by &lt;CODE&gt;node&lt;/CODE&gt;.
+    *
+    * @param node
+    * @return
+    * @throws CanonicalizationException
+    */
+   public byte[] canonicalizeSubtree(Node node)
+           throws CanonicalizationException {
+<span class="fc" id="L266">      return this.canonicalizerSpi.engineCanonicalizeSubTree(node);</span>
+   }
+
+   /**
+    * Canonicalizes the subtree rooted by &lt;CODE&gt;node&lt;/CODE&gt;.
+    *
+    * @param node
+    * @param inclusiveNamespaces
+    * @return
+    * @throws CanonicalizationException
+    */
+   public byte[] canonicalizeSubtree(Node node, String inclusiveNamespaces)
+           throws CanonicalizationException {
+<span class="nc" id="L279">      return this.canonicalizerSpi.engineCanonicalizeSubTree(node,</span>
+              inclusiveNamespaces);
+   }
+
+   /**
+    * Canonicalizes an XPath node set. The &lt;CODE&gt;xpathNodeSet&lt;/CODE&gt; is treated
+    * as a list of XPath nodes, not as a list of subtrees.
+    *
+    * @param xpathNodeSet
+    * @return
+    * @throws CanonicalizationException
+    */
+   public byte[] canonicalizeXPathNodeSet(NodeList xpathNodeSet)
+           throws CanonicalizationException {
+<span class="fc" id="L293">      return this.canonicalizerSpi.engineCanonicalizeXPathNodeSet(xpathNodeSet);</span>
+   }
+
+   /**
+    * Canonicalizes an XPath node set. The &lt;CODE&gt;xpathNodeSet&lt;/CODE&gt; is treated
+    * as a list of XPath nodes, not as a list of subtrees.
+    *
+    * @param xpathNodeSet
+    * @param inclusiveNamespaces
+    * @return
+    * @throws CanonicalizationException
+    */
+   public byte[] canonicalizeXPathNodeSet(
+           NodeList xpathNodeSet, String inclusiveNamespaces)
+              throws CanonicalizationException {
+<span class="nc" id="L308">      return this.canonicalizerSpi.engineCanonicalizeXPathNodeSet(xpathNodeSet,</span>
+              inclusiveNamespaces);
+   }
+
+   /**
+    * Canonicalizes an XPath node set.
+    *
+    * @param xpathNodeSet
+    * @return
+    * @throws CanonicalizationException
+    */
+   public byte[] canonicalizeXPathNodeSet(Set xpathNodeSet)
+           throws CanonicalizationException {
+<span class="nc" id="L321">      return this.canonicalizerSpi.engineCanonicalizeXPathNodeSet(xpathNodeSet);</span>
+   }
+
+   /**
+    * Canonicalizes an XPath node set.
+    *
+    * @param xpathNodeSet
+    * @param inclusiveNamespaces
+    * @return
+    * @throws CanonicalizationException
+    */
+   public byte[] canonicalizeXPathNodeSet(
+           Set xpathNodeSet, String inclusiveNamespaces)
+              throws CanonicalizationException {
+<span class="nc" id="L335">      return this.canonicalizerSpi.engineCanonicalizeXPathNodeSet(xpathNodeSet,</span>
+              inclusiveNamespaces);
+   }
+
+   /**
+    * Returns the name of the implementing {@link CanonicalizerSpi} class
+    *
+    * @return the name of the implementing {@link CanonicalizerSpi} class
+    */
+   public String getImplementingCanonicalizerClass() {
+<span class="nc" id="L345">      return this.canonicalizerSpi.getClass().getName();</span>
+   }
+
+   /**
+    * Method getImplementingClass
+    *
+    * @param URI
+    * @return
+    */
+   private static String getImplementingClass(String URI) {
+
+<span class="fc" id="L356">      Iterator i = _canonicalizerHash.keySet().iterator();</span>
+
+<span class="fc bfc" id="L358" title="All 2 branches covered.">      while (i.hasNext()) {</span>
+<span class="fc" id="L359">         String key = (String) i.next();</span>
+
+<span class="fc bfc" id="L361" title="All 2 branches covered.">         if (key.equals(URI)) {</span>
+<span class="fc" id="L362">            return (String) _canonicalizerHash.get(key);</span>
+         }
+<span class="fc" id="L364">      }</span>
+
+<span class="fc" id="L366">      return null;</span>
+   }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KeyWrapImpl_TRIPLEDES_BC.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.algorithms.encryption.implementations.BC</a> &gt; <span class="el_source">KeyWrapImpl_TRIPLEDES_BC.java</span></div><h1>KeyWrapImpl_TRIPLEDES_BC.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.algorithms.encryption.implementations.BC;
+
+
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.security.*;
+import java.security.spec.*;
+import javax.crypto.*;
+import javax.crypto.spec.*;
+import org.apache.xml.security.algorithms.*;
+import org.apache.xml.security.algorithms.encryption.*;
+import org.apache.xml.security.algorithms.encryption.helper.*;
+import org.apache.xml.security.algorithms.encryption.params.*;
+import org.apache.xml.security.exceptions.XMLSecurityException;
+import org.apache.xml.security.utils.*;
+import org.w3c.dom.*;
+import org.apache.xml.security.utils.EncryptionConstants;
+
+
+/**
+ *
+ * @author $Author: dohy $
+ */
+<span class="fc" id="L83">public class KeyWrapImpl_TRIPLEDES_BC extends EncryptionMethodSpi {</span>
+
+   /** Field _cipher */
+   Cipher _cipher;
+
+   /** Field _sha1digest */
+   MessageDigest _sha1digest;
+
+   /**
+    * Method engineGetIvLength
+    *
+    * @return
+    */
+   public int engineGetIvLength() {
+<span class="nc" id="L97">      return 8;</span>
+   }
+
+   /**
+    * Method getImplementedAlgorithmURI
+    *
+    * @return
+    */
+   public String getImplementedAlgorithmURI() {
+<span class="fc" id="L106">      return EncryptionConstants.ALGO_ID_KEYWRAP_TRIPLEDES;</span>
+   }
+
+   /**
+    * Method getRequiredProviderName
+    *
+    * @return
+    */
+   public String getRequiredProviderName() {
+<span class="fc" id="L115">      return &quot;BC&quot;;</span>
+   }
+
+   /**
+    * Method getImplementedAlgorithmType
+    *
+    * @return
+    */
+   public int getImplementedAlgorithmType() {
+<span class="nc" id="L124">      return EncryptionMethodSpi.ALGOTYPE_SYMMETRIC_KEY_WRAP;</span>
+   }
+
+   /**
+    * Method engineGetBlockSize
+    *
+    * @return
+    */
+   public int engineGetBlockSize() {
+<span class="nc" id="L133">      return this._cipher.getBlockSize();</span>
+   }
+
+   /**
+    * Method engineInit
+    *
+    * @param doc
+    * @param params
+    * @return
+    * @throws org.apache.xml.security.exceptions.XMLSecurityException
+    */
+   public EncryptionMethodParams engineInit(
+           Document doc, EncryptionMethodParams params)
+              throws org.apache.xml.security.exceptions.XMLSecurityException {
+
+<span class="pc bpc" id="L148" title="1 of 2 branches missed.">      if (params != null) {</span>
+<span class="nc" id="L149">         throw new XMLSecurityException(</span>
+            &quot;encryption.algorithmCannotEatInitParams&quot;);
+      }
+
+      try {
+<span class="fc" id="L154">         this._cipher = Cipher.getInstance(this.getImplementedAlgorithmJCE(),</span>
+                                           this.getRequiredProviderName());
+
+<span class="fc" id="L157">         MessageDigestAlgorithm mda = MessageDigestAlgorithm.getInstance(doc,</span>
+                                         Constants.ALGO_ID_DIGEST_SHA1);
+
+<span class="fc" id="L160">         this._sha1digest = mda.getAlgorithm();</span>
+<span class="nc" id="L161">      } catch (NoSuchAlgorithmException ex) {</span>
+<span class="nc" id="L162">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L163">      } catch (NoSuchProviderException ex) {</span>
+<span class="nc" id="L164">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L165">      } catch (NoSuchPaddingException ex) {</span>
+<span class="nc" id="L166">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+<span class="fc" id="L167">      }</span>
+
+<span class="fc" id="L169">      return params;</span>
+   }
+
+   /**
+    * Method engineInit
+    *
+    * @param encryptionMethodElem
+    * @return
+    * @throws org.apache.xml.security.exceptions.XMLSecurityException
+    */
+   public EncryptionMethodParams engineInit(Element encryptionMethodElem)
+           throws org.apache.xml.security.exceptions.XMLSecurityException {
+
+<span class="nc bnc" id="L182" title="All 2 branches missed.">      if (encryptionMethodElem.getChildNodes().getLength() != 0) {</span>
+<span class="nc" id="L183">         throw new XMLSecurityException(</span>
+            &quot;encryption.algorithmCannotEatInitParams&quot;);
+      }
+
+      try {
+<span class="nc" id="L188">         this._cipher = Cipher.getInstance(this.getImplementedAlgorithmJCE(),</span>
+                                           this.getRequiredProviderName());
+
+<span class="nc" id="L191">         MessageDigestAlgorithm mda =</span>
+            MessageDigestAlgorithm
+               .getInstance(encryptionMethodElem.getOwnerDocument(), Constants
+                  .ALGO_ID_DIGEST_SHA1);
+
+<span class="nc" id="L196">         this._sha1digest = mda.getAlgorithm();</span>
+<span class="nc" id="L197">      } catch (NoSuchAlgorithmException ex) {</span>
+<span class="nc" id="L198">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L199">      } catch (NoSuchProviderException ex) {</span>
+<span class="nc" id="L200">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L201">      } catch (NoSuchPaddingException ex) {</span>
+<span class="nc" id="L202">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L203">      }</span>
+
+<span class="nc" id="L205">      return null;</span>
+   }
+
+   /**
+    * Method engineWrap
+    *
+    * @param contentKey
+    * @param wrapKey
+    * @return
+    * @throws org.apache.xml.security.exceptions.XMLSecurityException
+    */
+   public byte[] engineWrap(Key contentKey, Key wrapKey)
+           throws org.apache.xml.security.exceptions.XMLSecurityException {
+<span class="nc" id="L218">      return this.engineWrap(contentKey, wrapKey, null);</span>
+   }
+
+   /**
+    * Method engineWrap
+    *
+    * @param contentKey
+    * @param wrapKey
+    * @param IV
+    * @return
+    * @throws org.apache.xml.security.exceptions.XMLSecurityException
+    */
+   public byte[] engineWrap(Key contentKey, Key wrapKey, byte[] IV)
+           throws org.apache.xml.security.exceptions.XMLSecurityException {
+
+      try {
+<span class="fc" id="L234">         TripleDESWrapper wrapper = new TripleDESWrapper(this._cipher,</span>
+                                       this._sha1digest);
+
+<span class="fc" id="L237">         return wrapper.wrap(contentKey.getEncoded(), wrapKey, IV);</span>
+<span class="nc" id="L238">      } catch (InvalidKeyException ex) {</span>
+<span class="nc" id="L239">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L240">      } catch (InvalidAlgorithmParameterException ex) {</span>
+<span class="nc" id="L241">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L242">      } catch (IllegalBlockSizeException ex) {</span>
+<span class="nc" id="L243">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+      }
+   }
+
+   /**
+    * Method engineUnwrap
+    *
+    * @param wrappedKey
+    * @param wrapKey
+    * @param wrappedKeyURI
+    * @return
+    * @throws org.apache.xml.security.exceptions.XMLSecurityException
+    */
+   public Key engineUnwrap(byte[] wrappedKey, Key wrapKey, String wrappedKeyURI)
+           throws org.apache.xml.security.exceptions.XMLSecurityException {
+
+      try {
+<span class="fc" id="L260">         String wrappedKeyAlgorithm =</span>
+            JCEMapper
+               .translateURItoJCEID(wrappedKeyURI, this
+                  .getRequiredProviderName()).getAlgorithmID();
+<span class="fc" id="L264">         int wrappedKeyType = JCEMapper.getKeyTypeFromURI(wrappedKeyURI);</span>
+<span class="fc" id="L265">         TripleDESWrapper wrapper = new TripleDESWrapper(this._cipher,</span>
+                                       this._sha1digest);
+<span class="fc" id="L267">         byte[] encoded = wrapper.unwrap(wrappedKey, wrapKey);</span>
+
+<span class="pc bpc" id="L269" title="1 of 2 branches missed.">         if (wrappedKeyType == Cipher.SECRET_KEY) {</span>
+<span class="fc" id="L270">            return new SecretKeySpec(encoded, wrappedKeyAlgorithm);</span>
+         } else {
+            try {
+<span class="nc" id="L273">               KeyFactory kf =</span>
+                  KeyFactory.getInstance(wrappedKeyAlgorithm,
+                                         this.getRequiredProviderName());
+
+<span class="nc bnc" id="L277" title="All 2 branches missed.">               if (wrappedKeyType == Cipher.PUBLIC_KEY) {</span>
+<span class="nc" id="L278">                  return kf.generatePublic(new X509EncodedKeySpec(encoded));</span>
+<span class="nc bnc" id="L279" title="All 2 branches missed.">               } else if (wrappedKeyType == Cipher.PRIVATE_KEY) {</span>
+<span class="nc" id="L280">                  return kf.generatePrivate(new PKCS8EncodedKeySpec(encoded));</span>
+               }
+<span class="nc" id="L282">            } catch (NoSuchProviderException e) {</span>
+<span class="nc" id="L283">               throw new InvalidKeyException(&quot;Unknown key type &quot;</span>
+                                             + e.getMessage());
+<span class="nc" id="L285">            } catch (NoSuchAlgorithmException e) {</span>
+<span class="nc" id="L286">               throw new InvalidKeyException(&quot;Unknown key type &quot;</span>
+                                             + e.getMessage());
+<span class="nc" id="L288">            } catch (InvalidKeySpecException e2) {</span>
+<span class="nc" id="L289">               throw new InvalidKeyException(&quot;Unknown key type &quot;</span>
+                                             + e2.getMessage());
+<span class="nc" id="L291">            }</span>
+
+<span class="nc" id="L293">            throw new InvalidKeyException(&quot;Unknown key type &quot; + wrappedKeyType);</span>
+         }
+<span class="nc" id="L295">      } catch (InvalidKeyException ex) {</span>
+<span class="nc" id="L296">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+      }
+   }
+
+   /**
+    * Method engineEncrypt
+    *
+    * @param plaintextBytes
+    * @param contentKey
+    * @return
+    * @throws org.apache.xml.security.exceptions.XMLSecurityException
+    */
+   public byte[] engineEncrypt(byte[] plaintextBytes, Key contentKey)
+           throws org.apache.xml.security.exceptions.XMLSecurityException {
+<span class="fc" id="L310">      throw new XMLSecurityException(</span>
+         &quot;encryption.algorithmCannotEncryptDecrypt&quot;);
+   }
+
+   /**
+    * Method engineEncrypt
+    *
+    * @param plaintextBytes
+    * @param contentKey
+    * @param IV
+    * @return
+    * @throws org.apache.xml.security.exceptions.XMLSecurityException
+    */
+   public byte[] engineEncrypt(byte[] plaintextBytes, Key contentKey, byte[] IV)
+           throws org.apache.xml.security.exceptions.XMLSecurityException {
+<span class="nc" id="L325">      throw new XMLSecurityException(</span>
+         &quot;encryption.algorithmCannotEncryptDecrypt&quot;);
+   }
+
+   /**
+    * Method engineDecrypt
+    *
+    * @param ciphertextBytes
+    * @param contentKey
+    * @return
+    * @throws org.apache.xml.security.exceptions.XMLSecurityException
+    */
+   public byte[] engineDecrypt(byte[] ciphertextBytes, Key contentKey)
+           throws org.apache.xml.security.exceptions.XMLSecurityException {
+<span class="nc" id="L339">      throw new XMLSecurityException(</span>
+         &quot;encryption.algorithmCannotEncryptDecrypt&quot;);
+   }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IdResolver.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.utils</a> &gt; <span class="el_source">IdResolver.java</span></div><h1>IdResolver.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.utils;
+
+
+
+import org.w3c.dom.*;
+import org.apache.xerces.dom.DocumentImpl;
+import javax.xml.transform.TransformerException;
+import org.apache.xpath.XPathAPI;
+import org.apache.xml.security.utils.*;
+import org.apache.xml.security.Init;
+
+
+/**
+ * Purpose of this class is to enable the XML Parser to keep track of ID
+ * attributes. This is done by 'registering' attributes of type ID at the
+ * IdResolver. This is necessary if we create a document from scratch and we
+ * sign some resources with a URI using a fragent identifier...
+ * &lt;BR /&gt;
+ * The problem is that if you do not validate a document, you cannot use the
+ * &lt;CODE&gt;getElementByID&lt;/CODE&gt; functionality. So this modules uses some implicit
+ * knowledge on selected Schemas and DTDs to pick the right Element for a given
+ * ID: We know that all &lt;CODE&gt;@Id&lt;/CODE&gt; attributes in an Element from the XML
+ * Signature namespace are of type &lt;CODE&gt;ID&lt;/CODE&gt;.
+ *
+ * @author $Author: dohy $
+ * @see org.apache.xml.security.utils.resolver.implementations.ResolverFragment
+ * @see &lt;A HREF=&quot;http://www.xml.com/lpt/a/2001/11/07/id.html&quot;&gt;&quot;Identity Crisis&quot; on xml.com&lt;/A&gt;
+ */
+public class IdResolver {
+
+   /** {@link org.apache.log4j} logging facility */
+<span class="fc" id="L90">   static org.apache.log4j.Category cat =</span>
+      org.apache.log4j.Category.getInstance(IdResolver.class.getName());
+
+   /**
+    * Constructor IdResolver
+    *
+    */
+<span class="nc" id="L97">   private IdResolver() {</span>
+
+      // we don't allow instantiation
+<span class="nc" id="L100">   }</span>
+
+   /**
+    * Method registerElementById
+    *
+    * @param element
+    * @param idValue
+    */
+   public static void registerElementById(Element element, String idValue) {
+
+<span class="fc" id="L110">      Document doc = element.getOwnerDocument();</span>
+
+<span class="fc" id="L112">      ((org.apache.xerces.dom.DocumentImpl) doc).putIdentifier(idValue,</span>
+              element);
+<span class="fc" id="L114">   }</span>
+
+   /**
+    * Method registerElementById
+    *
+    * @param element
+    * @param id
+    */
+   public static void registerElementById(Element element, Attr id) {
+<span class="nc" id="L123">      IdResolver.registerElementById(element, id.getNodeValue());</span>
+<span class="nc" id="L124">   }</span>
+
+   /**
+    * Method getElementById
+    *
+    * @param doc
+    * @param id
+    * @return
+    */
+   public static Element getElementById(Document doc, String id) {
+
+<span class="fc" id="L135">      Element result = null;</span>
+
+<span class="fc" id="L137">      result = IdResolver.getElementByIdType(doc, id);</span>
+
+<span class="fc bfc" id="L139" title="All 2 branches covered.">      if (result != null) {</span>
+<span class="fc" id="L140">         cat.debug(</span>
+            &quot;I could find an Element using the simple getElementById method: &quot;
+            + result.getTagName());
+
+<span class="fc" id="L144">         return result;</span>
+      }
+
+<span class="fc" id="L147">      result = IdResolver.getElementByIdInDSNamespace(doc, id);</span>
+
+<span class="pc bpc" id="L149" title="1 of 2 branches missed.">      if (result != null) {</span>
+<span class="fc" id="L150">         cat.debug(</span>
+            &quot;I could find an Element using the advanced ds:Namespace searcher method: &quot;
+            + result.getTagName());
+
+         // register the ID to speed up further queries on that ID
+<span class="fc" id="L155">         IdResolver.registerElementById(result, id);</span>
+
+<span class="fc" id="L157">         return result;</span>
+      }
+
+<span class="nc" id="L160">      result = IdResolver.getElementByIdInXENCNamespace(doc, id);</span>
+
+<span class="nc bnc" id="L162" title="All 2 branches missed.">      if (result != null) {</span>
+<span class="nc" id="L163">         cat.debug(</span>
+            &quot;I could find an Element using the advanced xenc:Namespace searcher method: &quot;
+            + result.getTagName());
+
+         // register the ID to speed up further queries on that ID
+<span class="nc" id="L168">         IdResolver.registerElementById(result, id);</span>
+
+<span class="nc" id="L170">         return result;</span>
+      }
+
+<span class="nc" id="L173">      result = IdResolver.getElementByIdInSOAPSignatureNamespace(doc, id);</span>
+
+<span class="nc bnc" id="L175" title="All 2 branches missed.">      if (result != null) {</span>
+<span class="nc" id="L176">         cat.debug(</span>
+            &quot;I could find an Element using the advanced SOAP-SEC:id searcher method: &quot;
+            + result.getTagName());
+
+         // register the ID to speed up further queries on that ID
+<span class="nc" id="L181">         IdResolver.registerElementById(result, id);</span>
+
+<span class="nc" id="L183">         return result;</span>
+      }
+
+<span class="nc" id="L186">      result = IdResolver.getElementByIdInXKMSNamespace(doc, id);</span>
+
+<span class="nc bnc" id="L188" title="All 2 branches missed.">      if (result != null) {</span>
+<span class="nc" id="L189">         cat.debug(&quot;I could find an Element using the XKMS searcher method: &quot;</span>
+                   + result.getTagName());
+
+         // register the ID to speed up further queries on that ID
+<span class="nc" id="L193">         IdResolver.registerElementById(result, id);</span>
+
+<span class="nc" id="L195">         return result;</span>
+      }
+
+<span class="nc" id="L198">      result = IdResolver.getElementByIdUnsafeMatchByIdName(doc, id);</span>
+
+<span class="nc bnc" id="L200" title="All 2 branches missed.">      if (result != null) {</span>
+<span class="nc" id="L201">         cat.warn(</span>
+            &quot;I could find an Element using the totally stupid and insecure Id/ID/id searcher method: &quot;
+            + result.getTagName());
+
+         // Don't register the ID, we're not sure
+<span class="nc" id="L206">         return result;</span>
+      }
+
+<span class="nc" id="L209">      return null;</span>
+   }
+
+   /**
+    * Method getElementByIdType
+    *
+    * @param doc
+    * @param id
+    * @return
+    */
+   private static Element getElementByIdType(Document doc, String id) {
+
+<span class="fc" id="L221">      cat.debug(&quot;getElementByIdType() Search for ID &quot; + id);</span>
+
+<span class="fc" id="L223">      return doc.getElementById(id);</span>
+   }
+
+   /**
+    * Method getElementByIdInDSNamespace
+    *
+    * @param doc
+    * @param id
+    * @return
+    */
+   private static Element getElementByIdInDSNamespace(Document doc, String id) {
+
+<span class="fc" id="L235">      cat.debug(&quot;getElementByIdInDSNamespace() Search for ID &quot; + id);</span>
+
+      try {
+<span class="fc" id="L238">         Element nscontext = XMLUtils.createDSctx(doc, &quot;ds&quot;,</span>
+                                                  Constants.SignatureSpecNS);
+<span class="fc" id="L240">         Element element = (Element) XPathAPI.selectSingleNode(doc,</span>
+                              &quot;//ds:*[@Id='&quot; + id + &quot;']&quot;, nscontext);
+
+<span class="fc" id="L243">         return element;</span>
+
+         /*
+         NodeList dsElements = XPathAPI.selectNodeList(doc, &quot;//ds:*&quot;,
+                                  nscontext);
+
+         cat.debug(&quot;Found ds:Elements: &quot; + dsElements.getLength());
+
+         for (int i = 0; i &lt; dsElements.getLength(); i++) {
+            Element currentElem = (Element) dsElements.item(i);
+            Attr IdAttr = currentElem.getAttributeNode(Constants._ATT_ID);
+
+            if (IdAttr != null) {
+               if (IdAttr.getNodeValue().equals(id)) {
+                  return currentElem;
+               }
+            }
+         }
+         */
+<span class="nc" id="L262">      } catch (TransformerException ex) {</span>
+<span class="nc" id="L263">         cat.fatal(&quot;empty&quot;, ex);</span>
+      }
+
+<span class="nc" id="L266">      return null;</span>
+   }
+
+   /**
+    * Method getElementByIdInXENCNamespace
+    *
+    * @param doc
+    * @param id
+    * @return
+    */
+   private static Element getElementByIdInXENCNamespace(Document doc,
+           String id) {
+
+<span class="nc" id="L279">      cat.debug(&quot;getElementByIdInXENCNamespace() Search for ID &quot; + id);</span>
+
+      try {
+<span class="nc" id="L282">         Element nscontext =</span>
+            XMLUtils.createDSctx(doc, &quot;xenc&quot;,
+                                 org.apache.xml.security.utils
+                                    .EncryptionConstants.EncryptionSpecNS);
+<span class="nc" id="L286">         Element element = (Element) XPathAPI.selectSingleNode(doc,</span>
+                              &quot;//xenc:*[@Id='&quot; + id + &quot;']&quot;, nscontext);
+
+<span class="nc" id="L289">         return element;</span>
+<span class="nc" id="L290">      } catch (TransformerException ex) {</span>
+<span class="nc" id="L291">         cat.fatal(&quot;empty&quot;, ex);</span>
+      }
+
+<span class="nc" id="L294">      return null;</span>
+   }
+
+   /**
+    * Method getElementByIdInSOAPSignatureNamespace
+    *
+    * @param doc
+    * @param id
+    * @return
+    */
+   private static Element getElementByIdInSOAPSignatureNamespace(Document doc,
+           String id) {
+
+<span class="nc" id="L307">      cat.debug(&quot;getElementByIdInSOAPSignatureNamespace() Search for ID &quot; + id);</span>
+
+      try {
+<span class="nc" id="L310">         Element nscontext = XMLUtils.createDSctx(</span>
+            doc, &quot;SOAP-SEC&quot;,
+            &quot;http://schemas.xmlsoap.org/soap/security/2000-12&quot;);
+<span class="nc" id="L313">         Element element = (Element) XPathAPI.selectSingleNode(doc,</span>
+                              &quot;//*[@SOAP-SEC:id='&quot; + id + &quot;']&quot;, nscontext);
+
+<span class="nc" id="L316">         return element;</span>
+<span class="nc" id="L317">      } catch (TransformerException ex) {</span>
+<span class="nc" id="L318">         cat.fatal(&quot;empty&quot;, ex);</span>
+      }
+
+<span class="nc" id="L321">      return null;</span>
+   }
+
+   /**
+    * Method getElementByIdInXKMSNamespace
+    *
+    * @param doc
+    * @param id
+    * @return
+    * @see http://www.w3c.org/2001/XKMS/Drafts/XKMS-20020410
+    */
+   private static Element getElementByIdInXKMSNamespace(Document doc,
+           String id) {
+
+      /*
+      xmlns:xkms=&quot;http://www.w3.org/2002/03/xkms#&quot;
+
+      &lt;attribute name=&quot;ID&quot;                type=&quot;ID&quot; use=&quot;optional&quot;/&gt;
+      &lt;attribute name=&quot;OriginalRequestID&quot; type=&quot;ID&quot; use=&quot;optional&quot;/&gt;
+      &lt;attribute name=&quot;RequestID&quot;         type=&quot;ID&quot; use=&quot;optional&quot;/&gt;
+      &lt;attribute name=&quot;ResponseID&quot;        type=&quot;ID&quot; use=&quot;required&quot;/&gt;
+      */
+<span class="nc" id="L343">      cat.debug(&quot;getElementByIdInXKMSNamespace() Search for ID &quot; + id);</span>
+
+      try {
+<span class="nc" id="L346">         Element nscontext =</span>
+            XMLUtils.createDSctx(doc, &quot;xkms&quot;,
+                                 &quot;http://www.w3.org/2002/03/xkms#&quot;);
+<span class="nc" id="L349">         String[] attrs = { &quot;ID&quot;, &quot;OriginalRequestID&quot;, &quot;RequestID&quot;,</span>
+                            &quot;ResponseID&quot; };
+
+<span class="nc bnc" id="L352" title="All 2 branches missed.">         for (int i = 0; i &lt; attrs.length; i++) {</span>
+<span class="nc" id="L353">            String attr = attrs[i];</span>
+<span class="nc" id="L354">            Element element = (Element) XPathAPI.selectSingleNode(doc,</span>
+                                 &quot;//xkms:*[@&quot; + attr + &quot;='&quot; + id + &quot;']&quot;,
+                                 nscontext);
+
+<span class="nc bnc" id="L358" title="All 2 branches missed.">            if (element != null) {</span>
+<span class="nc" id="L359">               return element;</span>
+            }
+         }
+
+<span class="nc" id="L363">         return null;</span>
+<span class="nc" id="L364">      } catch (TransformerException ex) {</span>
+<span class="nc" id="L365">         cat.fatal(&quot;empty&quot;, ex);</span>
+      }
+
+<span class="nc" id="L368">      return null;</span>
+   }
+
+   /**
+    * Method getElementByIdUnsafeMatchByIdName
+    *
+    * @param doc
+    * @param id
+    * @return
+    */
+   private static Element getElementByIdUnsafeMatchByIdName(Document doc,
+           String id) {
+
+<span class="nc" id="L381">      cat.debug(&quot;getElementByIdUnsafeMatchByIdName() Search for ID &quot; + id);</span>
+
+      try {
+<span class="nc" id="L384">         Element element_Id = (Element) XPathAPI.selectSingleNode(doc,</span>
+                                 &quot;//*[@Id='&quot; + id + &quot;']&quot;);
+
+<span class="nc bnc" id="L387" title="All 2 branches missed.">         if (element_Id != null) {</span>
+<span class="nc" id="L388">            return element_Id;</span>
+         }
+
+<span class="nc" id="L391">         Element element_ID = (Element) XPathAPI.selectSingleNode(doc,</span>
+                                 &quot;//*[@ID='&quot; + id + &quot;']&quot;);
+
+<span class="nc bnc" id="L394" title="All 2 branches missed.">         if (element_ID != null) {</span>
+<span class="nc" id="L395">            return element_ID;</span>
+         }
+
+<span class="nc" id="L398">         Element element_id = (Element) XPathAPI.selectSingleNode(doc,</span>
+                                 &quot;//*[@id='&quot; + id + &quot;']&quot;);
+
+<span class="nc bnc" id="L401" title="All 2 branches missed.">         if (element_id != null) {</span>
+<span class="nc" id="L402">            return element_id;</span>
+         }
+<span class="nc" id="L404">      } catch (TransformerException ex) {</span>
+<span class="nc" id="L405">         cat.fatal(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L406">      }</span>
+
+<span class="nc" id="L408">      return null;</span>
+   }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

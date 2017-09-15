@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransformBase64Decode.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.transforms.implementations</a> &gt; <span class="el_source">TransformBase64Decode.java</span></div><h1>TransformBase64Decode.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.transforms.implementations;
+
+
+
+import java.io.InputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import org.w3c.dom.*;
+import org.w3c.dom.traversal.*;
+import org.apache.xpath.XPathAPI;
+import org.apache.xpath.objects.XObject;
+import javax.xml.parsers.*;
+import javax.xml.transform.TransformerException;
+import org.xml.sax.SAXException;
+import org.apache.xml.security.exceptions.Base64DecodingException;
+import org.apache.xml.security.signature.XMLSignatureInput;
+import org.apache.xml.security.c14n.Canonicalizer;
+import org.apache.xml.security.c14n.CanonicalizationException;
+import org.apache.xml.security.c14n.InvalidCanonicalizerException;
+import org.apache.xml.security.utils.Base64;
+import org.apache.xml.security.utils.Constants;
+import org.apache.xml.security.utils.XMLUtils;
+import org.apache.xml.security.transforms.*;
+import org.apache.xml.dtm.DTMManager;
+import org.apache.xpath.CachedXPathAPI;
+
+
+/**
+ * Implements the &lt;CODE&gt;http://www.w3.org/2000/09/xmldsig#base64&lt;/CODE&gt; decoding
+ * transform.
+ *
+ * &lt;p&gt;The normative specification for base64 decoding transforms is
+ * &lt;A HREF=&quot;http://www.w3.org/TR/2001/CR-xmldsig-core-20010419/#ref-MIME&quot;&gt;[MIME]&lt;/A&gt;.
+ * The base64 Transform element has no content. The input
+ * is decoded by the algorithms. This transform is useful if an
+ * application needs to sign the raw data associated with the encoded
+ * content of an element. &lt;/p&gt;
+ *
+ * &lt;p&gt;This transform requires an octet stream for input.
+ * If an XPath node-set (or sufficiently functional alternative) is
+ * given as input, then it is converted to an octet stream by
+ * performing operations logically equivalent to 1) applying an XPath
+ * transform with expression self::text(), then 2) taking the string-value
+ * of the node-set. Thus, if an XML element is identified by a barename
+ * XPointer in the Reference URI, and its content consists solely of base64
+ * encoded character data, then this transform automatically strips away the
+ * start and end tags of the identified element and any of its descendant
+ * elements as well as any descendant comments and processing instructions.
+ * The output of this transform is an octet stream.&lt;/p&gt;
+ *
+ * @author Christian Geuer-Pollmann
+ * @see org.apache.xml.security.utils.Base64
+ */
+<span class="fc" id="L113">public class TransformBase64Decode extends TransformSpi {</span>
+
+   /** Field implementedTransformURI */
+   public static final String implementedTransformURI =
+      Transforms.TRANSFORM_BASE64_DECODE;
+
+   /**
+    * Method engineGetURI
+    *
+    * @return
+    */
+   protected String engineGetURI() {
+<span class="nc" id="L125">      return this.implementedTransformURI;</span>
+   }
+
+   //J-
+<span class="nc" id="L129">   public boolean wantsOctetStream ()   { return true; }</span>
+<span class="nc" id="L130">   public boolean wantsNodeSet ()       { return true; }</span>
+<span class="nc" id="L131">   public boolean returnsOctetStream () { return true; }</span>
+<span class="nc" id="L132">   public boolean returnsNodeSet ()     { return false; }</span>
+   //J+
+
+   /**
+    * Method enginePerformTransform
+    *
+    * @param input
+    * @return
+    * @throws CanonicalizationException
+    * @throws IOException
+    * @throws InvalidCanonicalizerException
+    * @throws TransformationException
+    */
+   protected XMLSignatureInput enginePerformTransform(XMLSignatureInput input)
+           throws IOException, CanonicalizationException,
+                  TransformationException, InvalidCanonicalizerException {
+
+<span class="fc bfc" id="L149" title="All 2 branches covered.">      if (input.isOctetStream()) {</span>
+         try {
+<span class="fc" id="L151">            byte[] base64Bytes = input.getBytes();</span>
+<span class="fc" id="L152">            byte[] decodedBytes = Base64.decode(base64Bytes);</span>
+
+<span class="fc" id="L154">            return new XMLSignatureInput(</span>
+               new ByteArrayInputStream(decodedBytes));
+<span class="nc" id="L156">         } catch (Base64DecodingException ex) {</span>
+<span class="nc" id="L157">            throw new TransformationException(&quot;empty&quot;, ex);</span>
+         }
+      } else {
+         try {
+<span class="fc" id="L161">            Document doc =</span>
+               DocumentBuilderFactory.newInstance().newDocumentBuilder()
+                  .parse(input.getOctetStream());
+<span class="fc" id="L164">            DocumentTraversal dt = ((DocumentTraversal) doc);</span>
+<span class="fc" id="L165">            Node rootNode = (Node) doc;</span>
+
+            // we accept all nodes
+<span class="fc" id="L168">            NodeFilter nodefilter =</span>
+               new org.apache.xml.security.c14n.helper.AlwaysAcceptNodeFilter();
+<span class="fc" id="L170">            TreeWalker treewalker = dt.createTreeWalker(rootNode,</span>
+                                                        NodeFilter.SHOW_ALL,
+                                                        nodefilter, true);
+<span class="fc" id="L173">            StringBuffer sb = new StringBuffer();</span>
+
+<span class="fc" id="L175">            process(treewalker, sb);</span>
+
+<span class="fc" id="L177">            byte[] decodedBytes = Base64.decode(sb.toString());</span>
+
+<span class="fc" id="L179">            return new XMLSignatureInput(</span>
+               new ByteArrayInputStream(decodedBytes));
+<span class="nc" id="L181">         } catch (ParserConfigurationException e) {</span>
+<span class="nc" id="L182">            throw new TransformationException(&quot;c14n.Canonicalizer.Exception&quot;,</span>
+                                              e);
+<span class="nc" id="L184">         } catch (SAXException e) {</span>
+<span class="nc" id="L185">            throw new TransformationException(&quot;c14n.Canonicalizer.Exception&quot;,</span>
+                                              e);
+<span class="nc" id="L187">         } catch (Base64DecodingException ex) {</span>
+<span class="nc" id="L188">            throw new TransformationException(&quot;empty&quot;, ex);</span>
+         }
+      }
+   }
+
+   /**
+    * Method process
+    *
+    * @param treewalker
+    * @param sb
+    */
+   private void process(TreeWalker treewalker, StringBuffer sb) {
+
+<span class="fc" id="L201">      Node currentNode = treewalker.getCurrentNode();</span>
+
+<span class="fc bfc" id="L203" title="All 2 branches covered.">      if (currentNode.getNodeType() == Node.TEXT_NODE) {</span>
+<span class="fc" id="L204">         sb.append(((Text) currentNode).getData());</span>
+      }
+
+<span class="fc bfc" id="L207" title="All 2 branches covered.">      for (Node node1 = treewalker.firstChild(); node1 != null;</span>
+<span class="fc" id="L208">              node1 = treewalker.nextSibling()) {</span>
+<span class="fc" id="L209">         process(treewalker, sb);</span>
+      }
+
+<span class="fc" id="L212">      treewalker.setCurrentNode(currentNode);</span>
+<span class="fc" id="L213">   }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

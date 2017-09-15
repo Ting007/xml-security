@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransformXPath2Filter04.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.transforms.implementations</a> &gt; <span class="el_source">TransformXPath2Filter04.java</span></div><h1>TransformXPath2Filter04.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.transforms.implementations;
+
+
+
+import java.util.*;
+import java.io.IOException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import org.xml.sax.SAXException;
+import org.w3c.dom.*;
+import org.apache.xml.security.signature.XMLSignatureInput;
+import org.apache.xml.security.c14n.*;
+import org.apache.xml.security.transforms.params.XPath2FilterContainer04;
+import org.apache.xml.security.transforms.*;
+import org.apache.xml.security.exceptions.*;
+import org.apache.xml.security.utils.*;
+import org.apache.xpath.CachedXPathAPI;
+import org.apache.xpath.objects.XObject;
+import org.apache.xml.utils.PrefixResolverDefault;
+import org.apache.xml.utils.PrefixResolver;
+import org.apache.xml.dtm.DTMManager;
+
+
+/**
+ * Implements the &lt;I&gt;XML Signature XPath Filter v2.0&lt;/I&gt;
+ *
+ * @author $Author: dohy $
+ * @see &lt;A HREF=&quot;http://www.w3.org/TR/xmldsig-filter2/&quot;&gt;XPath Filter v2.0 (TR)&lt;/A&gt;
+ * @see &lt;A HREF=http://www.w3.org/Signature/Drafts/xmldsig-xfilter2/&quot;&gt;XPath Filter v2.0 (editors copy)&lt;/A&gt;
+ */
+<span class="nc" id="L89">public class TransformXPath2Filter04 extends TransformSpi {</span>
+
+   /** {@link org.apache.log4j} logging facility */
+<span class="fc" id="L92">   static org.apache.log4j.Category cat =</span>
+      org.apache.log4j.Category
+         .getInstance(TransformXPath2Filter04.class.getName());
+
+   /** Field implementedTransformURI */
+   public static final String implementedTransformURI =
+      Transforms.TRANSFORM_XPATH2FILTER04;
+
+   //J-
+<span class="nc" id="L101">   public boolean wantsOctetStream ()   { return false; }</span>
+<span class="nc" id="L102">   public boolean wantsNodeSet ()       { return true; }</span>
+<span class="nc" id="L103">   public boolean returnsOctetStream () { return false; }</span>
+<span class="nc" id="L104">   public boolean returnsNodeSet ()     { return true; }</span>
+   //J+
+
+   /**
+    * Method engineGetURI
+    *
+    * @return
+    */
+   protected String engineGetURI() {
+<span class="nc" id="L113">      return this.implementedTransformURI;</span>
+   }
+
+   /**
+    * Method enginePerformTransform
+    *
+    * @param input
+    * @return
+    * @throws TransformationException
+    */
+   protected XMLSignatureInput enginePerformTransform(XMLSignatureInput input)
+           throws TransformationException {
+
+      try {
+<span class="nc" id="L127">         Set inputSet = input.getNodeSet();</span>
+
+<span class="nc" id="L129">         cat.debug(&quot;perform xfilter2 on &quot; + inputSet.size() + &quot; nodes&quot;);</span>
+
+<span class="nc" id="L131">         CachedXPathFuncHereAPI xPathFuncHereAPI =</span>
+            new CachedXPathFuncHereAPI(input.getCachedXPathAPI());
+<span class="nc" id="L133">         CachedXPathAPI myXPathAPI =</span>
+            new CachedXPathAPI(input.getCachedXPathAPI());
+
+<span class="nc bnc" id="L136" title="All 2 branches missed.">         if (inputSet.size() == 0) {</span>
+<span class="nc" id="L137">            Object exArgs[] = { &quot;input node set contains no nodes&quot; };</span>
+
+<span class="nc" id="L139">            throw new TransformationException(&quot;empty&quot;, exArgs);</span>
+         }
+
+<span class="nc" id="L142">         Element xpathElement =</span>
+            this._transformObject.getChildElementLocalName(0,
+               XPath2FilterContainer04.XPathFilter2NS,
+               XPath2FilterContainer04._TAG_XPATH2);
+
+<span class="nc bnc" id="L147" title="All 2 branches missed.">         if (xpathElement == null) {</span>
+<span class="nc" id="L148">            Object exArgs[] = { &quot;dsig-xpath:XPath&quot;, &quot;Transform&quot; };</span>
+
+<span class="nc" id="L150">            throw new TransformationException(&quot;xml.WrongContent&quot;, exArgs);</span>
+         }
+
+<span class="nc" id="L153">         Document inputDoc = null;</span>
+
+         {
+<span class="nc" id="L156">            Iterator it = inputSet.iterator();</span>
+
+<span class="nc bnc" id="L158" title="All 2 branches missed.">            if (it.hasNext()) {</span>
+<span class="nc" id="L159">               inputDoc = XMLUtils.getOwnerDocument((Node) it.next());</span>
+            }
+         }
+
+<span class="nc" id="L163">         XPath2FilterContainer04 xpathContainer =</span>
+            XPath2FilterContainer04.newInstance(xpathElement,
+                                              input.getSourceURI());
+<span class="nc" id="L166">         Document doc = this._transformObject.getElement().getOwnerDocument();</span>
+<span class="nc" id="L167">         NodeList subtreeRoots = xPathFuncHereAPI.selectNodeList(doc,</span>
+                                    xpathContainer.getXPathFilterTextNode(),
+                                    xpathContainer.getElement());
+
+<span class="nc" id="L171">         cat.debug(&quot;subtreeRoots contains &quot; + subtreeRoots.getLength()</span>
+                   + &quot; nodes&quot;);
+
+         /*
+          * foreach subtree
+          */
+<span class="nc" id="L177">         Set selectedNodes = new HashSet();</span>
+
+<span class="nc bnc" id="L179" title="All 2 branches missed.">         for (int i = 0; i &lt; subtreeRoots.getLength(); i++) {</span>
+<span class="nc" id="L180">            Node currentRootNode = subtreeRoots.item(i);</span>
+<span class="nc" id="L181">            int currentRootNodeType = currentRootNode.getNodeType();</span>
+
+<span class="nc bnc" id="L183" title="All 4 branches missed.">            if ((currentRootNodeType == Node.ELEMENT_NODE)</span>
+                    || (currentRootNodeType == Node.DOCUMENT_NODE)) {
+<span class="nc" id="L185">               NodeList nodesInSubtree =</span>
+                  myXPathAPI
+                     .selectNodeList(currentRootNode, Canonicalizer
+                        .XPATH_C14N_WITH_COMMENTS_SINGLE_NODE);
+<span class="nc" id="L189">               int jMax = nodesInSubtree.getLength();</span>
+
+<span class="nc bnc" id="L191" title="All 2 branches missed.">               for (int j = 0; j &lt; jMax; j++) {</span>
+<span class="nc" id="L192">                  selectedNodes.add(nodesInSubtree.item(j));</span>
+               }
+<span class="nc bnc" id="L194" title="All 8 branches missed.">            } else if ((currentRootNodeType == Node.ATTRIBUTE_NODE)</span>
+                       || (currentRootNodeType == Node.TEXT_NODE)
+                       || (currentRootNodeType == Node.CDATA_SECTION_NODE)
+                       || (currentRootNodeType
+                           == Node.PROCESSING_INSTRUCTION_NODE)) {
+<span class="nc" id="L199">               selectedNodes.add(currentRootNode);</span>
+            } else {
+<span class="nc" id="L201">               throw new RuntimeException(&quot;unknown node type: &quot; + currentRootNodeType + &quot; &quot; + currentRootNode);</span>
+            }
+         }
+
+<span class="nc" id="L205">         cat.debug(&quot;selection process identified &quot; + selectedNodes.size()</span>
+                   + &quot; nodes&quot;);
+
+<span class="nc" id="L208">         Set resultNodes = new HashSet();</span>
+
+<span class="nc bnc" id="L210" title="All 2 branches missed.">         if (xpathContainer.isIntersect()) {</span>
+<span class="nc" id="L211">            Iterator inputSetIterator = inputSet.iterator();</span>
+
+<span class="nc bnc" id="L213" title="All 2 branches missed.">            while (inputSetIterator.hasNext()) {</span>
+<span class="nc" id="L214">               Node currentInputNode = (Node) inputSetIterator.next();</span>
+
+               // if the input node is selected, include it in the output
+<span class="nc bnc" id="L217" title="All 2 branches missed.">               if (selectedNodes.contains(currentInputNode)) {</span>
+<span class="nc" id="L218">                  resultNodes.add(currentInputNode);</span>
+               }
+<span class="nc" id="L220">            }</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">         } else if (xpathContainer.isSubtract()) {</span>
+<span class="nc" id="L222">            Iterator inputSetIterator = inputSet.iterator();</span>
+
+<span class="nc bnc" id="L224" title="All 2 branches missed.">            while (inputSetIterator.hasNext()) {</span>
+<span class="nc" id="L225">               Node currentInputNode = (Node) inputSetIterator.next();</span>
+
+               // if the input node is selected, do not include it
+               // otherwise, include it
+<span class="nc bnc" id="L229" title="All 2 branches missed.">               if (!selectedNodes.contains(currentInputNode)) {</span>
+<span class="nc" id="L230">                  resultNodes.add(currentInputNode);</span>
+               }
+<span class="nc" id="L232">            }</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">         } else if (xpathContainer.isUnion()) {</span>
+<span class="nc" id="L234">            Iterator inputSetIterator = inputSet.iterator();</span>
+
+<span class="nc bnc" id="L236" title="All 2 branches missed.">            while (inputSetIterator.hasNext()) {</span>
+<span class="nc" id="L237">               Node currentInputNode = (Node) inputSetIterator.next();</span>
+
+               // add all input nodes to the result
+<span class="nc" id="L240">               resultNodes.add(currentInputNode);</span>
+<span class="nc" id="L241">            }</span>
+
+<span class="nc" id="L243">            Iterator selectedSetIterator = selectedNodes.iterator();</span>
+
+<span class="nc bnc" id="L245" title="All 2 branches missed.">            while (selectedSetIterator.hasNext()) {</span>
+<span class="nc" id="L246">               Node currentSelectedNode = (Node) selectedSetIterator.next();</span>
+
+               // add all selected nodes to the result
+<span class="nc" id="L249">               resultNodes.add(currentSelectedNode);</span>
+<span class="nc" id="L250">            }</span>
+<span class="nc" id="L251">         } else {</span>
+<span class="nc" id="L252">            throw new TransformationException(&quot;empty&quot;);</span>
+         }
+
+<span class="nc" id="L255">         XMLSignatureInput result = new XMLSignatureInput(resultNodes,</span>
+                                       input.getCachedXPathAPI());
+
+<span class="nc" id="L258">         result.setSourceURI(input.getSourceURI());</span>
+
+<span class="nc" id="L260">         return result;</span>
+<span class="nc" id="L261">      } catch (TransformerException ex) {</span>
+<span class="nc" id="L262">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L263">      } catch (DOMException ex) {</span>
+<span class="nc" id="L264">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L265">      } catch (IOException ex) {</span>
+<span class="nc" id="L266">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L267">      } catch (CanonicalizationException ex) {</span>
+<span class="nc" id="L268">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L269">      } catch (InvalidCanonicalizerException ex) {</span>
+<span class="nc" id="L270">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L271">      } catch (ParserConfigurationException ex) {</span>
+<span class="nc" id="L272">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L273">      } catch (XMLSecurityException ex) {</span>
+<span class="nc" id="L274">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L275">      } catch (SAXException ex) {</span>
+<span class="nc" id="L276">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+      }
+   }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

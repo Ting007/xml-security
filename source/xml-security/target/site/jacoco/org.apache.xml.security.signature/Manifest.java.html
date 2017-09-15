@@ -1,0 +1,622 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Manifest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.signature</a> &gt; <span class="el_source">Manifest.java</span></div><h1>Manifest.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.signature;
+
+
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.*;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import org.apache.xml.security.algorithms.MessageDigestAlgorithm;
+import org.apache.xml.security.c14n.*;
+import org.apache.xml.security.exceptions.XMLSecurityException;
+import org.apache.xml.security.transforms.TransformationException;
+import org.apache.xml.security.transforms.Transforms;
+import org.apache.xml.security.utils.*;
+import org.apache.xml.security.utils.resolver.*;
+import org.apache.xpath.XPathAPI;
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
+
+
+/**
+ * Handles &lt;code&gt;&amp;lt;ds:Manifest&amp;gt;&lt;/code&gt; elements
+ * &lt;p&gt; This element holds the &lt;code&gt;Reference&lt;/code&gt; elements&lt;/p&gt;
+ * @author $author: $
+ */
+public class Manifest extends SignatureElementProxy {
+
+   /** {@link org.apache.log4j} logging facility */
+<span class="fc" id="L88">   static org.apache.log4j.Category cat =</span>
+      org.apache.log4j.Category.getInstance(Manifest.class.getName());
+
+   /** Field _references */
+   Vector _references;
+
+   /** Field verificationResults[] */
+<span class="pc" id="L95">   private boolean verificationResults[] = null;</span>
+
+   /** Field _signedContents */
+<span class="pc" id="L98">   Vector _signedContents = new Vector();</span>
+
+   /** Field _resolverProperties */
+<span class="pc" id="L101">   HashMap _resolverProperties = new HashMap(10);</span>
+
+   /** Field _perManifestResolvers */
+<span class="pc" id="L104">   Vector _perManifestResolvers = new Vector();</span>
+
+   /**
+    * Consturts {@link Manifest}
+    *
+    * @param doc the {@link Document} in which &lt;code&gt;XMLsignature&lt;/code&gt; is placed
+    */
+   public Manifest(Document doc) {
+
+<span class="nc" id="L113">      super(doc);</span>
+
+<span class="nc" id="L115">      XMLUtils.addReturnToElement(this._constructionElement);</span>
+
+<span class="nc" id="L117">      this._references = new Vector();</span>
+<span class="nc" id="L118">   }</span>
+
+   /**
+    * Constructor Manifest
+    *
+    * @param element
+    * @param BaseURI
+    * @throws XMLSecurityException
+    */
+   public Manifest(Element element, String BaseURI)
+           throws XMLSecurityException {
+
+<span class="fc" id="L130">      super(element, BaseURI);</span>
+
+      // check out Reference children
+<span class="fc" id="L133">      int le = this.length(Constants.SignatureSpecNS, Constants._TAG_REFERENCE);</span>
+      {
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">         if (le == 0) {</span>
+
+            // At least one Reference must be present. Bad.
+<span class="nc" id="L138">            Object exArgs[] = { Constants._TAG_REFERENCE,</span>
+                                Constants._TAG_MANIFEST };
+
+<span class="nc" id="L141">            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR,</span>
+                                   I18n.translate(&quot;xml.WrongContent&quot;, exArgs));
+         }
+      }
+
+      // create Vector
+<span class="fc" id="L147">      this._references = new Vector(le);</span>
+
+<span class="fc bfc" id="L149" title="All 2 branches covered.">      for (int i = 0; i &lt; le; i++) {</span>
+<span class="fc" id="L150">         this._references.add(null);</span>
+      }
+<span class="fc" id="L152">   }</span>
+
+   /**
+    * This &lt;code&gt;addDocument&lt;/code&gt; method is used to add a new resource to the
+    * signed info. A {@link org.apache.xml.security.signature.Reference} is built
+    * from the supplied values.
+    *
+    * @param BaseURI the URI of the resource where the XML instance was stored
+    * @param referenceURI &lt;code&gt;URI&lt;/code&gt; attribute in &lt;code&gt;Reference&lt;/code&gt; for specifing where data is
+    * @param transforms org.apache.xml.security.signature.Transforms object with an ordered list of transformations to be performed.
+    * @param digestURI The digest algorthim URI to be used.
+    * @param ReferenceId
+    * @param ReferenceType
+    * @throws XMLSignatureException
+    */
+   public void addDocument(
+           String BaseURI, String referenceURI, Transforms transforms, String digestURI, String ReferenceId, String ReferenceType)
+              throws XMLSignatureException {
+
+<span class="nc bnc" id="L171" title="All 2 branches missed.">      if (this._state == MODE_SIGN) {</span>
+
+         // the this._doc is handed implicitly by the this.getOwnerDocument()
+<span class="nc" id="L174">         Reference ref = new Reference(this._doc, BaseURI, referenceURI, this,</span>
+                                       transforms, digestURI);
+
+<span class="nc bnc" id="L177" title="All 2 branches missed.">         if (ReferenceId != null) {</span>
+<span class="nc" id="L178">            ref.setId(ReferenceId);</span>
+         }
+
+<span class="nc bnc" id="L181" title="All 2 branches missed.">         if (ReferenceType != null) {</span>
+<span class="nc" id="L182">            ref.setType(ReferenceType);</span>
+         }
+
+         // add Reference object to our cache vector
+<span class="nc" id="L186">         this._references.add(ref);</span>
+
+         // add the Element of the Reference object to the Manifest/SignedInfo
+<span class="nc" id="L189">         this._constructionElement.appendChild(ref.getElement());</span>
+<span class="nc" id="L190">         XMLUtils.addReturnToElement(this._constructionElement);</span>
+      }
+<span class="nc" id="L192">   }</span>
+
+   /**
+    * The calculation of the DigestValues in the References must be after the
+    * References are already added to the document and during the signing
+    * process. This ensures that all neccesary data is in place.
+    *
+    * @throws ReferenceNotInitializedException
+    * @throws XMLSignatureException
+    */
+   public void generateDigestValues()
+           throws XMLSignatureException, ReferenceNotInitializedException {
+
+<span class="nc bnc" id="L205" title="All 2 branches missed.">      if (this._state == MODE_SIGN) {</span>
+<span class="nc bnc" id="L206" title="All 2 branches missed.">         for (int i = 0; i &lt; this.getLength(); i++) {</span>
+
+            // update the cached Reference object, the Element content is automatically updated
+<span class="nc" id="L209">            Reference currentRef = (Reference) this._references.elementAt(i);</span>
+
+<span class="nc" id="L211">            currentRef.generateDigestValue();</span>
+         }
+      }
+<span class="nc" id="L214">   }</span>
+
+   /**
+    * Return the nonnegative number of added references.
+    *
+    * @return the number of references
+    */
+   public int getLength() {
+<span class="fc" id="L222">      return this._references.size();</span>
+   }
+
+   /**
+    * Return the &lt;it&gt;i&lt;/it&gt;&lt;sup&gt;th&lt;/sup&gt; reference.  Valid &lt;code&gt;i&lt;/code&gt;
+    * values are 0 to &lt;code&gt;{link@ getSize}-1&lt;/code&gt;.
+    *
+    * @param i Index of the requested {@link Reference}
+    * @return the &lt;it&gt;i&lt;/it&gt;&lt;sup&gt;th&lt;/sup&gt; reference
+    * @throws XMLSecurityException
+    */
+   public Reference item(int i) throws XMLSecurityException {
+
+<span class="pc bpc" id="L235" title="1 of 2 branches missed.">      if (this._state == MODE_SIGN) {</span>
+
+         // we already have real objects
+<span class="nc" id="L238">         return (Reference) this._references.elementAt(i);</span>
+      } else {
+<span class="pc bpc" id="L240" title="1 of 2 branches missed.">         if (this._references.elementAt(i) == null) {</span>
+
+            // not yet constructed, so _we_ have to
+<span class="nc" id="L243">            Element refElem = super.getChildElementLocalName(i,</span>
+                                 Constants.SignatureSpecNS,
+                                 Constants._TAG_REFERENCE);
+<span class="nc" id="L246">            Reference ref = new Reference(refElem, this._baseURI, this);</span>
+
+<span class="nc" id="L248">            this._references.set(i, ref);</span>
+         }
+
+<span class="fc" id="L251">         return (Reference) this._references.elementAt(i);</span>
+      }
+   }
+
+   /**
+    * Sets the &lt;code&gt;Id&lt;/code&gt; attribute
+    *
+    * @param Id the &lt;code&gt;Id&lt;/code&gt; attribute in &lt;code&gt;ds:Manifest&lt;/code&gt;
+    */
+   public void setId(String Id) {
+
+<span class="nc bnc" id="L262" title="All 4 branches missed.">      if ((this._state == MODE_SIGN) &amp;&amp; (Id != null)) {</span>
+<span class="nc" id="L263">         this._constructionElement.setAttributeNS(null, Constants._ATT_ID, Id);</span>
+<span class="nc" id="L264">         IdResolver.registerElementById(this._constructionElement, Id);</span>
+      }
+<span class="nc" id="L266">   }</span>
+
+   /**
+    * Returns the &lt;code&gt;Id&lt;/code&gt; attribute
+    *
+    * @return the &lt;code&gt;Id&lt;/code&gt; attribute in &lt;code&gt;ds:Manifest&lt;/code&gt;
+    */
+   public String getId() {
+<span class="nc" id="L274">      return this._constructionElement.getAttributeNS(null, Constants._ATT_ID);</span>
+   }
+
+   /**
+    * Used to do a &lt;A HREF=&quot;http://www.w3.org/TR/xmldsig-core/#def-ValidationReference&quot;&gt;reference
+    * validation&lt;/A&gt; of all enclosed references using the {@link Reference#verify} method.
+    *
+    * &lt;p&gt;This step loops through all {@link Reference}s and does verify the hash
+    * values. If one or more verifications fail, the method returns
+    * &lt;code&gt;false&lt;/code&gt;. If &lt;i&gt;all&lt;/i&gt; verifications are successful,
+    * it returns &lt;code&gt;true&lt;/code&gt;. The results of the individual reference
+    * validations are available by using the {@link #getVerificationResult(int)} method
+    *
+    * @return true if all References verify, false if one or more do not verify.
+    * @throws MissingResourceFailureException if a {@link Reference} does not verify (throws a {@link org.apache.xml.security.signature.ReferenceNotInitializedException} because of an uninitialized {@link XMLSignatureInput}
+    * @see org.apache.xml.security.signature.Reference#verify
+    * @see org.apache.xml.security.signature.SignedInfo#verify
+    * @see org.apache.xml.security.signature.MissingResourceFailureException
+    * @throws XMLSecurityException
+    */
+   public boolean verifyReferences()
+           throws MissingResourceFailureException, XMLSecurityException {
+<span class="nc" id="L296">      return this.verifyReferences(false);</span>
+   }
+
+   /**
+    * Used to do a &lt;A HREF=&quot;http://www.w3.org/TR/xmldsig-core/#def-ValidationReference&quot;&gt;reference
+    * validation&lt;/A&gt; of all enclosed references using the {@link Reference#verify} method.
+    *
+    * &lt;p&gt;This step loops through all {@link Reference}s and does verify the hash
+    * values. If one or more verifications fail, the method returns
+    * &lt;code&gt;false&lt;/code&gt;. If &lt;i&gt;all&lt;/i&gt; verifications are successful,
+    * it returns &lt;code&gt;true&lt;/code&gt;. The results of the individual reference
+    * validations are available by using the {@link #getVerificationResult(int)} method
+    *
+    * @param followManifests
+    * @return true if all References verify, false if one or more do not verify.
+    * @throws MissingResourceFailureException if a {@link Reference} does not verify (throws a {@link org.apache.xml.security.signature.ReferenceNotInitializedException} because of an uninitialized {@link XMLSignatureInput}
+    * @see org.apache.xml.security.signature.Reference#verify
+    * @see org.apache.xml.security.signature.SignedInfo#verify
+    * @see org.apache.xml.security.signature.MissingResourceFailureException
+    * @throws XMLSecurityException
+    */
+   public boolean verifyReferences(boolean followManifests)
+           throws MissingResourceFailureException, XMLSecurityException {
+
+<span class="fc" id="L320">      cat.debug(</span>
+         &quot;verify &quot;
+         + this.length(Constants.SignatureSpecNS, Constants._TAG_REFERENCE)
+         + &quot; References&quot;);
+<span class="fc bfc" id="L324" title="All 2 branches covered.">      cat.debug(&quot;I am &quot; + (followManifests</span>
+                           ? &quot;&quot;
+                           : &quot;not&quot;) + &quot; requested to follow nested Manifests&quot;);
+
+<span class="fc" id="L328">      boolean verify = true;</span>
+
+<span class="pc bpc" id="L330" title="1 of 2 branches missed.">      if (this.length(Constants.SignatureSpecNS, Constants._TAG_REFERENCE)</span>
+              == 0) {
+<span class="nc" id="L332">         throw new XMLSecurityException(&quot;empty&quot;);</span>
+      }
+
+<span class="fc" id="L335">      this.verificationResults =</span>
+         new boolean[this.length(Constants.SignatureSpecNS, Constants._TAG_REFERENCE)];
+
+<span class="fc" id="L338">      for (int i =</span>
+<span class="fc bfc" id="L339" title="All 2 branches covered.">              0; i &lt; this</span>
+                 .length(Constants.SignatureSpecNS, Constants
+<span class="fc" id="L341">                    ._TAG_REFERENCE); i++) {</span>
+<span class="fc" id="L342">         Reference currentRef =</span>
+            new Reference(this
+               .getChildElementLocalName(i, Constants.SignatureSpecNS, Constants
+               ._TAG_REFERENCE), this._baseURI, this);
+
+<span class="fc" id="L347">         this._references.set(i, currentRef);</span>
+
+         /* if only one item does not verify, the whole verification fails */
+         try {
+<span class="fc" id="L351">            boolean currentRefVerified = currentRef.verify();</span>
+
+<span class="fc" id="L353">            this.setVerificationResult(i, currentRefVerified);</span>
+
+<span class="fc bfc" id="L355" title="All 2 branches covered.">            if (!currentRefVerified) {</span>
+<span class="fc" id="L356">               verify = false;</span>
+            }
+
+<span class="fc" id="L359">            cat.debug(&quot;The Reference has Type &quot; + currentRef.getType());</span>
+
+            // was verification successful till now and do we want to verify the Manifest?
+<span class="fc bfc" id="L362" title="All 6 branches covered.">            if (verify &amp;&amp; followManifests</span>
+                    &amp;&amp; currentRef.typeIsReferenceToManifest()) {
+<span class="fc" id="L364">               cat.debug(&quot;We have to follow a nested Manifest&quot;);</span>
+
+               try {
+<span class="fc" id="L367">                  currentRef.dereferenceURIandPerformTransforms();</span>
+
+<span class="fc" id="L369">                  XMLSignatureInput signedManifestNodes =</span>
+                     currentRef.getTransformsOutput();
+<span class="fc" id="L371">                  Set nl = signedManifestNodes.getNodeSet();</span>
+<span class="fc" id="L372">                  Manifest referencedManifest = null;</span>
+<span class="fc" id="L373">                  Iterator nlIterator = nl.iterator();</span>
+
+<span class="pc bpc" id="L375" title="1 of 2 branches missed.">                  findManifest: while (nlIterator.hasNext()) {</span>
+<span class="fc" id="L376">                     Node n = (Node) nlIterator.next();</span>
+
+<span class="pc bpc" id="L378" title="2 of 6 branches missed.">                     if ((n.getNodeType() == Node.ELEMENT_NODE) &amp;&amp; ((Element) n)</span>
+                             .getNamespaceURI()
+                             .equals(Constants.SignatureSpecNS) &amp;&amp; ((Element) n)
+                             .getLocalName().equals(Constants._TAG_MANIFEST)) {
+                        try {
+<span class="fc" id="L383">                           referencedManifest =</span>
+                              new Manifest((Element) n,
+                                           signedManifestNodes.getSourceURI());
+
+<span class="fc" id="L387">                           break findManifest;</span>
+<span class="nc" id="L388">                        } catch (XMLSecurityException ex) {</span>
+
+                           // Hm, seems not to be a ds:Manifest
+                        }
+                     }
+<span class="fc" id="L393">                  }</span>
+
+<span class="pc bpc" id="L395" title="1 of 2 branches missed.">                  if (referencedManifest == null) {</span>
+
+                     // The Reference stated that it points to a ds:Manifest
+                     // but we did not find a ds:Manifest in the signed area
+<span class="nc" id="L399">                     throw new MissingResourceFailureException(&quot;empty&quot;,</span>
+                                                               currentRef);
+                  }
+
+<span class="fc" id="L403">                  referencedManifest._perManifestResolvers =</span>
+                     this._perManifestResolvers;
+<span class="fc" id="L405">                  referencedManifest._resolverProperties =</span>
+                     this._resolverProperties;
+
+<span class="fc" id="L408">                  boolean referencedManifestValid =</span>
+                     referencedManifest.verifyReferences(followManifests);
+
+<span class="pc bpc" id="L411" title="1 of 2 branches missed.">                  if (!referencedManifestValid) {</span>
+<span class="nc" id="L412">                     verify = false;</span>
+
+<span class="nc" id="L414">                     cat.warn(&quot;The nested Manifest was invalid (bad)&quot;);</span>
+                  } else {
+<span class="fc" id="L416">                     cat.debug(&quot;The nested Manifest was valid (good)&quot;);</span>
+                  }
+<span class="nc" id="L418">               } catch (IOException ex) {</span>
+<span class="nc" id="L419">                  throw new ReferenceNotInitializedException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L420">               } catch (ParserConfigurationException ex) {</span>
+<span class="nc" id="L421">                  throw new ReferenceNotInitializedException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L422">               } catch (SAXException ex) {</span>
+<span class="nc" id="L423">                  throw new ReferenceNotInitializedException(&quot;empty&quot;, ex);</span>
+<span class="fc" id="L424">               }</span>
+            }
+<span class="nc" id="L426">         } catch (ReferenceNotInitializedException ex) {</span>
+<span class="nc" id="L427">            Object exArgs[] = { currentRef.getURI() };</span>
+
+<span class="nc" id="L429">            throw new MissingResourceFailureException(</span>
+               &quot;signature.Verification.Reference.NoInput&quot;, exArgs, ex,
+               currentRef);
+<span class="fc" id="L432">         }</span>
+      }
+
+<span class="fc" id="L435">      return verify;</span>
+   }
+
+   /**
+    * Method setVerificationResult
+    *
+    * @param index
+    * @param verify
+    * @throws XMLSecurityException
+    */
+   private void setVerificationResult(int index, boolean verify)
+           throws XMLSecurityException {
+
+<span class="pc bpc" id="L448" title="1 of 2 branches missed.">      if (this.verificationResults == null) {</span>
+<span class="nc" id="L449">         this.verificationResults = new boolean[this.getLength()];</span>
+      }
+
+<span class="fc" id="L452">      this.verificationResults[index] = verify;</span>
+<span class="fc" id="L453">   }</span>
+
+   /**
+    * After verifying a {@link Manifest} or a {@link SignedInfo} using the
+    * {@link Manifest#verifyReferences} or {@link SignedInfo#verify} methods,
+    * the individual results can be retrieved with this method.
+    *
+    * @param index an index of into a {@link Manifest} or a {@link SignedInfo}
+    * @return the results of reference validation at the specified index
+    * @throws XMLSecurityException
+    */
+   public boolean getVerificationResult(int index) throws XMLSecurityException {
+
+<span class="pc bpc" id="L466" title="2 of 4 branches missed.">      if ((index &lt; 0) || (index &gt; this.getLength() - 1)) {</span>
+<span class="nc" id="L467">         Object exArgs[] = { Integer.toString(index),</span>
+                             Integer.toString(this.getLength()) };
+<span class="nc" id="L469">         Exception e =</span>
+            new IndexOutOfBoundsException(I18n
+               .translate(&quot;signature.Verification.IndexOutOfBounds&quot;, exArgs));
+
+<span class="nc" id="L473">         throw new XMLSecurityException(&quot;generic.EmptyMessage&quot;, e);</span>
+      }
+
+<span class="pc bpc" id="L476" title="1 of 2 branches missed.">      if (this.verificationResults == null) {</span>
+         try {
+<span class="nc" id="L478">            boolean discard = this.verifyReferences();</span>
+<span class="nc" id="L479">         } catch (Exception ex) {</span>
+<span class="nc" id="L480">            throw new XMLSecurityException(&quot;generic.EmptyMessage&quot;, ex);</span>
+<span class="nc" id="L481">         }</span>
+      }
+
+<span class="fc" id="L484">      return this.verificationResults[index];</span>
+   }
+
+   /**
+    * Adds Resource Resolver for retrieving resources at specified &lt;code&gt;URI&lt;/code&gt; attribute in &lt;code&gt;reference&lt;/code&gt; element
+    *
+    * @param resolver {@link ResourceResolver} can provide the implemenatin subclass of {@link ResourceResolverSpi} for retrieving resource.
+    */
+   public void addResourceResolver(ResourceResolver resolver) {
+
+<span class="nc bnc" id="L494" title="All 2 branches missed.">      if (resolver != null) {</span>
+<span class="nc" id="L495">         this._perManifestResolvers.add(resolver);</span>
+      }
+<span class="nc" id="L497">   }</span>
+
+   /**
+    * Adds Resource Resolver for retrieving resources at specified &lt;code&gt;URI&lt;/code&gt; attribute in &lt;code&gt;reference&lt;/code&gt; element
+    *
+    * @param resolverSpi the implemenatin subclass of {@link ResourceResolverSpi} for retrieving resource.
+    */
+   public void addResourceResolver(ResourceResolverSpi resolverSpi) {
+
+<span class="pc bpc" id="L506" title="1 of 2 branches missed.">      if (resolverSpi != null) {</span>
+<span class="fc" id="L507">         this._perManifestResolvers.add(new ResourceResolver(resolverSpi));</span>
+      }
+<span class="fc" id="L509">   }</span>
+
+   /**
+    * Used to pass parameters like proxy servers etc. to the ResourceResolver
+    * implementation.
+    *
+    * @param key the key
+    * @param value the value
+    */
+   public void setResolverProperty(String key, String value) {
+
+<span class="nc" id="L520">      java.util.Iterator i = this._resolverProperties.keySet().iterator();</span>
+
+<span class="nc bnc" id="L522" title="All 2 branches missed.">      while (i.hasNext()) {</span>
+<span class="nc" id="L523">         String c = (String) i.next();</span>
+
+<span class="nc bnc" id="L525" title="All 2 branches missed.">         if (c.equals(key)) {</span>
+<span class="nc" id="L526">            key = c;</span>
+
+<span class="nc" id="L528">            break;</span>
+         }
+<span class="nc" id="L530">      }</span>
+
+<span class="nc" id="L532">      this._resolverProperties.put(key, value);</span>
+<span class="nc" id="L533">   }</span>
+
+   /**
+    * Returns the value at specified key
+    *
+    * @param key the key
+    * @return the value
+    */
+   public String getResolverProperty(String key) {
+
+<span class="nc" id="L543">      java.util.Iterator i = this._resolverProperties.keySet().iterator();</span>
+
+<span class="nc bnc" id="L545" title="All 2 branches missed.">      while (i.hasNext()) {</span>
+<span class="nc" id="L546">         String c = (String) i.next();</span>
+
+<span class="nc bnc" id="L548" title="All 2 branches missed.">         if (c.equals(key)) {</span>
+<span class="nc" id="L549">            key = c;</span>
+
+<span class="nc" id="L551">            break;</span>
+         }
+<span class="nc" id="L553">      }</span>
+
+<span class="nc" id="L555">      return (String) this._resolverProperties.get(key);</span>
+   }
+
+   /**
+    * Method getSignedContentItem
+    *
+    * @param i
+    * @return
+    * @throws XMLSignatureException
+    */
+   public byte[] getSignedContentItem(int i) throws XMLSignatureException {
+
+      try {
+<span class="nc" id="L568">         return this.getReferencedContentAfterTransformsItem(i).getBytes();</span>
+<span class="nc" id="L569">      } catch (IOException ex) {</span>
+<span class="nc" id="L570">         throw new XMLSignatureException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L571">      } catch (CanonicalizationException ex) {</span>
+<span class="nc" id="L572">         throw new XMLSignatureException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L573">      } catch (InvalidCanonicalizerException ex) {</span>
+<span class="nc" id="L574">         throw new XMLSignatureException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L575">      } catch (XMLSecurityException ex) {</span>
+<span class="nc" id="L576">         throw new XMLSignatureException(&quot;empty&quot;, ex);</span>
+      }
+   }
+
+   /**
+    * Method getReferencedContentPriorTransformsItem
+    *
+    * @param i
+    * @return
+    * @throws XMLSecurityException
+    */
+   public XMLSignatureInput getReferencedContentBeforeTransformsItem(int i)
+           throws XMLSecurityException {
+<span class="nc" id="L589">      return this.item(i).getTransformsInput();</span>
+   }
+
+   /**
+    * Method getReferencedContentAfterTransformsItem
+    *
+    * @param i
+    * @return
+    * @throws XMLSecurityException
+    */
+   public XMLSignatureInput getReferencedContentAfterTransformsItem(int i)
+           throws XMLSecurityException {
+<span class="fc" id="L601">      return this.item(i).getTransformsOutput();</span>
+   }
+
+   /**
+    * Method getSignedContentLength
+    *
+    * @return
+    */
+   public int getSignedContentLength() {
+<span class="nc" id="L610">      return this.getLength();</span>
+   }
+
+   /**
+    * Method getBaseLocalName
+    *
+    * @return
+    */
+   public String getBaseLocalName() {
+<span class="fc" id="L619">      return Constants._TAG_MANIFEST;</span>
+   }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

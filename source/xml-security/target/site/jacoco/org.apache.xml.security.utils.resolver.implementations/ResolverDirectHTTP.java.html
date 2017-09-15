@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ResolverDirectHTTP.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.utils.resolver.implementations</a> &gt; <span class="el_source">ResolverDirectHTTP.java</span></div><h1>ResolverDirectHTTP.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.utils.resolver.implementations;
+
+
+
+import java.net.*;
+import java.io.*;
+import org.w3c.dom.*;
+import org.apache.xml.utils.URI;
+import org.apache.xml.security.utils.resolver.ResourceResolverException;
+import org.apache.xml.security.signature.XMLSignatureInput;
+import org.apache.xml.security.utils.resolver.ResourceResolverSpi;
+import org.apache.xml.security.utils.Base64;
+
+
+/**
+ * A simple ResourceResolver for HTTP requests. This class handles only 'pure'
+ * HTTP URIs which means without a fragment. The Fragment handling is done by the
+ * {@link ResolverFragment} class.
+ * &lt;BR&gt;
+ * If the user has a corporate HTTP proxy which is to be used, the usage can be
+ * switched on by setting properties for the resolver:
+ * &lt;PRE&gt;
+ * resourceResolver.setProperty(&quot;http.proxy.host&quot;, &quot;proxy.company.com&quot;);
+ * resourceResolver.setProperty(&quot;http.proxy.port&quot;, &quot;8080&quot;);
+ *
+ * // if we need a password for the proxy
+ * resourceResolver.setProperty(&quot;http.proxy.username&quot;, &quot;proxyuser3&quot;);
+ * resourceResolver.setProperty(&quot;http.proxy.password&quot;, &quot;secretca&quot;);
+ * &lt;/PRE&gt;
+ *
+ *
+ * @author $Author: dohy $
+ * @see &lt;A HREF=&quot;http://www.javaworld.com/javaworld/javatips/jw-javatip42_p.html&quot;&gt;Java Tip 42: Write Java apps that work with proxy-based firewalls&lt;/A&gt;
+ * @see &lt;A HREF=&quot;http://java.sun.com/j2se/1.4/docs/guide/net/properties.html&quot;&gt;SUN J2SE docs for network properties&lt;/A&gt;
+ * @see &lt;A HREF=&quot;http://metalab.unc.edu/javafaq/javafaq.html#proxy&quot;&gt;The JAVA FAQ Question 9.5: How do I make Java work with a proxy server?&lt;/A&gt;
+ * @todo the proxy behaviour seems not to work; if a on-existing proxy is set, it works ?!?
+ */
+<span class="fc" id="L96">public class ResolverDirectHTTP extends ResourceResolverSpi {</span>
+
+   /** {@link org.apache.log4j} logging facility */
+<span class="fc" id="L99">   static org.apache.log4j.Category cat =</span>
+      org.apache.log4j.Category.getInstance(ResolverDirectHTTP.class.getName());
+
+   /** Field properties[] */
+<span class="fc" id="L103">   static final String properties[] = { &quot;http.proxy.host&quot;,</span>
+                                        &quot;http.proxy.port&quot;,
+                                        &quot;http.proxy.username&quot;,
+                                        &quot;http.proxy.password&quot;,
+                                        &quot;http.basic.username&quot;,
+                                        &quot;http.basic.password&quot; };
+
+   /** Field HttpProxyHost */
+   private static final int HttpProxyHost = 0;
+
+   /** Field HttpProxyPort */
+   private static final int HttpProxyPort = 1;
+
+   /** Field HttpProxyUser */
+   private static final int HttpProxyUser = 2;
+
+   /** Field HttpProxyPass */
+   private static final int HttpProxyPass = 3;
+
+   /** Field HttpProxyUser */
+   private static final int HttpBasicUser = 4;
+
+   /** Field HttpProxyPass */
+   private static final int HttpBasicPass = 5;
+
+   /**
+    * Method resolve
+    *
+    * @param uri
+    * @param BaseURI
+    * @return
+    * @throws ResourceResolverException
+    * @todo calculate the correct URI from the attribute and the BaseURI
+    */
+   public XMLSignatureInput engineResolve(Attr uri, String BaseURI)
+           throws ResourceResolverException {
+
+      try {
+<span class="nc" id="L141">         boolean useProxy = false;</span>
+<span class="nc" id="L142">         String proxyHost =</span>
+            engineGetProperty(ResolverDirectHTTP
+               .properties[ResolverDirectHTTP.HttpProxyHost]);
+<span class="nc" id="L145">         String proxyPort =</span>
+            engineGetProperty(ResolverDirectHTTP
+               .properties[ResolverDirectHTTP.HttpProxyPort]);
+
+<span class="nc bnc" id="L149" title="All 4 branches missed.">         if ((proxyHost != null) &amp;&amp; (proxyPort != null)) {</span>
+<span class="nc" id="L150">            useProxy = true;</span>
+         }
+
+<span class="nc" id="L153">         String oldProxySet =</span>
+            (String) System.getProperties().get(&quot;http.proxySet&quot;);
+<span class="nc" id="L155">         String oldProxyHost =</span>
+            (String) System.getProperties().get(&quot;http.proxyHost&quot;);
+<span class="nc" id="L157">         String oldProxyPort =</span>
+            (String) System.getProperties().get(&quot;http.proxyPort&quot;);
+<span class="nc bnc" id="L159" title="All 6 branches missed.">         boolean switchBackProxy = ((oldProxySet != null)</span>
+                                    &amp;&amp; (oldProxyHost != null)
+                                    &amp;&amp; (oldProxyPort != null));
+
+         // switch on proxy usage
+<span class="nc bnc" id="L164" title="All 2 branches missed.">         if (useProxy) {</span>
+<span class="nc" id="L165">            cat.debug(&quot;Use of HTTP proxy enabled: &quot; + proxyHost + &quot;:&quot;</span>
+                      + proxyPort);
+<span class="nc" id="L167">            System.getProperties().put(&quot;http.proxySet&quot;, &quot;true&quot;);</span>
+<span class="nc" id="L168">            System.getProperties().put(&quot;http.proxyHost&quot;, proxyHost);</span>
+<span class="nc" id="L169">            System.getProperties().put(&quot;http.proxyPort&quot;, proxyPort);</span>
+         }
+
+         // make network request
+<span class="nc" id="L173">         URI uriNew = new URI(new URI(BaseURI), uri.getNodeValue());</span>
+
+         // if the URI contains a fragment, ignore it
+<span class="nc" id="L176">         URI uriNewNoFrag = new URI(uriNew);</span>
+
+<span class="nc" id="L178">         uriNewNoFrag.setFragment(null);</span>
+
+<span class="nc" id="L180">         URL url = new URL(uriNewNoFrag.toString());</span>
+<span class="nc" id="L181">         URLConnection urlConnection = url.openConnection();</span>
+
+         {
+
+            // set proxy pass
+<span class="nc" id="L186">            String proxyUser =</span>
+               engineGetProperty(ResolverDirectHTTP
+                  .properties[ResolverDirectHTTP.HttpProxyUser]);
+<span class="nc" id="L189">            String proxyPass =</span>
+               engineGetProperty(ResolverDirectHTTP
+                  .properties[ResolverDirectHTTP.HttpProxyPass]);
+
+<span class="nc bnc" id="L193" title="All 4 branches missed.">            if ((proxyUser != null) &amp;&amp; (proxyPass != null)) {</span>
+<span class="nc" id="L194">               String password = proxyUser + &quot;:&quot; + proxyPass;</span>
+<span class="nc" id="L195">               String encodedPassword = Base64.encode(password.getBytes());</span>
+
+               // or was it Proxy-Authenticate ?
+<span class="nc" id="L198">               urlConnection.setRequestProperty(&quot;Proxy-Authorization&quot;,</span>
+                                                encodedPassword);
+            }
+         }
+
+         {
+            // check if Basic authentication is required
+<span class="nc" id="L205">            String auth = urlConnection.getHeaderField(&quot;WWW-Authenticate&quot;);</span>
+
+<span class="nc bnc" id="L207" title="All 2 branches missed.">            if (auth != null) {</span>
+
+               // do http basic authentication
+<span class="nc bnc" id="L210" title="All 2 branches missed.">               if (auth.startsWith(&quot;Basic&quot;)) {</span>
+<span class="nc" id="L211">                  String user =</span>
+                     engineGetProperty(ResolverDirectHTTP
+                        .properties[ResolverDirectHTTP.HttpBasicUser]);
+<span class="nc" id="L214">                  String pass =</span>
+                     engineGetProperty(ResolverDirectHTTP
+                        .properties[ResolverDirectHTTP.HttpBasicPass]);
+
+<span class="nc bnc" id="L218" title="All 4 branches missed.">                  if ((user != null) &amp;&amp; (pass != null)) {</span>
+<span class="nc" id="L219">                     urlConnection = url.openConnection();</span>
+
+<span class="nc" id="L221">                     String password = user + &quot;:&quot; + pass;</span>
+<span class="nc" id="L222">                     String encodedPassword =</span>
+                        Base64.encode(password.getBytes());
+
+                     // set authentication property in the http header
+<span class="nc" id="L226">                     urlConnection.setRequestProperty(&quot;Authorization&quot;,</span>
+                                                      &quot;Basic &quot;
+                                                      + encodedPassword);
+                  }
+               }
+            }
+         }
+
+<span class="nc" id="L234">         String mimeType = urlConnection.getHeaderField(&quot;Content-Type&quot;);</span>
+<span class="nc" id="L235">         String contentLength = urlConnection.getHeaderField(&quot;Content-Length&quot;);</span>
+<span class="nc" id="L236">         InputStream inputStream = urlConnection.getInputStream();</span>
+<span class="nc" id="L237">         BufferedInputStream bufIn = new BufferedInputStream(inputStream);</span>
+<span class="nc" id="L238">         ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+<span class="nc" id="L239">         byte buf[] = new byte[4096];</span>
+<span class="nc" id="L240">         int read = 0;</span>
+<span class="nc" id="L241">         int summarized = 0;</span>
+
+<span class="nc bnc" id="L243" title="All 2 branches missed.">         while ((read = inputStream.read(buf)) &gt;= 0) {</span>
+<span class="nc" id="L244">            baos.write(buf, 0, read);</span>
+
+<span class="nc" id="L246">            summarized += read;</span>
+         }
+
+<span class="nc" id="L249">         cat.debug(&quot;Fetched &quot; + summarized + &quot; bytes from URI &quot;</span>
+                   + uriNew.toString());
+
+<span class="nc" id="L252">         XMLSignatureInput result = new XMLSignatureInput(baos.toByteArray());</span>
+
+         // XMLSignatureInput result = new XMLSignatureInput(inputStream);
+<span class="nc" id="L255">         result.setSourceURI(uriNew.toString());</span>
+<span class="nc" id="L256">         result.setMIMEType(mimeType);</span>
+
+         // switch off proxy usage
+<span class="nc bnc" id="L259" title="All 2 branches missed.">         if (switchBackProxy) {</span>
+<span class="nc" id="L260">            System.getProperties().put(&quot;http.proxySet&quot;, oldProxySet);</span>
+<span class="nc" id="L261">            System.getProperties().put(&quot;http.proxyHost&quot;, oldProxyHost);</span>
+<span class="nc" id="L262">            System.getProperties().put(&quot;http.proxyPort&quot;, oldProxyPort);</span>
+         }
+
+<span class="nc" id="L265">         return result;</span>
+<span class="nc" id="L266">      } catch (MalformedURLException ex) {</span>
+<span class="nc" id="L267">         throw new ResourceResolverException(&quot;generic.EmptyMessage&quot;, ex, uri,</span>
+                                             BaseURI);
+<span class="nc" id="L269">      } catch (IOException ex) {</span>
+<span class="nc" id="L270">         throw new ResourceResolverException(&quot;generic.EmptyMessage&quot;, ex, uri,</span>
+                                             BaseURI);
+      }
+   }
+
+   /**
+    * We resolve http URIs &lt;I&gt;without&lt;/I&gt; fragment...
+    *
+    * @param uri
+    * @param BaseURI
+    * @return
+    */
+   public boolean engineCanResolve(Attr uri, String BaseURI) {
+
+<span class="pc bpc" id="L284" title="1 of 2 branches missed.">      if (uri == null) {</span>
+<span class="nc" id="L285">         return false;</span>
+      }
+
+<span class="fc" id="L288">      String uriNodeValue = uri.getNodeValue();</span>
+
+<span class="fc bfc" id="L290" title="All 4 branches covered.">      if (uriNodeValue.equals(&quot;&quot;) || uriNodeValue.startsWith(&quot;#&quot;)) {</span>
+<span class="fc" id="L291">         return false;</span>
+      }
+
+      try {
+<span class="fc" id="L295">         URI uriNew = new URI(new URI(BaseURI), uri.getNodeValue());</span>
+
+<span class="pc bpc" id="L297" title="1 of 2 branches missed.">         if (uriNew.getScheme().equals(&quot;http&quot;)) {</span>
+<span class="nc" id="L298">            cat.debug(&quot;I state that I can resolve &quot; + uriNew.toString());</span>
+
+<span class="nc" id="L300">            return true;</span>
+         }
+
+<span class="fc" id="L303">         cat.debug(&quot;I state that I can't resolve &quot; + uriNew.toString());</span>
+<span class="pc" id="L304">      } catch (URI.MalformedURIException ex) {}</span>
+
+<span class="fc" id="L306">      return false;</span>
+   }
+
+   /**
+    * Method engineGetPropertyKeys
+    *
+    * @return
+    */
+   public String[] engineGetPropertyKeys() {
+<span class="nc" id="L315">      return ResolverDirectHTTP.properties;</span>
+   }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>
