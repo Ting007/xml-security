@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PRNG.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.utils</a> &gt; <span class="el_source">PRNG.java</span></div><h1>PRNG.java</h1><pre class="source lang-java linenums">package org.apache.xml.security.utils;
+
+import java.security.SecureRandom;
+
+/**
+ * Singleton for an application-wide {@link SecureRandom}.
+ *
+ * @author $Author: dohy $
+ */
+public class PRNG {
+
+<span class="fc" id="L12">  private static PRNG _prng = null;</span>
+  private SecureRandom _sr;
+
+<span class="fc" id="L15">  private PRNG(SecureRandom secureRandom) {</span>
+<span class="fc" id="L16">     this._sr = secureRandom;</span>
+<span class="fc" id="L17">  }</span>
+
+  public static void init(SecureRandom secureRandom) {
+<span class="pc bpc" id="L20" title="1 of 2 branches missed.">     if (PRNG._prng == null) {</span>
+<span class="fc" id="L21">        PRNG._prng = new PRNG(secureRandom);</span>
+     }
+<span class="fc" id="L23">  }</span>
+
+  public static PRNG getInstance() {
+<span class="nc bnc" id="L26" title="All 2 branches missed.">     if (PRNG._prng == null) {</span>
+<span class="nc" id="L27">        PRNG.init(new SecureRandom());</span>
+     }
+
+<span class="nc" id="L30">     return PRNG._prng;</span>
+  }
+
+  public SecureRandom getSecureRandom() {
+<span class="nc" id="L34">     return this._sr;</span>
+  }
+
+  public static byte[] createBytes(int length) {
+<span class="nc" id="L38">     byte result[] = new byte[length];</span>
+<span class="nc" id="L39">     PRNG.getInstance().nextBytes(result);</span>
+<span class="nc" id="L40">     return result;</span>
+  }
+
+  public void nextBytes(byte[] bytes) {
+<span class="nc" id="L44">     this._sr.nextBytes(bytes);</span>
+<span class="nc" id="L45">  }</span>
+
+  public double nextDouble() {
+<span class="nc" id="L48">     return this._sr.nextDouble();</span>
+  }
+
+  public int nextInt() {
+<span class="nc" id="L52">     return this._sr.nextInt();</span>
+  }
+
+  public int nextInt(int i) {
+<span class="nc" id="L56">     return this._sr.nextInt(i);</span>
+  }
+
+  public boolean nextBoolean() {
+<span class="nc" id="L60">     return this._sr.nextBoolean();</span>
+  }
+
+  static {
+<span class="fc" id="L64">     org.apache.xml.security.Init.init();</span>
+<span class="fc" id="L65">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

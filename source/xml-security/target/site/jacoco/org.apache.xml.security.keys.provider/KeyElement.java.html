@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KeyElement.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.keys.provider</a> &gt; <span class="el_source">KeyElement.java</span></div><h1>KeyElement.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.keys.provider;
+
+
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.KeyFactory;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.security.spec.*;
+import javax.crypto.*;
+import javax.crypto.spec.*;
+import org.apache.xml.security.algorithms.JCEMapper;
+import org.apache.xml.security.algorithms.encryption.EncryptionMethod;
+import org.apache.xml.security.encryption.EncryptedKey;
+import org.apache.xml.security.exceptions.XMLSecurityException;
+import org.apache.xml.security.keys.content.X509Data;
+import org.apache.xml.security.keys.content.x509.XMLX509Certificate;
+import org.apache.xml.security.utils.*;
+import org.w3c.dom.*;
+
+
+/**
+ *
+ * @author $Author: dohy $
+ */
+public class KeyElement extends KeyBaseType {
+
+   /**
+    * Constructor KeyElement
+    *
+    * @param doc
+    * @param alias
+    * @param k
+    * @param password
+    * @param chain
+    */
+   public KeyElement(Document doc, String alias, Key k, char[] password,
+                     Certificate[] chain) throws XMLSecurityException {
+
+<span class="nc" id="L106">      super(doc, alias);</span>
+
+<span class="nc" id="L108">      this.wrap(k, password);</span>
+<span class="nc" id="L109">      this.setCertificateChain(chain);</span>
+<span class="nc" id="L110">   }</span>
+
+   /**
+    * Constructor KeyElement
+    *
+    * @param doc
+    * @param alias
+    * @param key
+    * @param chain
+    */
+   public KeyElement(Document doc, String alias, byte[] key,
+                     Certificate[] chain) throws XMLSecurityException {
+
+<span class="nc" id="L123">      super(doc, alias);</span>
+
+<span class="nc" id="L125">      this.wrap(key);</span>
+<span class="nc" id="L126">      this.setCertificateChain(chain);</span>
+<span class="nc" id="L127">   }</span>
+
+   /** Field salt */
+<span class="nc" id="L130">   public static final byte[] salt = { (byte) 0xc9, (byte) 0x36, (byte) 0x78,</span>
+                                       (byte) 0x99, (byte) 0x52, (byte) 0x3e,
+                                       (byte) 0xea, (byte) 0xf2 };
+
+   /**
+    * Method wrap
+    *
+    * @param key
+    */
+<span class="nc" id="L139">   private void wrap(byte[] key) {}</span>
+
+   /**
+    * Method wrap
+    *
+    * @param k
+    * @param password
+    */
+   private void wrap(Key k, char[] password) {
+
+      try {
+<span class="nc" id="L150">         Key wrapKey = createWrapKey(EncryptionConstants.ALGO_ID_KEYWRAP_AES256,</span>
+                                     password);
+<span class="nc" id="L152">         EncryptedKey ek =</span>
+            new EncryptedKey(this._doc,
+                             EncryptionConstants.ALGO_ID_KEYWRAP_AES256, null,
+                             null, k, wrapKey, null, null, null, null, null,
+                             null);
+
+         /*
+         String JCAalgo = k.getAlgorithm();
+         String JCAformat = k.getFormat();
+         String keyType = null;
+         if (JavaUtils.implementsInterface(k, &quot;java.security.PrivateKey&quot;)) {
+            keyType = &quot;PrivateKey&quot;;
+         } else if (JavaUtils
+                 .implementsInterface(k, &quot;javax.crypto.SecretKey&quot;)) {
+            keyType = &quot;SecretKey&quot;;
+         }
+         */
+<span class="nc" id="L169">         this._constructionElement.appendChild(ek.getElement());</span>
+<span class="nc" id="L170">         XMLUtils.addReturnToElement(this._constructionElement);</span>
+<span class="nc" id="L171">      } catch (XMLSecurityException ex) {</span>
+<span class="nc" id="L172">         throw new RuntimeException(ex.getMessage());</span>
+<span class="nc" id="L173">      }</span>
+<span class="nc" id="L174">   }</span>
+
+   /**
+    * Method unwrap
+    *
+    * @param password
+    * @return
+    * @throws NoSuchAlgorithmException
+    * @throws UnrecoverableKeyException
+    */
+   public Key unwrap(char[] password)
+           throws NoSuchAlgorithmException, UnrecoverableKeyException {
+
+      try {
+<span class="nc" id="L188">         Key wrapKey = createWrapKey(EncryptionConstants.ALGO_ID_KEYWRAP_AES256,</span>
+                                     password);
+<span class="nc" id="L190">         EncryptedKey ek =</span>
+            new EncryptedKey(this
+               .getChildElementLocalName(0, EncryptionConstants
+               .EncryptionSpecNS, EncryptionConstants._TAG_ENCRYPTEDKEY), this
+                  ._baseURI);
+
+<span class="nc" id="L196">         return ek.unwrap(wrapKey, EncryptionConstants.ALGO_ID_KEYWRAP_AES128);</span>
+<span class="nc" id="L197">      } catch (XMLSecurityException ex) {</span>
+<span class="nc" id="L198">         throw new RuntimeException(ex.getMessage());</span>
+      }
+   }
+
+   /**
+    * Constructor KeyElement
+    *
+    * @param element
+    * @param BaseURI
+    * @throws XMLSecurityException
+    */
+   public KeyElement(Element element, String BaseURI)
+           throws XMLSecurityException {
+<span class="nc" id="L211">      super(element, BaseURI);</span>
+<span class="nc" id="L212">   }</span>
+
+   /**
+    * Method getBaseLocalName
+    *
+    * @return
+    */
+   public String getBaseLocalName() {
+<span class="nc" id="L220">      return ApacheKeyStoreConstants._TAG_KEY;</span>
+   }
+
+   /**
+    * Method setCertificateChain
+    *
+    * @param chain
+    * @throws XMLSecurityException
+    */
+   public void setCertificateChain(Certificate[] chain)
+           throws XMLSecurityException {
+
+<span class="nc bnc" id="L232" title="All 6 branches missed.">      if ((this._state == MODE_CREATE) &amp;&amp; (chain != null)</span>
+              &amp;&amp; (chain.length &gt; 0)) {
+<span class="nc" id="L234">         Element chainElement =</span>
+            ElementProxy.createElementForFamily(this._doc,
+                                                this.getBaseNamespace(),
+                                                ApacheKeyStoreConstants
+                                                   ._TAG_CERTIFICATE_CHAIN);
+
+<span class="nc" id="L240">         XMLUtils.addReturnToElement(chainElement);</span>
+
+<span class="nc bnc" id="L242" title="All 2 branches missed.">         for (int i = 0; i &lt; chain.length; i++) {</span>
+<span class="nc" id="L243">            Certificate currentCert = chain[i];</span>
+
+<span class="nc bnc" id="L245" title="All 2 branches missed.">            if (currentCert != null) {</span>
+<span class="nc bnc" id="L246" title="All 2 branches missed.">               if (currentCert.getType().equals(&quot;X.509&quot;)) {</span>
+<span class="nc" id="L247">                  X509Data xd = new X509Data(this._doc);</span>
+
+<span class="nc" id="L249">                  xd.add(new XMLX509Certificate(this._doc,</span>
+                                                (X509Certificate) currentCert));
+<span class="nc" id="L251">                  chainElement.appendChild(xd.getElement());</span>
+<span class="nc" id="L252">                  XMLUtils.addReturnToElement(chainElement);</span>
+<span class="nc" id="L253">               } else {</span>
+<span class="nc" id="L254">                  throw new IllegalArgumentException(</span>
+                     &quot;The certificate &quot; + i + &quot; is of type &quot;
+                     + currentCert.getType()
+                     + &quot;, but I can only handle X.509 certificates&quot;);
+               }
+            }
+         }
+
+<span class="nc" id="L262">         this._constructionElement.appendChild(chainElement);</span>
+      }
+<span class="nc" id="L264">   }</span>
+
+   /**
+    * Method getCertificateChain
+    *
+    * @param alias
+    * @return
+    */
+   public Certificate[] getCertificateChain(String alias) {
+
+      try {
+<span class="nc" id="L275">         NodeList certificates =</span>
+            this._constructionElement
+               .getElementsByTagNameNS(Constants.SignatureSpecNS,
+                                       Constants._TAG_X509CERTIFICATE);
+<span class="nc" id="L279">         Certificate result[] = new Certificate[certificates.getLength()];</span>
+
+<span class="nc bnc" id="L281" title="All 2 branches missed.">         for (int i = 0; i &lt; certificates.getLength(); i++) {</span>
+<span class="nc" id="L282">            Element currentCert = (Element) certificates.item(i);</span>
+<span class="nc" id="L283">            XMLX509Certificate cert = new XMLX509Certificate(currentCert,</span>
+                                         this._baseURI);
+
+<span class="nc" id="L286">            result[i] = cert.getX509Certificate();</span>
+         }
+
+<span class="nc" id="L289">         return result;</span>
+<span class="nc" id="L290">      } catch (XMLSecurityException ex) {}</span>
+
+<span class="nc" id="L292">      return null;</span>
+   }
+
+   /**
+    * converts a password to a byte array according to the scheme in
+    * PKCS12 (unicode, big endian, 2 zero pad bytes at the end).
+    *
+    * @param password a character array reqpresenting the password.
+    * @return a byte array representing the password.
+    */
+   public static byte[] PKCS12PasswordToBytes(char[] password) {
+
+      // +1 for extra 2 pad bytes.
+<span class="nc" id="L305">      byte[] bytes = new byte[(password.length + 1) * 2];</span>
+
+<span class="nc bnc" id="L307" title="All 2 branches missed.">      for (int i = 0; i != password.length; i++) {</span>
+<span class="nc" id="L308">         bytes[i * 2] = (byte) (password[i] &gt;&gt;&gt; 8);</span>
+<span class="nc" id="L309">         bytes[i * 2 + 1] = (byte) password[i];</span>
+      }
+
+<span class="nc" id="L312">      return bytes;</span>
+   }
+
+   /**
+    * Method createWrapKey
+    *
+    * @param algorithmURI
+    * @param password
+    * @return
+    * @throws XMLSecurityException
+    */
+   private static Key createWrapKey(String algorithmURI, char[] password)
+           throws XMLSecurityException {
+
+<span class="nc" id="L326">      int requiredKeyLength = JCEMapper.getKeyLengthFromURI(algorithmURI) / 8;</span>
+<span class="nc" id="L327">      String JCEAlgoID = JCEMapper.getJCEKeyAlgorithmFromURI(algorithmURI,</span>
+                            &quot;BC&quot;);
+
+      try {
+<span class="nc" id="L331">         MessageDigest md = MessageDigest.getInstance(&quot;SHA-1&quot;, &quot;BC&quot;);</span>
+
+<span class="nc" id="L333">         md.update(PKCS12PasswordToBytes(password));</span>
+
+<span class="nc" id="L335">         byte[] keyBytes = new byte[requiredKeyLength];</span>
+
+<span class="nc" id="L337">         md.digest(keyBytes, 0, keyBytes.length);</span>
+
+<span class="nc" id="L339">         return new SecretKeySpec(keyBytes, JCEAlgoID);</span>
+<span class="nc" id="L340">      } catch (NoSuchProviderException ex) {}</span>
+<span class="nc" id="L341">      catch (NoSuchAlgorithmException ex) {}</span>
+<span class="nc" id="L342">      catch (java.security.DigestException ex) {}</span>
+
+<span class="nc" id="L344">      return null;</span>
+   }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

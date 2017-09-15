@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>I18n.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.utils</a> &gt; <span class="el_source">I18n.java</span></div><h1>I18n.java</h1><pre class="source lang-java linenums">
+/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights 
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:  
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written 
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European 
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme. 
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.utils;
+
+
+
+import java.util.Properties;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import java.text.MessageFormat;
+
+
+/**
+ * The Internationalization (I18N) pack.
+ *
+ *
+ *
+ * @author Christian Geuer-Pollmann
+ */
+<span class="nc" id="L77">public class I18n {</span>
+
+   /** Field defaultLanguageCode */
+   public static String defaultLanguageCode;    // will be set in static{} block
+
+   /** Field defaultCountryCode */
+   public static String defaultCountryCode;    // will be set in static{} block
+
+   /** Field resourceBundle */
+   protected static ResourceBundle resourceBundle;
+
+   /** Field alreadyInitialized */
+<span class="fc" id="L89">   protected static boolean alreadyInitialized = false;</span>
+
+   /** Field _languageCode */
+<span class="fc" id="L92">   protected static String _languageCode = null;</span>
+
+   /** Field _countryCode */
+<span class="fc" id="L95">   protected static String _countryCode = null;</span>
+
+   /**
+    * Method translate
+    *
+    * translates a message ID into an internationalized String, see alse
+    * &lt;CODE&gt;XMLSecurityException.getExceptionMEssage()&lt;/CODE&gt;. The strings are
+    * stored in the &lt;CODE&gt;ResourceBundle&lt;/CODE&gt;, which is identified in
+    * &lt;CODE&gt;exceptionMessagesResourceBundleBase&lt;/CODE&gt;
+    *
+    * @param message
+    * @param args is an &lt;CODE&gt;Object[]&lt;/CODE&gt; array of strings which are inserted into the String which is retrieved from the &lt;CODE&gt;ResouceBundle&lt;/CODE&gt;
+    * @return
+    */
+   public static String translate(String message, Object[] args) {
+<span class="fc" id="L110">      return getExceptionMessage(message, args);</span>
+   }
+
+   /**
+    * Method translate
+    *
+    * translates a message ID into an internationalized String, see alse
+    * &lt;CODE&gt;XMLSecurityException.getExceptionMEssage()&lt;/CODE&gt;
+    *
+    * @param message
+    * @return
+    */
+   public static String translate(String message) {
+<span class="nc" id="L123">      return getExceptionMessage(message);</span>
+   }
+
+   /**
+    * Method getExceptionMessage
+    *
+    * @param msgID
+    * @return
+    */
+   public static String getExceptionMessage(String msgID) {
+
+      try {
+<span class="fc" id="L135">         String s = resourceBundle.getString(msgID);</span>
+
+<span class="fc" id="L137">         return s;</span>
+<span class="nc" id="L138">      } catch (Throwable t) {</span>
+<span class="nc" id="L139">         String s = &quot;No message with ID \&quot;&quot; + msgID</span>
+                    + &quot;\&quot; found in resource bundle \&quot;&quot;
+                    + Constants.exceptionMessagesResourceBundleBase + &quot;\&quot;&quot;;
+
+<span class="nc" id="L143">         return s;</span>
+      }
+   }
+
+   /**
+    * Method getExceptionMessage
+    *
+    * @param msgID
+    * @param originalException
+    * @return
+    */
+   public static String getExceptionMessage(String msgID,
+                                            Exception originalException) {
+
+      try {
+<span class="nc" id="L158">         Object exArgs[] = { originalException.getMessage() };</span>
+<span class="nc" id="L159">         String s = MessageFormat.format(resourceBundle.getString(msgID),</span>
+                                         exArgs);
+
+<span class="nc" id="L162">         return s;</span>
+<span class="nc" id="L163">      } catch (Throwable t) {</span>
+<span class="nc" id="L164">         String s = &quot;No message with ID \&quot;&quot; + msgID</span>
+                    + &quot;\&quot; found in resource bundle \&quot;&quot;
+                    + Constants.exceptionMessagesResourceBundleBase
+                    + &quot;\&quot;. Original Exception was a &quot;
+                    + originalException.getClass().getName() + &quot; and message &quot;
+                    + originalException.getMessage();
+
+<span class="nc" id="L171">         return s;</span>
+      }
+   }
+
+   /**
+    * Method getExceptionMessage
+    *
+    * @param msgID
+    * @param exArgs
+    * @return
+    */
+   public static String getExceptionMessage(String msgID, Object exArgs[]) {
+
+      try {
+<span class="fc" id="L185">         String s = MessageFormat.format(resourceBundle.getString(msgID),</span>
+                                         exArgs);
+
+<span class="fc" id="L188">         return s;</span>
+<span class="nc" id="L189">      } catch (Throwable t) {</span>
+<span class="nc" id="L190">         String s = &quot;No message with ID \&quot;&quot; + msgID</span>
+                    + &quot;\&quot; found in resource bundle \&quot;&quot;
+                    + Constants.exceptionMessagesResourceBundleBase + &quot;\&quot;&quot;;
+
+<span class="nc" id="L194">         return s;</span>
+      }
+   }
+
+   /**
+    * Method init
+    *
+    * @param _defaultLanguageCode
+    * @param _defaultCountryCode
+    */
+   public static void init(String _defaultLanguageCode,
+                           String _defaultCountryCode) {
+
+<span class="fc" id="L207">      I18n.defaultLanguageCode = _defaultLanguageCode;</span>
+
+<span class="pc bpc" id="L209" title="1 of 2 branches missed.">      if (I18n.defaultLanguageCode == null) {</span>
+<span class="nc" id="L210">         I18n.defaultLanguageCode = Locale.getDefault().getLanguage();</span>
+      }
+
+<span class="fc" id="L213">      I18n.defaultCountryCode = _defaultCountryCode;</span>
+
+<span class="pc bpc" id="L215" title="1 of 2 branches missed.">      if (I18n.defaultCountryCode == null) {</span>
+<span class="nc" id="L216">         I18n.defaultCountryCode = Locale.getDefault().getCountry();</span>
+      }
+
+<span class="fc" id="L219">      initLocale(I18n.defaultLanguageCode, I18n.defaultCountryCode);</span>
+<span class="fc" id="L220">   }</span>
+
+   /**
+    * Method initLocale
+    *
+    * @param languageCode
+    * @param countryCode
+    */
+   public static void initLocale(String languageCode, String countryCode) {
+
+<span class="pc bpc" id="L230" title="5 of 6 branches missed.">      if (alreadyInitialized &amp;&amp; languageCode.equals(_languageCode)</span>
+              &amp;&amp; countryCode.equals(_countryCode)) {
+<span class="nc" id="L232">         return;</span>
+      }
+
+<span class="pc bpc" id="L235" title="4 of 8 branches missed.">      if ((languageCode != null) &amp;&amp; (countryCode != null)</span>
+              &amp;&amp; (languageCode.length() &gt; 0) &amp;&amp; (countryCode.length() &gt; 0)) {
+<span class="fc" id="L237">         _languageCode = languageCode;</span>
+<span class="fc" id="L238">         _countryCode = countryCode;</span>
+      } else {
+<span class="nc" id="L240">         _countryCode = I18n.defaultCountryCode;</span>
+<span class="nc" id="L241">         _languageCode = I18n.defaultLanguageCode;</span>
+      }
+
+<span class="fc" id="L244">      I18n.resourceBundle =</span>
+         ResourceBundle.getBundle(Constants.exceptionMessagesResourceBundleBase,
+                                  new Locale(_languageCode, _countryCode));
+<span class="fc" id="L247">   }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

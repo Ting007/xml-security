@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KeyTransportImpl_RSAOAEP_BC.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.algorithms.encryption.implementations.BC</a> &gt; <span class="el_source">KeyTransportImpl_RSAOAEP_BC.java</span></div><h1>KeyTransportImpl_RSAOAEP_BC.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.algorithms.encryption.implementations.BC;
+
+import java.io.*;
+import java.security.*;
+import java.security.spec.*;
+import javax.crypto.*;
+import javax.crypto.spec.*;
+import org.apache.xml.security.algorithms.*;
+import org.apache.xml.security.algorithms.encryption.*;
+import org.apache.xml.security.algorithms.encryption.helper.*;
+import org.apache.xml.security.algorithms.encryption.params.*;
+import org.apache.xml.security.exceptions.XMLSecurityException;
+import org.apache.xml.security.utils.*;
+import org.w3c.dom.*;
+
+
+/**
+ *
+ * @author $Author: dohy $
+ */
+<span class="fc" id="L79">public class KeyTransportImpl_RSAOAEP_BC extends KeyTransportImpl {</span>
+
+   /** Field _params */
+<span class="fc" id="L82">   OAEPParams _params = null;</span>
+
+   /** Field _cipher */
+<span class="fc" id="L85">   OAEPCipher _cipher = null;</span>
+
+   /**
+    * Method engineGetIvLength
+    *
+    * @return
+    */
+   public int engineGetIvLength() {
+<span class="nc" id="L93">      return -1;</span>
+   }
+
+   /**
+    * Method getImplementedAlgorithmURI
+    *
+    * @return
+    */
+   public String getImplementedAlgorithmURI() {
+<span class="nc" id="L102">      return EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP;</span>
+   }
+
+   /**
+    * Method engineGetBlockSize
+    *
+    * @return
+    */
+   public int engineGetBlockSize() {
+<span class="nc bnc" id="L111" title="All 2 branches missed.">      if (this._cipher != null) {</span>
+<span class="nc" id="L112">         return this._cipher.getInputBlockSize();</span>
+      } else {
+<span class="nc" id="L114">         return 0;</span>
+      }
+   }
+
+   /**
+    * Method engineInit
+    *
+    * @param doc
+    * @param params
+    * @throws XMLSecurityException
+    */
+   public EncryptionMethodParams engineInit(Document doc, EncryptionMethodParams params)
+           throws XMLSecurityException {
+
+<span class="nc" id="L128">      this._doc = doc;</span>
+
+<span class="nc bnc" id="L130" title="All 2 branches missed.">      if (params == null) {</span>
+<span class="nc" id="L131">         this._params = new OAEPParams(null, null);</span>
+      } else {
+<span class="nc bnc" id="L133" title="All 2 branches missed.">         if (params instanceof OAEPParams) {</span>
+<span class="nc" id="L134">            this._params = (OAEPParams) params;</span>
+         } else {
+<span class="nc" id="L136">            throw new XMLSecurityException(&quot;empty&quot;);</span>
+         }
+      }
+
+      try {
+<span class="nc" id="L141">         Cipher rsaCipher =</span>
+            Cipher.getInstance(this.getImplementedAlgorithmJCE(),
+                               this.getRequiredProviderName());
+<span class="nc" id="L144">         MessageDigestAlgorithm mda =</span>
+            MessageDigestAlgorithm.getInstance(this._doc,
+                                               this._params
+                                                  .getDigestMethodURI());
+<span class="nc" id="L148">         MessageDigest md = mda.getAlgorithm();</span>
+
+<span class="nc" id="L150">         this._cipher = new OAEPCipher(rsaCipher, md,</span>
+                                       this._params.getOAEPParamBytes());
+<span class="nc" id="L152">      } catch (NoSuchAlgorithmException ex) {</span>
+<span class="nc" id="L153">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L154">      } catch (NoSuchProviderException ex) {</span>
+<span class="nc" id="L155">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L156">      } catch (NoSuchPaddingException ex) {</span>
+<span class="nc" id="L157">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L158">      }</span>
+
+<span class="nc" id="L160">      return (EncryptionMethodParams) this._params;</span>
+   }
+
+   public EncryptionMethodParams engineInit(Element encryptionMethodElem)
+              throws org.apache.xml.security.exceptions.XMLSecurityException {
+
+<span class="nc" id="L166">      this._params = new OAEPParams(encryptionMethodElem);</span>
+
+      try {
+<span class="nc" id="L169">         Cipher rsaCipher =</span>
+            Cipher.getInstance(this.getImplementedAlgorithmJCE(),
+                               this.getRequiredProviderName());
+<span class="nc" id="L172">         MessageDigestAlgorithm mda =</span>
+            MessageDigestAlgorithm.getInstance(this._doc,
+                                               this._params
+                                                  .getDigestMethodURI());
+<span class="nc" id="L176">         MessageDigest md = mda.getAlgorithm();</span>
+
+<span class="nc" id="L178">         this._cipher = new OAEPCipher(rsaCipher, md,</span>
+                                       this._params.getOAEPParamBytes());
+<span class="nc" id="L180">      } catch (NoSuchAlgorithmException ex) {</span>
+<span class="nc" id="L181">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L182">      } catch (NoSuchProviderException ex) {</span>
+<span class="nc" id="L183">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L184">      } catch (NoSuchPaddingException ex) {</span>
+<span class="nc" id="L185">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L186">      }</span>
+
+<span class="nc" id="L188">      return (EncryptionMethodParams) this._params;</span>
+   }
+
+   /**
+    * Method engineWrap
+    *
+    * @param contentKey
+    * @param wrapKey
+    * @return
+    * @throws XMLSecurityException
+    */
+   public byte[] engineWrap(Key contentKey, Key wrapKey)
+           throws XMLSecurityException {
+
+      try {
+<span class="nc" id="L203">         this._cipher.init(Cipher.ENCRYPT_MODE, wrapKey,</span>
+                           PRNG.getInstance().getSecureRandom());
+
+<span class="nc" id="L206">         byte contentKeyBytes[] = contentKey.getEncoded();</span>
+
+<span class="nc" id="L208">         return this._cipher.encodeBlock(contentKeyBytes, 0,</span>
+                                         contentKeyBytes.length);
+<span class="nc" id="L210">      } catch (BadPaddingException ex) {</span>
+<span class="nc" id="L211">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L212">      } catch (InvalidKeyException ex) {</span>
+<span class="nc" id="L213">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L214">      } catch (IllegalBlockSizeException ex) {</span>
+<span class="nc" id="L215">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+      }
+   }
+
+   /**
+    * Method engineUnwrap
+    *
+    * @param wrappedKey
+    * @param wrapKey
+    * @param wrappedKeyAlgoURI
+    * @return
+    * @throws XMLSecurityException
+    */
+   public Key engineUnwrap(
+           byte[] wrappedKey, Key wrapKey, String wrappedKeyAlgoURI)
+              throws XMLSecurityException {
+
+      try {
+<span class="nc" id="L233">         this._cipher.init(Cipher.DECRYPT_MODE, wrapKey, null);</span>
+
+<span class="nc" id="L235">         String keyAlgorithm =</span>
+            JCEMapper
+               .translateURItoJCEID(wrappedKeyAlgoURI, this
+                  .getRequiredProviderName()).getAlgorithmID();
+<span class="nc" id="L239">         int keyType = JCEMapper.getKeyTypeFromURI(wrappedKeyAlgoURI);</span>
+<span class="nc" id="L240">         byte[] decoded = this._cipher.decodeBlock(wrappedKey, 0,</span>
+                                                   wrappedKey.length);
+
+<span class="nc bnc" id="L243" title="All 2 branches missed.">         if (keyType == Cipher.SECRET_KEY) {</span>
+<span class="nc" id="L244">            return new SecretKeySpec(decoded, keyAlgorithm);</span>
+         } else {
+            try {
+<span class="nc" id="L247">               KeyFactory kf =</span>
+                  KeyFactory.getInstance(keyAlgorithm,
+                                         this.getRequiredProviderName());
+
+<span class="nc bnc" id="L251" title="All 2 branches missed.">               if (keyType == Cipher.PUBLIC_KEY) {</span>
+<span class="nc" id="L252">                  return kf.generatePublic(new X509EncodedKeySpec(decoded));</span>
+<span class="nc bnc" id="L253" title="All 2 branches missed.">               } else if (keyType == Cipher.PRIVATE_KEY) {</span>
+<span class="nc" id="L254">                  return kf.generatePrivate(new PKCS8EncodedKeySpec(decoded));</span>
+               }
+<span class="nc" id="L256">            } catch (NoSuchProviderException e) {</span>
+<span class="nc" id="L257">               throw new InvalidKeyException(&quot;Unknown key type &quot;</span>
+                                             + e.getMessage());
+<span class="nc" id="L259">            } catch (NoSuchAlgorithmException e) {</span>
+<span class="nc" id="L260">               throw new InvalidKeyException(&quot;Unknown key type &quot;</span>
+                                             + e.getMessage());
+<span class="nc" id="L262">            } catch (InvalidKeySpecException e2) {</span>
+<span class="nc" id="L263">               throw new InvalidKeyException(&quot;Unknown key type &quot;</span>
+                                             + e2.getMessage());
+<span class="nc" id="L265">            }</span>
+
+<span class="nc" id="L267">            throw new InvalidKeyException(&quot;Unknown key type &quot; + keyType);</span>
+         }
+<span class="nc" id="L269">      } catch (BadPaddingException ex) {</span>
+<span class="nc" id="L270">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L271">      } catch (InvalidKeyException ex) {</span>
+<span class="nc" id="L272">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L273">      } catch (IllegalBlockSizeException ex) {</span>
+<span class="nc" id="L274">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+      }
+   }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

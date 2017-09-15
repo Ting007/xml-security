@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransformEnvelopedSignature.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.transforms.implementations</a> &gt; <span class="el_source">TransformEnvelopedSignature.java</span></div><h1>TransformEnvelopedSignature.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.transforms.implementations;
+
+
+
+import java.io.IOException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import org.apache.xml.security.c14n.*;
+import org.apache.xml.security.c14n.helper.XPathContainer;
+import org.apache.xml.security.exceptions.*;
+import org.apache.xml.security.signature.XMLSignatureInput;
+import org.apache.xml.security.transforms.*;
+import org.apache.xml.security.utils.*;
+import org.apache.xml.utils.PrefixResolver;
+import org.apache.xml.utils.PrefixResolverDefault;
+import org.apache.xpath.CachedXPathAPI;
+import org.apache.xpath.XPathContext;
+import org.apache.xpath.XPath;
+import org.apache.xpath.objects.XObject;
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
+import org.apache.xml.dtm.DTMManager;
+
+
+/**
+ * Implements the &lt;CODE&gt;http://www.w3.org/2000/09/xmldsig#enveloped-signature&lt;/CODE&gt;
+ * transform.
+ *
+ * @author Christian Geuer-Pollmann
+ */
+<span class="fc" id="L89">public class TransformEnvelopedSignature extends TransformSpi {</span>
+
+   /** {@link org.apache.log4j} logging facility */
+<span class="fc" id="L92">   static org.apache.log4j.Category cat =</span>
+      org.apache.log4j.Category
+         .getInstance(TransformEnvelopedSignature.class.getName());
+
+   /** Field implementedTransformURI */
+   public static final String implementedTransformURI =
+      Transforms.TRANSFORM_ENVELOPED_SIGNATURE;
+
+   //J-
+<span class="nc" id="L101">   public boolean wantsOctetStream ()   { return true; }</span>
+<span class="nc" id="L102">   public boolean wantsNodeSet ()       { return true; }</span>
+<span class="nc" id="L103">   public boolean returnsOctetStream () { return true; }</span>
+<span class="nc" id="L104">   public boolean returnsNodeSet ()     { return false; }</span>
+   //J+
+
+   /**
+    * Method engineGetURI
+    *
+    * @return
+    */
+   protected String engineGetURI() {
+<span class="nc" id="L113">      return this.implementedTransformURI;</span>
+   }
+
+   /**
+    * This transform performs the Enveloped-Signature-Transform by
+    *
+    * @param input
+    * @return
+    * @throws TransformationException
+    */
+   protected XMLSignatureInput enginePerformTransform(XMLSignatureInput input)
+           throws TransformationException {
+
+      try {
+
+         /**
+          * If the actual input is an octet stream, then the application MUST
+          * convert the octet stream to an XPath node-set suitable for use by
+          * Canonical XML with Comments. (A subsequent application of the
+          * REQUIRED Canonical XML algorithm would strip away these comments.)
+          *
+          * ...
+          *
+          * The evaluation of this expression includes all of the document's nodes
+          * (including comments) in the node-set representing the octet stream.
+          */
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">         if (input.isOctetStream()) {</span>
+<span class="nc" id="L140">            input.setNodesetXPath(Canonicalizer.XPATH_C14N_WITH_COMMENTS);</span>
+         }
+
+<span class="fc" id="L143">         NodeList inputNodes = input.getNodeSet();</span>
+
+<span class="pc bpc" id="L145" title="1 of 2 branches missed.">         if (inputNodes.getLength() == 0) {</span>
+<span class="nc" id="L146">            Object exArgs[] = { &quot;input node set contains no nodes&quot; };</span>
+
+<span class="nc" id="L148">            throw new TransformationException(&quot;generic.EmptyMessage&quot;, exArgs);</span>
+         }
+
+<span class="fc" id="L151">         HelperNodeList resultNodes = new HelperNodeList();</span>
+
+         /**
+          * compile XPath for evaluation; this is taken from {@link XPathAPI#eval}
+          */
+<span class="fc" id="L156">         Document doc = XMLUtils.getOwnerDocument(inputNodes.item(0));</span>
+<span class="fc" id="L157">         Element nscontext = XMLUtils.createDSctx(doc, &quot;ds&quot;,</span>
+                                                  Constants.SignatureSpecNS);
+<span class="fc" id="L159">         PrefixResolverDefault prefixResolver =</span>
+            new PrefixResolverDefault(nscontext);
+<span class="fc" id="L161">         XPath xpath = new XPath(&quot;count(ancestor-or-self::ds:Signature | &quot;</span>
+                                 + &quot;here()/ancestor::ds:Signature[1]) &gt; &quot;
+                                 + &quot;count(ancestor-or-self::ds:Signature)&quot;,
+                                 null, prefixResolver, XPath.SELECT, null);
+
+         // now set the xPathContext with the XPath Text node as owner document;
+         // this is important for the here() function; as defined by the spec,
+         // the here function will return an empty nodeset because we have no
+         // node that bears our xpath expression.
+         //
+         // Well, the Algorithm Attribute does not contain the XPath, but for
+         // our purpose to get the here() function running, it works
+<span class="fc" id="L173">         Node algorithmAttr =</span>
+            this._transformObject.getElement()
+               .getAttributeNode(Constants._ATT_ALGORITHM);
+<span class="fc" id="L176">         FuncHereContext funcHereCtx = new FuncHereContext(algorithmAttr,</span>
+                                          input.getCachedXPathAPI());
+
+<span class="fc" id="L179">         funcHereCtx.setNamespaceContext(prefixResolver);</span>
+<span class="fc" id="L180">         cat.debug(&quot;Selected &quot; + algorithmAttr</span>
+                   + &quot; attribute as owner for FuncHereContext&quot;);
+
+         /*
+         // create a DTMIterator from the input node set
+         // (does not work in Xalan 2.2.D7) ;-(
+         org.apache.xpath.NodeSetDTM dtmIterator =
+            new org.apache.xpath.NodeSetDTM(inputNodes, funcHereCtx);
+
+         funcHereCtx.pushContextNodeList(dtmIterator);
+         */
+<span class="fc" id="L191">         DTMManager dtmManager =</span>
+            input.getCachedXPathAPI().getXPathContext().getDTMManager();
+<span class="fc" id="L193">         org.apache.xpath.NodeSetDTM dtmIterator =</span>
+            new org.apache.xpath.NodeSetDTM(dtmManager);
+
+<span class="fc bfc" id="L196" title="All 2 branches covered.">         for (int i = 0; i &lt; inputNodes.getLength(); i++) {</span>
+<span class="fc" id="L197">            dtmIterator</span>
+               .addNode(dtmManager.getDTMHandleFromNode(inputNodes.item(i)));
+         }
+
+<span class="fc" id="L201">         funcHereCtx.pushContextNodeList(dtmIterator);</span>
+
+<span class="fc bfc" id="L203" title="All 2 branches covered.">         for (int i = 0; i &lt; inputNodes.getLength(); i++) {</span>
+<span class="fc" id="L204">            Node currentContextNode = inputNodes.item(i);</span>
+<span class="fc" id="L205">            XObject value = xpath.execute((XPathContext) funcHereCtx,</span>
+                                          currentContextNode, prefixResolver);
+
+<span class="pc bpc" id="L208" title="1 of 2 branches missed.">            if (value.getType() != XObject.CLASS_BOOLEAN) {</span>
+<span class="nc" id="L209">               throw new TransformerException(</span>
+                  &quot;The XPath.execute() method did not return an XBoolean&quot;);
+            }
+
+<span class="fc bfc" id="L213" title="All 2 branches covered.">            if (value.bool()) {</span>
+<span class="fc bfc" id="L214" title="All 2 branches covered.">               cat.debug(&quot;added (&quot;</span>
+                         + ((currentContextNode.getNamespaceURI() != null)
+                            ? &quot;{&quot; + currentContextNode.getNamespaceURI() + &quot;} &quot;
+                            : &quot;&quot;) + currentContextNode.getNodeName() + &quot;)&quot;);
+<span class="fc" id="L218">               resultNodes.appendChild(currentContextNode);</span>
+            } else {
+<span class="fc bfc" id="L220" title="All 2 branches covered.">               cat.debug(&quot;not added (&quot;</span>
+                         + ((currentContextNode.getNamespaceURI() != null)
+                            ? &quot;{&quot; + currentContextNode.getNamespaceURI() + &quot;} &quot;
+                            : &quot;&quot;) + currentContextNode.getNodeName() + &quot;)&quot;);
+            }
+         }
+
+<span class="fc" id="L227">         XMLSignatureInput result = new XMLSignatureInput(resultNodes,</span>
+                                       input.getCachedXPathAPI());
+
+<span class="fc" id="L230">         cat.debug(</span>
+            &quot;TransformsEnvelopedSignature finished processing and returns &quot;
+            + resultNodes.getLength() + &quot; nodes&quot;);
+
+<span class="fc" id="L234">         return result;</span>
+<span class="nc" id="L235">      } catch (IOException ex) {</span>
+<span class="nc" id="L236">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L237">      } catch (SAXException ex) {</span>
+<span class="nc" id="L238">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L239">      } catch (TransformerException ex) {</span>
+<span class="nc" id="L240">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L241">      } catch (ParserConfigurationException ex) {</span>
+<span class="nc" id="L242">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L243">      } catch (CanonicalizationException ex) {</span>
+<span class="nc" id="L244">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L245">      } catch (InvalidCanonicalizerException ex) {</span>
+<span class="nc" id="L246">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+      }
+   }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

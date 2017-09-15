@@ -1,0 +1,441 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TripleDESWrapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.algorithms.encryption.helper</a> &gt; <span class="el_source">TripleDESWrapper.java</span></div><h1>TripleDESWrapper.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.algorithms.encryption.helper;
+
+
+
+import java.io.*;
+import java.security.*;
+import javax.crypto.*;
+import javax.crypto.spec.*;
+import org.apache.xml.security.exceptions.XMLSecurityException;
+import org.apache.xml.security.utils.*;
+
+
+/**
+ *
+ * @author $Author: dohy $
+ */
+public class TripleDESWrapper {
+
+   /** Field digest */
+<span class="fc" id="L78">   byte[] digest = new byte[20];</span>
+
+   /** Field iv */
+   byte[] iv;
+
+   /** Field IV2 */
+<span class="fc" id="L84">   private static final byte[] IV2 = { (byte) 0x4a, (byte) 0xdd, (byte) 0xa2,</span>
+                                       (byte) 0x2c, (byte) 0x79, (byte) 0xe8,
+                                       (byte) 0x21, (byte) 0x05 };
+
+   /** Field _cipher */
+   Cipher _cipher;
+
+   /** Field _digest */
+   MessageDigest _digest;
+
+   /**
+    * Constructor TripleDESWrapper
+    *
+    * @param tripleDesECBCipher
+    * @param sha1
+    */
+<span class="fc" id="L100">   public TripleDESWrapper(Cipher tripleDesECBCipher, MessageDigest sha1) {</span>
+<span class="fc" id="L101">      this._cipher = tripleDesECBCipher;</span>
+<span class="fc" id="L102">      this._digest = sha1;</span>
+<span class="fc" id="L103">   }</span>
+
+   /**
+    * Method wrap
+    *
+    * @param keyToBeWrapped
+    * @param wrapKey
+    * @param IV
+    * @return
+    * @throws IllegalBlockSizeException
+    * @throws InvalidAlgorithmParameterException
+    * @throws InvalidKeyException
+    * @throws XMLSecurityException
+    */
+   public byte[] wrap(byte[] keyToBeWrapped, Key wrapKey, byte[] IV)
+           throws InvalidKeyException, InvalidAlgorithmParameterException,
+                  IllegalBlockSizeException, XMLSecurityException {
+
+      try {
+
+         // Compute the CMS Key Checksum, (section 5.6.1), call this CKS.
+<span class="fc" id="L124">         byte[] CKS = calculateCMSKeyChecksum(keyToBeWrapped);</span>
+
+         // Let WKCKS = WK || CKS where || is concatenation.
+<span class="fc" id="L127">         byte[] WKCKS = new byte[keyToBeWrapped.length + CKS.length];</span>
+
+<span class="fc" id="L129">         System.arraycopy(keyToBeWrapped, 0, WKCKS, 0, keyToBeWrapped.length);</span>
+<span class="fc" id="L130">         System.arraycopy(CKS, 0, WKCKS, keyToBeWrapped.length, CKS.length);</span>
+
+         // Encrypt WKCKS in CBC mode using KEK as the key and IV as the
+         // initialization vector. Call the results TEMP1.
+<span class="fc" id="L134">         byte TEMP1[] = new byte[WKCKS.length];</span>
+
+<span class="fc" id="L136">         System.arraycopy(WKCKS, 0, TEMP1, 0, WKCKS.length);</span>
+
+<span class="fc" id="L138">         int extraBytes = WKCKS.length % this._cipher.getBlockSize();</span>
+
+<span class="pc bpc" id="L140" title="1 of 2 branches missed.">         if (extraBytes != 0) {</span>
+<span class="nc" id="L141">            throw new IllegalStateException(&quot;Not multiple of block length: &quot;</span>
+                                            + WKCKS.length + &quot; % &quot;
+                                            + this._cipher.getBlockSize()
+                                            + &quot; = &quot; + extraBytes);
+         }
+
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">         if (IV == null) {</span>
+<span class="nc" id="L148">            IV = PRNG.createBytes(8);</span>
+         }
+
+<span class="fc" id="L151">         IvParameterSpec ivParam = new IvParameterSpec(IV);</span>
+
+<span class="fc" id="L153">         this._cipher.init(Cipher.ENCRYPT_MODE, wrapKey, ivParam);</span>
+
+         {
+<span class="fc" id="L156">            ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+            byte[] t;
+
+<span class="fc" id="L159">            t = this._cipher.update(TEMP1);</span>
+
+<span class="pc bpc" id="L161" title="1 of 2 branches missed.">            if (t != null) {</span>
+<span class="fc" id="L162">               baos.write(t);</span>
+            }
+
+<span class="fc" id="L165">            t = this._cipher.doFinal();</span>
+
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">            if (t != null) {</span>
+<span class="fc" id="L168">               baos.write(t);</span>
+            }
+
+<span class="fc" id="L171">            System.arraycopy(baos.toByteArray(), 0, TEMP1, 0, TEMP1.length);</span>
+         }
+
+         // Left TEMP2 = IV || TEMP1.
+<span class="fc" id="L175">         byte[] TEMP2 = new byte[IV.length + TEMP1.length];</span>
+
+<span class="fc" id="L177">         System.arraycopy(IV, 0, TEMP2, 0, IV.length);</span>
+<span class="fc" id="L178">         System.arraycopy(TEMP1, 0, TEMP2, IV.length, TEMP1.length);</span>
+
+         // Reverse the order of the octets in TEMP2 and call the result TEMP3.
+<span class="fc" id="L181">         byte[] TEMP3 = new byte[TEMP2.length];</span>
+
+<span class="fc bfc" id="L183" title="All 2 branches covered.">         for (int i = 0; i &lt; TEMP2.length; i++) {</span>
+<span class="fc" id="L184">            TEMP3[i] = TEMP2[TEMP2.length - (i + 1)];</span>
+         }
+
+         // Encrypt TEMP3 in CBC mode using the KEK and an initialization vector
+         // of 0x 4a dd a2 2c 79 e8 21 05. The resulting cipher text is the desired
+         // result. It is 40 octets long if a 168 bit key is being wrapped.
+<span class="fc" id="L190">         IvParameterSpec iv2Param = new IvParameterSpec(IV2);</span>
+
+<span class="fc" id="L192">         this._cipher.init(Cipher.ENCRYPT_MODE, wrapKey, iv2Param);</span>
+
+         {
+<span class="fc" id="L195">            ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+            byte[] t;
+
+<span class="fc" id="L198">            t = this._cipher.update(TEMP3);</span>
+
+<span class="pc bpc" id="L200" title="1 of 2 branches missed.">            if (t != null) {</span>
+<span class="fc" id="L201">               baos.write(t);</span>
+            }
+
+<span class="fc" id="L204">            t = this._cipher.doFinal();</span>
+
+<span class="pc bpc" id="L206" title="1 of 2 branches missed.">            if (t != null) {</span>
+<span class="fc" id="L207">               baos.write(t);</span>
+            }
+
+<span class="fc" id="L210">            System.arraycopy(baos.toByteArray(), 0, TEMP3, 0, TEMP3.length);</span>
+         }
+
+<span class="fc" id="L213">         return TEMP3;</span>
+<span class="nc" id="L214">      } catch (IOException ex) {</span>
+<span class="nc" id="L215">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L216">      } catch (BadPaddingException ex) {</span>
+<span class="nc" id="L217">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+      }
+   }
+
+   /**
+    * Method unwrap
+    *
+    * @param wrappedKey
+    * @param wrapKey
+    * @return
+    * @throws InvalidCipherTextException
+    * @throws XMLSecurityException
+    */
+   public byte[] unwrap(byte[] wrappedKey, Key wrapKey)
+           throws InvalidCipherTextException, XMLSecurityException {
+
+      try {
+<span class="pc bpc" id="L234" title="1 of 2 branches missed.">         if (wrappedKey == null) {</span>
+<span class="nc" id="L235">            throw new InvalidCipherTextException(&quot;Null pointer as ciphertext&quot;);</span>
+         }
+
+<span class="pc bpc" id="L238" title="1 of 2 branches missed.">         if (wrappedKey.length % this._cipher.getBlockSize() != 0) {</span>
+<span class="nc" id="L239">            throw new InvalidCipherTextException(&quot;Ciphertext not multiple of &quot;</span>
+                                                 + this._cipher.getBlockSize());
+         }
+
+         /*
+         // Check if the length of the cipher text is reasonable given the key
+         // type. It must be 40 bytes for a 168 bit key and either 32, 40, or
+         // 48 bytes for a 128, 192, or 256 bit key. If the length is not supported
+         // or inconsistent with the algorithm for which the key is intended,
+         // return error.
+         //
+         // we do not accept 168 bit keys. it has to be 192 bit.
+         int lengthA = (estimatedKeyLengthInBit / 8) + 16;
+         int lengthB = estimatedKeyLengthInBit % 8;
+
+         if ((lengthA != keyToBeUnwrapped.length) || (lengthB != 0)) {
+            throw new XMLSecurityException(&quot;empty&quot;);
+         }
+         */
+
+         // Decrypt the cipher text with TRIPLedeS in CBC mode using the KEK
+         // and an initialization vector (IV) of 0x4adda22c79e82105. Call the output TEMP3.
+<span class="fc" id="L261">         IvParameterSpec iv2Param = new IvParameterSpec(IV2);</span>
+
+<span class="fc" id="L263">         this._cipher.init(Cipher.DECRYPT_MODE, wrapKey, iv2Param);</span>
+
+<span class="fc" id="L265">         byte TEMP3[] = new byte[wrappedKey.length];</span>
+
+<span class="fc" id="L267">         System.arraycopy(wrappedKey, 0, TEMP3, 0, wrappedKey.length);</span>
+
+         {
+<span class="fc" id="L270">            ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+            byte[] t;
+
+<span class="fc" id="L273">            t = this._cipher.update(TEMP3);</span>
+
+<span class="pc bpc" id="L275" title="1 of 2 branches missed.">            if (t != null) {</span>
+<span class="fc" id="L276">               baos.write(t);</span>
+            }
+
+<span class="fc" id="L279">            t = this._cipher.doFinal();</span>
+
+<span class="pc bpc" id="L281" title="1 of 2 branches missed.">            if (t != null) {</span>
+<span class="fc" id="L282">               baos.write(t);</span>
+            }
+
+<span class="fc" id="L285">            System.arraycopy(baos.toByteArray(), 0, TEMP3, 0, TEMP3.length);</span>
+         }
+
+         // Reverse the order of the octets in TEMP3 and call the result TEMP2.
+<span class="fc" id="L289">         byte[] TEMP2 = new byte[TEMP3.length];</span>
+
+<span class="fc bfc" id="L291" title="All 2 branches covered.">         for (int i = 0; i &lt; TEMP3.length; i++) {</span>
+<span class="fc" id="L292">            TEMP2[i] = TEMP3[TEMP3.length - (i + 1)];</span>
+         }
+
+         // Decompose TEMP2 into IV, the first 8 octets, and TEMP1, the remaining octets.
+<span class="fc" id="L296">         IvParameterSpec ivParam = new IvParameterSpec(TEMP2, 0, 8);</span>
+<span class="fc" id="L297">         byte[] TEMP1 = new byte[TEMP2.length - 8];</span>
+
+<span class="fc" id="L299">         System.arraycopy(TEMP2, 8, TEMP1, 0, TEMP2.length - 8);</span>
+
+         // Decrypt TEMP1 using TRIPLedeS in CBC mode using the KEK and the IV
+         // found in the previous step. Call the result WKCKS.
+<span class="fc" id="L303">         this._cipher.init(Cipher.DECRYPT_MODE, wrapKey, ivParam);</span>
+
+<span class="fc" id="L305">         byte[] WKCKS = new byte[TEMP1.length];</span>
+
+<span class="fc" id="L307">         System.arraycopy(TEMP1, 0, WKCKS, 0, TEMP1.length);</span>
+
+         {
+<span class="fc" id="L310">            ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+            byte[] t;
+
+<span class="fc" id="L313">            t = this._cipher.update(WKCKS);</span>
+
+<span class="pc bpc" id="L315" title="1 of 2 branches missed.">            if (t != null) {</span>
+<span class="fc" id="L316">               baos.write(t);</span>
+            }
+
+<span class="fc" id="L319">            t = this._cipher.doFinal();</span>
+
+<span class="pc bpc" id="L321" title="1 of 2 branches missed.">            if (t != null) {</span>
+<span class="fc" id="L322">               baos.write(t);</span>
+            }
+
+<span class="fc" id="L325">            System.arraycopy(baos.toByteArray(), 0, WKCKS, 0, WKCKS.length);</span>
+         }
+
+         // Decompose WKCKS. CKS is the last 8 octets and WK, the wrapped key, are
+         // those octets before the CKS.
+<span class="fc" id="L330">         byte[] result = new byte[WKCKS.length - 8];</span>
+<span class="fc" id="L331">         byte[] CKStoBeVerified = new byte[8];</span>
+
+<span class="fc" id="L333">         System.arraycopy(WKCKS, 0, result, 0, WKCKS.length - 8);</span>
+<span class="fc" id="L334">         System.arraycopy(WKCKS, WKCKS.length - 8, CKStoBeVerified, 0, 8);</span>
+
+         // Calculate a CMS Key Checksum, (section 5.6.1), over the WK and compare
+         // with the CKS extracted in the above step. If they are not equal, return error.
+<span class="pc bpc" id="L338" title="1 of 2 branches missed.">         if (!checkCMSKeyChecksum(result, CKStoBeVerified)) {</span>
+<span class="nc" id="L339">            throw new InvalidCipherTextException(</span>
+               &quot;Checksum inside ciphertext is corrupted&quot;);
+         }
+
+         // WK is the wrapped key, now extracted for use in data decryption.
+<span class="fc" id="L344">         return result;</span>
+<span class="nc" id="L345">      } catch (InvalidCipherTextException ex) {</span>
+<span class="nc" id="L346">         throw ex;</span>
+<span class="nc" id="L347">      } catch (XMLSecurityException ex) {</span>
+<span class="nc" id="L348">         throw ex;</span>
+<span class="nc" id="L349">      } catch (Exception ex) {</span>
+<span class="nc" id="L350">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+      }
+   }
+
+   /**
+    * Some key wrap algorithms make use of the Key Checksum defined
+    * in CMS [CMS-Algorithms]. This is used to provide an integrity
+    * check value for the key being wrapped. The algorithm is
+    *
+    * - Compute the 20 octet SHA-1 hash on the key being wrapped.
+    * - Use the first 8 octets of this hash as the checksum value.
+    *
+    * @param key
+    * @return
+    * @see http://www.w3.org/TR/xmlenc-core/#sec-CMSKeyChecksum
+    */
+   private byte[] calculateCMSKeyChecksum(byte[] key) {
+
+<span class="fc" id="L368">      this._digest.reset();</span>
+<span class="fc" id="L369">      this._digest.update(key, 0, key.length);</span>
+
+<span class="fc" id="L371">      byte result[] = new byte[8];</span>
+<span class="fc" id="L372">      byte digest[] = this._digest.digest();</span>
+
+<span class="fc" id="L374">      System.arraycopy(digest, 0, result, 0, 8);</span>
+
+<span class="fc" id="L376">      return result;</span>
+   }
+
+   /**
+    * @param key
+    * @param checksum
+    * @return
+    * @see http://www.w3.org/TR/xmlenc-core/#sec-CMSKeyChecksum
+    */
+   private boolean checkCMSKeyChecksum(byte[] key, byte[] checksum) {
+
+<span class="fc" id="L387">      byte[] calculatedChecksum = calculateCMSKeyChecksum(key);</span>
+
+<span class="pc bpc" id="L389" title="1 of 2 branches missed.">      if (checksum.length != calculatedChecksum.length) {</span>
+<span class="nc" id="L390">         return false;</span>
+      }
+
+<span class="fc bfc" id="L393" title="All 2 branches covered.">      for (int i = 0; i != checksum.length; i++) {</span>
+<span class="pc bpc" id="L394" title="1 of 2 branches missed.">         if (checksum[i] != calculatedChecksum[i]) {</span>
+<span class="nc" id="L395">            return false;</span>
+         }
+      }
+
+<span class="fc" id="L399">      return true;</span>
+   }
+
+   /**
+    * Method main
+    *
+    * @param unused
+    * @throws Exception
+    */
+   public static void main(String unused[]) throws Exception {
+      //J-
+<span class="nc" id="L410">       String CEK    = &quot;2923 bf85 e06d d6ae 5291 49f1 f1ba e9ea b3a7 da3d 860d 3e98&quot;;</span>
+<span class="nc" id="L411">       String KEK    = &quot;255e 0d1c 07b6 46df b313 4cc8 43ba 8aa7 1f02 5b7c 0838 251f&quot;;</span>
+<span class="nc" id="L412">       String IV     = &quot;5dd4 cbfc 96f5 453b&quot;;</span>
+<span class="nc" id="L413">       String RESULT = &quot;6901 0761 8ef0 92b3 b48c a179 6b23 4ae9 fa33 ebb4 1596 0403 &quot; +</span>
+                       &quot;7db5 d6a8 4eb3 aac2 768c 6327 75a4 67d4&quot;;
+       //J+
+<span class="nc" id="L416">      org.apache.xml.security.Init.init();</span>
+<span class="nc" id="L417">      Security</span>
+         .addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+
+<span class="nc" id="L420">      Cipher cipher = Cipher.getInstance(&quot;DESEDE/CBC/NOPADDING&quot;, &quot;BC&quot;);</span>
+<span class="nc" id="L421">      MessageDigest digest = MessageDigest.getInstance(&quot;SHA1&quot;, &quot;BC&quot;);</span>
+<span class="nc" id="L422">      TripleDESWrapper tdw = new TripleDESWrapper(cipher, digest);</span>
+<span class="nc" id="L423">      Key wrapKey = new SecretKeySpec(HexDump.hexStringToByteArray(KEK),</span>
+                                      &quot;DESEDE&quot;);
+<span class="nc" id="L425">      byte[] result = tdw.wrap(HexDump.hexStringToByteArray(CEK), wrapKey,</span>
+                               HexDump.hexStringToByteArray(IV));
+
+<span class="nc" id="L428">      System.out.println(HexDump.byteArrayToHexString(result));</span>
+<span class="nc" id="L429">      System.out</span>
+         .println(HexDump
+            .byteArrayToHexString(HexDump.hexStringToByteArray(RESULT)));
+
+<span class="nc" id="L433">      byte[] unwrapped = tdw.unwrap(result, wrapKey);</span>
+
+<span class="nc" id="L435">      System.out.println(HexDump.byteArrayToHexString(unwrapped));</span>
+<span class="nc" id="L436">      System.out</span>
+         .println(HexDump
+            .byteArrayToHexString(HexDump.hexStringToByteArray(CEK)));
+<span class="nc" id="L439">   }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

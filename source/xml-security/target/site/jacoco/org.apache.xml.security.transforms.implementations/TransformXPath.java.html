@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransformXPath.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.transforms.implementations</a> &gt; <span class="el_source">TransformXPath.java</span></div><h1>TransformXPath.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.transforms.implementations;
+
+
+
+import java.io.IOException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import org.xml.sax.SAXException;
+import org.w3c.dom.*;
+import org.apache.xml.security.signature.XMLSignatureInput;
+import org.apache.xml.security.c14n.*;
+import org.apache.xml.security.c14n.helper.XPathContainer;
+import org.apache.xml.security.transforms.*;
+import org.apache.xml.security.exceptions.*;
+import org.apache.xml.security.utils.*;
+import org.apache.xpath.CachedXPathAPI;
+import org.apache.xpath.objects.XObject;
+import org.apache.xml.utils.PrefixResolverDefault;
+import org.apache.xml.utils.PrefixResolver;
+import org.apache.xml.dtm.DTMManager;
+
+
+/**
+ * Class TransformXPath
+ *
+ * Implements the &lt;CODE&gt;http://www.w3.org/TR/1999/REC-xpath-19991116&lt;/CODE&gt;
+ * transform.
+ *
+ * @author Christian Geuer-Pollmann
+ * @see http://www.w3.org/TR/1999/REC-xpath-19991116
+ *
+ */
+<span class="fc" id="L91">public class TransformXPath extends TransformSpi {</span>
+
+   /** {@link org.apache.log4j} logging facility */
+<span class="fc" id="L94">   static org.apache.log4j.Category cat =</span>
+      org.apache.log4j.Category.getInstance(TransformXPath.class.getName());
+
+   /** Field implementedTransformURI */
+   public static final String implementedTransformURI =
+      Transforms.TRANSFORM_XPATH;
+
+   //J-
+<span class="nc" id="L102">   public boolean wantsOctetStream ()   { return false; }</span>
+<span class="nc" id="L103">   public boolean wantsNodeSet ()       { return true; }</span>
+<span class="nc" id="L104">   public boolean returnsOctetStream () { return false; }</span>
+<span class="nc" id="L105">   public boolean returnsNodeSet ()     { return true; }</span>
+   //J+
+
+   /**
+    * Method engineGetURI
+    *
+    * @return
+    */
+   protected String engineGetURI() {
+<span class="nc" id="L114">      return this.implementedTransformURI;</span>
+   }
+
+   /**
+    * Method enginePerformTransform
+    *
+    * @param input
+    * @return
+    * @throws TransformationException
+    */
+   protected XMLSignatureInput enginePerformTransform(XMLSignatureInput input)
+           throws TransformationException {
+
+      try {
+
+         /**
+          * If the actual input is an octet stream, then the application MUST
+          * convert the octet stream to an XPath node-set suitable for use by
+          * Canonical XML with Comments. (A subsequent application of the
+          * REQUIRED Canonical XML algorithm would strip away these comments.)
+          *
+          * ...
+          *
+          * The evaluation of this expression includes all of the document's nodes
+          * (including comments) in the node-set representing the octet stream.
+          */
+<span class="fc bfc" id="L140" title="All 2 branches covered.">         if (input.isOctetStream()) {</span>
+<span class="fc" id="L141">            input.setNodesetXPath(Canonicalizer.XPATH_C14N_WITH_COMMENTS);</span>
+         }
+
+<span class="fc" id="L144">         NodeList inputNodes = input.getNodeSet();</span>
+<span class="fc" id="L145">         CachedXPathFuncHereAPI xPathFuncHereAPI =</span>
+            new CachedXPathFuncHereAPI(input.getCachedXPathAPI());
+<span class="fc" id="L147">         CachedXPathAPI myXPathAPI =</span>
+            new CachedXPathAPI(input.getCachedXPathAPI());
+
+<span class="pc bpc" id="L150" title="1 of 2 branches missed.">         if (inputNodes.getLength() == 0) {</span>
+<span class="nc" id="L151">            Object exArgs[] = { &quot;input node set contains no nodes&quot; };</span>
+
+<span class="nc" id="L153">            throw new TransformationException(&quot;empty&quot;, exArgs);</span>
+         }
+
+<span class="fc" id="L156">         Element transformElement = this._transformObject.getElement();</span>
+<span class="fc" id="L157">         Document doc = transformElement.getOwnerDocument();</span>
+<span class="fc" id="L158">         Element nscontext = XMLUtils.createDSctx(doc, &quot;ds&quot;,</span>
+                                                  Constants.SignatureSpecNS);
+
+<span class="fc" id="L161">         cat.debug(&quot;The Transform Element is &quot; + transformElement);</span>
+
+<span class="fc" id="L163">         Element xpathElement =</span>
+            (Element) myXPathAPI.selectSingleNode(transformElement,
+                                                  &quot;./ds:&quot;
+                                                  + Constants
+                                                     ._TAG_XPATH, nscontext);
+
+<span class="pc bpc" id="L169" title="1 of 2 branches missed.">         if (xpathElement == null) {</span>
+<span class="nc" id="L170">            Object exArgs[] = { &quot;ds:XPath&quot;, &quot;Transform&quot; };</span>
+
+<span class="nc" id="L172">            throw new TransformationException(&quot;xml.WrongContent&quot;, exArgs);</span>
+         }
+
+         /**
+          * The transform output is also an XPath node-set. The XPath expression
+          * appearing in the XPath parameter is evaluated once for each node in
+          * the input node-set. The result is converted to a boolean. If the
+          * boolean is true, then the node is included in the output node-set.
+          * If the boolean is false, then the node is omitted from the output
+          * node-set.
+          */
+<span class="fc" id="L183">         HelperNodeList resultNodes = new HelperNodeList();</span>
+
+         /**
+          * precompile XPath for evaluation; this is taken from {@link XPathAPI#eval}
+          */
+<span class="fc" id="L188">         PrefixResolverDefault prefixResolver =</span>
+            new PrefixResolverDefault(xpathElement);
+<span class="fc" id="L190">         Node xpathnode = xpathElement.getChildNodes().item(0);</span>
+
+<span class="pc bpc" id="L192" title="1 of 2 branches missed.">         if (xpathnode == null) {</span>
+<span class="nc" id="L193">            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,</span>
+                                   &quot;Text must be in ds:Xpath&quot;);
+         }
+
+<span class="fc bfc" id="L197" title="All 2 branches covered.">         for (int i = 0; i &lt; inputNodes.getLength(); i++) {</span>
+
+            /* Same solution as in TransformBase64 ?
+            if (inputNodes.item(i).getClass().getName().equals(
+               &quot;org.apache.xml.dtm.ref.dom2dtm.DOM2DTM$defaultNamespaceDeclarationNode&quot;)) {
+               continue;
+            }
+            */
+<span class="fc" id="L205">            XObject includeInResult = xPathFuncHereAPI.eval(inputNodes.item(i),</span>
+                                         xpathnode, prefixResolver);
+
+<span class="fc bfc" id="L208" title="All 2 branches covered.">            if (includeInResult.bool()) {</span>
+<span class="fc" id="L209">               resultNodes.appendChild(inputNodes.item(i));</span>
+<span class="fc" id="L210">               cat.debug(&quot;Included: (+) &quot; + inputNodes.item(i));</span>
+            } else {
+<span class="fc" id="L212">               cat.debug(&quot;Excluded:     &quot; + inputNodes.item(i));</span>
+            }
+         }
+
+<span class="fc" id="L216">         XMLSignatureInput result = new XMLSignatureInput(resultNodes,</span>
+                                       input.getCachedXPathAPI());
+
+<span class="fc" id="L219">         result.setSourceURI(input.getSourceURI());</span>
+
+<span class="fc" id="L221">         return result;</span>
+<span class="nc" id="L222">      } catch (TransformerException ex) {</span>
+<span class="nc" id="L223">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L224">      } catch (DOMException ex) {</span>
+<span class="nc" id="L225">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L226">      } catch (IOException ex) {</span>
+<span class="nc" id="L227">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L228">      } catch (CanonicalizationException ex) {</span>
+<span class="nc" id="L229">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L230">      } catch (InvalidCanonicalizerException ex) {</span>
+<span class="nc" id="L231">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L232">      } catch (ParserConfigurationException ex) {</span>
+<span class="nc" id="L233">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L234">      } catch (XMLSecurityException ex) {</span>
+<span class="nc" id="L235">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L236">      } catch (SAXException ex) {</span>
+<span class="nc" id="L237">         throw new TransformationException(&quot;empty&quot;, ex);</span>
+      }
+   }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

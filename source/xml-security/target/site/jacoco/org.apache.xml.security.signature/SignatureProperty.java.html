@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SignatureProperty.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.signature</a> &gt; <span class="el_source">SignatureProperty.java</span></div><h1>SignatureProperty.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.signature;
+
+
+
+import java.io.IOException;
+import org.w3c.dom.*;
+import org.apache.xml.security.algorithms.SignatureAlgorithm;
+import org.apache.xml.security.c14n.Canonicalizer;
+import org.apache.xml.security.c14n.CanonicalizationException;
+import org.apache.xml.security.signature.MissingResourceFailureException;
+import org.apache.xml.security.exceptions.*;
+import org.apache.xml.security.signature.XMLSignatureException;
+import org.apache.xml.security.signature.Reference;
+import org.apache.xml.security.signature.XMLSignatureInput;
+import org.apache.xml.security.transforms.Transforms;
+import org.apache.xml.security.utils.Constants;
+import org.apache.xml.security.utils.XMLUtils;
+import org.apache.xml.security.utils.*;
+
+
+/**
+ * Handles &lt;code&gt;&amp;lt;ds:SignatureProperty&amp;gt;&lt;/code&gt; elements
+ * Addittional information item concerning the generation of the signature(s) can
+ * be placed in this Element
+ *
+ * @author Christian Geuer-Pollmann
+ */
+public class SignatureProperty extends SignatureElementProxy {
+
+   /** {@link org.apache.log4j} logging facility */
+<span class="nc" id="L89">   static org.apache.log4j.Category cat =</span>
+      org.apache.log4j.Category.getInstance(SignatureProperty.class.getName());
+
+   /**
+    * Constructs{@link SignatureProperty} using specified &lt;code&gt;Target&lt;/code&gt; attribute
+    *
+    * @param doc the {@link Document} in which &lt;code&gt;XMLsignature&lt;/code&gt; is placed
+    * @param Target the &lt;code&gt;Target&lt;/code&gt; attribute references the &lt;code&gt;Signature&lt;/code&gt; element to which the property applies SignatureProperty
+    * @throws XMLSignatureException
+    */
+   public SignatureProperty(Document doc, String Target)
+           throws XMLSignatureException {
+<span class="nc" id="L101">      this(doc, Target, null);</span>
+<span class="nc" id="L102">   }</span>
+
+   /**
+    * Constructs {@link SignatureProperty} using sepcified &lt;code&gt;Target&lt;/code&gt; attribute and &lt;code&gt;Id&lt;/code&gt; attribute
+    *
+    * @param doc the {@link Document} in which &lt;code&gt;XMLsignature&lt;/code&gt; is placed
+    * @param Target the &lt;code&gt;Target&lt;/code&gt; attribute references the &lt;code&gt;Signature&lt;/code&gt; element to which the property applies
+    * @param Id the &lt;code&gt;Id&lt;/code&gt; will be specified by {@link Reference#ReferenceURI} in validation
+    * @throws XMLSignatureException
+    */
+   public SignatureProperty(Document doc, String Target, String Id)
+           throws XMLSignatureException {
+
+<span class="nc" id="L115">      super(doc);</span>
+
+<span class="nc" id="L117">      this.setTarget(Target);</span>
+<span class="nc" id="L118">      this.setId(Id);</span>
+<span class="nc" id="L119">   }</span>
+
+   /**
+    * Constructs a {@link SignatureProperty} from an {@link Element}
+    * @param element &lt;code&gt;SignatureProperty&lt;/code&gt; element
+    * @param BaseURI the URI of the resource where the XML instance was stored
+    * @throws XMLSecurityException
+    */
+   public SignatureProperty(Element element, String BaseURI)
+           throws XMLSecurityException {
+<span class="nc" id="L129">      super(element, BaseURI);</span>
+<span class="nc" id="L130">   }</span>
+
+   /**
+    *   Sets the &lt;code&gt;Id&lt;/code&gt; attribute
+    *
+    *   @param Id the &lt;code&gt;Id&lt;/code&gt; attribute
+    */
+   public void setId(String Id) {
+
+<span class="nc bnc" id="L139" title="All 4 branches missed.">      if ((this._state == MODE_SIGN) &amp;&amp; (Id != null)) {</span>
+<span class="nc" id="L140">         this._constructionElement.setAttribute(Constants._ATT_ID, Id);</span>
+<span class="nc" id="L141">         IdResolver.registerElementById(this._constructionElement, Id);</span>
+      }
+<span class="nc" id="L143">   }</span>
+
+   /**
+    * Returns the &lt;code&gt;Id&lt;/code&gt; attribute
+    *
+    * @return the &lt;code&gt;Id&lt;/code&gt; attribute
+    */
+   public String getId() {
+<span class="nc" id="L151">      return this._constructionElement.getAttribute(Constants._ATT_ID);</span>
+   }
+
+   /**
+    * Sets the &lt;code&gt;Target&lt;/code&gt; attribute
+    *
+    * @param Target the &lt;code&gt;Target&lt;/code&gt; attribute
+    */
+   public void setTarget(String Target) {
+
+<span class="nc bnc" id="L161" title="All 4 branches missed.">      if ((this._state == MODE_SIGN) &amp;&amp; (Target != null)) {</span>
+<span class="nc" id="L162">         this._constructionElement.setAttribute(Constants._ATT_TARGET, Target);</span>
+      }
+<span class="nc" id="L164">   }</span>
+
+   /**
+    * Returns the &lt;code&gt;Target&lt;/code&gt; attribute
+    *
+    * @return the &lt;code&gt;Target&lt;/code&gt; attribute
+    */
+   public String getTarget() {
+<span class="nc" id="L172">      return this._constructionElement.getAttribute(Constants._ATT_TARGET);</span>
+   }
+
+   /**
+    * Method appendChild
+    *
+    * @param node
+    * @return
+    */
+   public Node appendChild(Node node) {
+<span class="nc" id="L182">      return this._constructionElement.appendChild(node);</span>
+   }
+
+   public String getBaseLocalName() {
+<span class="nc" id="L186">      return Constants._TAG_SIGNATUREPROPERTY;</span>
+   }
+
+   static {
+<span class="nc" id="L190">      org.apache.xml.security.Init.init();</span>
+<span class="nc" id="L191">   }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

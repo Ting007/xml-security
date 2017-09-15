@@ -1,0 +1,530 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Canonicalizer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.c14n</a> &gt; <span class="el_source">Canonicalizer.java</span></div><h1>Canonicalizer.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.c14n;
+
+
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Iterator;
+import org.w3c.dom.*;
+import org.apache.xml.security.exceptions.*;
+import org.apache.xml.security.signature.XMLSignatureInput;
+import org.apache.xml.security.utils.Constants;
+import org.apache.xml.security.utils.JavaUtils;
+
+
+/**
+ *
+ *
+ * @author Christian Geuer-Pollmann
+ */
+public class Canonicalizer {
+
+   /** {@link org.apache.log4j} logging facility */
+<span class="fc" id="L82">   static org.apache.log4j.Category cat =</span>
+      org.apache.log4j.Category.getInstance(Canonicalizer.class.getName());
+
+   /** The output encoding of canonicalized data */
+   public static final String ENCODING = &quot;UTF8&quot;;
+
+   /** Field XPATH_NO_COMMENTS */
+   private static final String XPATH_NO_COMMENTS = &quot;[not(self::comment())]&quot;;
+
+   /** The XPath for Canonicalization - Recommended Canonical XML with Comments */
+   public static final String XPATH_C14N_WITH_COMMENTS =
+      &quot;(//. | //@* | //namespace::*)&quot;;
+
+   /** The XPath for Canonicalization - Required Canonical XML (omits comments) */
+   public static final String XPATH_C14N_OMIT_COMMENTS =
+      XPATH_C14N_WITH_COMMENTS + XPATH_NO_COMMENTS;
+
+   /** The XPath for Canonicalization of a single Node with Comments */
+   public static final String XPATH_C14N_WITH_COMMENTS_SINGLE_NODE =
+      &quot;(.//. | .//@* | .//namespace::*)&quot;;
+
+   /** The XPath for Canonicalization of a single Node (omits comments) */
+   public static final String XPATH_C14N_OMIT_COMMENTS_SINGLE_NODE =
+      XPATH_C14N_WITH_COMMENTS_SINGLE_NODE + XPATH_NO_COMMENTS;
+
+   /** Field ALGO_ID_C14N_OMIT_COMMENTS */
+   public static final String ALGO_ID_C14N_OMIT_COMMENTS =
+      &quot;http://www.w3.org/TR/2001/REC-xml-c14n-20010315&quot;;
+
+   /** Field ALGO_ID_C14N_WITH_COMMENTS */
+   public static final String ALGO_ID_C14N_WITH_COMMENTS =
+      ALGO_ID_C14N_OMIT_COMMENTS + &quot;#WithComments&quot;;
+
+   /** Canonicalization - Required Exclusive Canonicalization (omits comments) */
+   public static final String ALGO_ID_C14N_EXCL = Constants.SignatureSpecNS
+                                                     + &quot;excludeC14N&quot;;
+
+   /** Canonicalization - Recommended Exclusive Canonicalization with Comments */
+   public static final String ALGO_ID_C14N_EXCL_WITHCOMMENTS =
+      Constants.SignatureSpecNS + &quot;excludeC14NwithComments&quot;;
+
+   /** Field canonicalizerSpi */
+<span class="fc" id="L124">   protected CanonicalizerSpi canonicalizerSpi = null;</span>
+
+   /** Field _alreadyInitialized */
+<span class="fc" id="L127">   static boolean _alreadyInitialized = false;</span>
+
+   /** Field _canonicalizerHash */
+<span class="fc" id="L130">   static HashMap _canonicalizerHash = null;</span>
+
+   /**
+    * Method init
+    *
+    */
+   public static void init() {
+
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">      if (!_alreadyInitialized) {</span>
+<span class="fc" id="L139">         _canonicalizerHash = new HashMap(10);</span>
+<span class="fc" id="L140">         _alreadyInitialized = true;</span>
+      }
+<span class="fc" id="L142">   }</span>
+
+   /**
+    * Constructor Canonicalizer
+    *
+    * @param algorithmURI
+    * @throws InvalidCanonicalizerException
+    */
+   private Canonicalizer(String algorithmURI)
+<span class="fc" id="L151">           throws InvalidCanonicalizerException {</span>
+
+      try {
+<span class="fc" id="L154">         String implementingClass = getImplementingClass(algorithmURI);</span>
+
+<span class="fc" id="L156">         this.canonicalizerSpi =</span>
+            (CanonicalizerSpi) Class.forName(implementingClass).newInstance();
+
+<span class="fc" id="L159">         cat.debug(&quot;Canonicalizer  spi = &quot;</span>
+                   + this.canonicalizerSpi.engineGetURI() + &quot;&quot;);
+
+         // this.canonicalizerSpi.engineSetURI(algorithmURI);
+<span class="nc" id="L163">      } catch (Exception e) {</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">         if (_canonicalizerHash == null) {</span>
+<span class="nc" id="L165">            cat.fatal(&quot;The _canonicalizerHash is null&quot;);</span>
+         } else {
+<span class="nc" id="L167">            Iterator i = _canonicalizerHash.keySet().iterator();</span>
+
+<span class="nc bnc" id="L169" title="All 2 branches missed.">            while (i.hasNext()) {</span>
+<span class="nc" id="L170">               String URI = (String) i.next();</span>
+
+<span class="nc" id="L172">               cat.debug(&quot;The URI &quot; + URI + &quot;maps to &quot;</span>
+                         + getImplementingClass(URI));
+<span class="nc" id="L174">            }</span>
+         }
+
+<span class="nc" id="L177">         Object exArgs[] = { algorithmURI };</span>
+
+<span class="nc" id="L179">         throw new InvalidCanonicalizerException(</span>
+            &quot;signature.Canonicalizer.UnknownCanonicalizer&quot;, exArgs);
+<span class="fc" id="L181">      }</span>
+<span class="fc" id="L182">   }</span>
+
+   /**
+    * Method getInstance
+    *
+    * @param algorithmURI
+    * @return
+    * @throws InvalidCanonicalizerException
+    */
+   public static final Canonicalizer getInstance(String algorithmURI)
+           throws InvalidCanonicalizerException {
+
+<span class="fc" id="L194">      org.apache.xml.security.Init.init();</span>
+
+<span class="fc" id="L196">      Canonicalizer c14nizer = new Canonicalizer(algorithmURI);</span>
+
+<span class="fc" id="L198">      return c14nizer;</span>
+   }
+
+   /**
+    * Method getInstance
+    *
+    * @param algorithmURI
+    * @param xpath
+    * @return
+    * @throws InvalidCanonicalizerException
+    */
+   public static final Canonicalizer getInstance(
+           String algorithmURI, Object xpath)
+              throws InvalidCanonicalizerException {
+
+<span class="nc" id="L213">      org.apache.xml.security.Init.init();</span>
+
+<span class="nc" id="L215">      Canonicalizer c14nizer = new Canonicalizer(algorithmURI);</span>
+
+<span class="nc" id="L217">      c14nizer.setXPath(xpath);</span>
+
+<span class="nc" id="L219">      return c14nizer;</span>
+   }
+
+   /**
+    * Method register
+    *
+    * @param algorithmURI
+    * @param implementingClass
+    * @throws AlgorithmAlreadyRegisteredException
+    */
+   public static void register(String algorithmURI, String implementingClass)
+           throws AlgorithmAlreadyRegisteredException {
+
+<span class="fc" id="L232">      org.apache.xml.security.Init.init();</span>
+<span class="fc" id="L233">      cat.debug(&quot;Try to register Canonicalizer &quot; + algorithmURI + &quot; to class &quot;</span>
+                + implementingClass);
+
+      // check whether URI is already registered
+<span class="fc" id="L237">      String registeredClass = getImplementingClass(algorithmURI);</span>
+
+<span class="pc bpc" id="L239" title="3 of 4 branches missed.">      if ((registeredClass != null) &amp;&amp; (registeredClass.length() != 0)) {</span>
+<span class="nc" id="L240">         Object exArgs[] = { algorithmURI, registeredClass };</span>
+
+<span class="nc" id="L242">         throw new AlgorithmAlreadyRegisteredException(</span>
+            &quot;algorithm.alreadyRegistered&quot;, exArgs);
+      }
+
+<span class="fc" id="L246">      cat.debug(&quot;Map of C14N &quot; + algorithmURI + &quot; to class &quot;</span>
+                + implementingClass);
+<span class="fc" id="L248">      _canonicalizerHash.put(algorithmURI, implementingClass);</span>
+<span class="fc" id="L249">   }</span>
+
+   /**
+    * Method getURI
+    *
+    * @return
+    */
+   public final String getURI() {
+<span class="nc" id="L257">      return this.canonicalizerSpi.engineGetURI();</span>
+   }
+
+   /**
+    * Method setValidating
+    *
+    * @param validating
+    */
+   public void setValidating(boolean validating) {
+<span class="nc" id="L266">      this.canonicalizerSpi.engineSetValidating(validating);</span>
+<span class="nc" id="L267">   }</span>
+
+   /**
+    * Method getValidating
+    *
+    * @return
+    */
+   public boolean getValidating() {
+<span class="nc" id="L275">      return this.canonicalizerSpi.engineGetValidating();</span>
+   }
+
+   /**
+    * Method setNamespaceAware
+    *
+    * @param namespaceAware
+    */
+   public void setNamespaceAware(boolean namespaceAware) {
+<span class="nc" id="L284">      this.canonicalizerSpi.engineSetNamespaceAware(namespaceAware);</span>
+<span class="nc" id="L285">   }</span>
+
+   /**
+    * Method getNamespaceAware
+    *
+    * @return
+    */
+   public boolean getNamespaceAware() {
+<span class="nc" id="L293">      return this.canonicalizerSpi.engineGetNamespaceAware();</span>
+   }
+
+   /**
+    * Method setIncludeComments
+    *
+    * @param includeComments
+    */
+   public void setIncludeComments(boolean includeComments) {
+<span class="nc" id="L302">      this.canonicalizerSpi.engineSetIncludeComments(includeComments);</span>
+<span class="nc" id="L303">   }</span>
+
+   /**
+    * Method getIncludeComments
+    *
+    * @return
+    */
+   public boolean getIncludeComments() {
+<span class="nc" id="L311">      return this.canonicalizerSpi.engineGetIncludeComments();</span>
+   }
+
+   /**
+    * Method canonicalize
+    *
+    * @param node
+    * @return
+    * @throws CanonicalizationException
+    */
+   public byte[] canonicalize(Node node) throws CanonicalizationException {
+
+<span class="pc bpc" id="L323" title="1 of 2 branches missed.">      if (node == null) {</span>
+<span class="nc" id="L324">         cat.error(&quot;I was asked to canonicalize a null node&quot;);</span>
+      }
+
+<span class="fc" id="L327">      return this.canonicalizerSpi.engineCanonicalize(node);</span>
+   }
+
+   /**
+    * Method canonicalize
+    *
+    * @param inputBytes
+    * @return
+    * @throws CanonicalizationException
+    * @throws java.io.IOException
+    * @throws javax.xml.parsers.ParserConfigurationException
+    * @throws org.xml.sax.SAXException
+    */
+   public byte[] canonicalize(byte[] inputBytes)
+           throws javax.xml.parsers.ParserConfigurationException,
+                  java.io.IOException, org.xml.sax.SAXException,
+                  CanonicalizationException {
+<span class="fc" id="L344">      return this.canonicalizerSpi.engineCanonicalize(inputBytes);</span>
+   }
+
+   /**
+    * Method canonicalize
+    *
+    * @param selectedNodes
+    * @return
+    * @throws CanonicalizationException
+    */
+   public byte[] canonicalize(NodeList selectedNodes)
+           throws CanonicalizationException {
+<span class="fc" id="L356">      return this.canonicalizerSpi.engineCanonicalize(selectedNodes);</span>
+   }
+
+   /**
+    * Method canonicalizeDocument
+    *
+    * @param doc
+    * @return
+    * @throws CanonicalizationException
+    */
+   public byte[] canonicalizeDocument(Document doc)
+           throws CanonicalizationException {
+
+<span class="nc bnc" id="L369" title="All 2 branches missed.">      if (this.getIncludeComments()) {</span>
+<span class="nc" id="L370">         this.setXPath(Canonicalizer.XPATH_C14N_WITH_COMMENTS);</span>
+      } else {
+<span class="nc" id="L372">         this.setXPath(Canonicalizer.XPATH_C14N_OMIT_COMMENTS);</span>
+      }
+
+<span class="nc" id="L375">      return this.canonicalize(doc);</span>
+   }
+
+   /**
+    * Method canonicalizeSingleNode
+    *
+    * @param rootNode
+    * @return
+    * @throws CanonicalizationException
+    */
+   public byte[] canonicalizeSingleNode(Node rootNode)
+           throws CanonicalizationException {
+
+<span class="nc bnc" id="L388" title="All 2 branches missed.">      if (this.getIncludeComments()) {</span>
+<span class="nc" id="L389">         this.setXPath(Canonicalizer.XPATH_C14N_WITH_COMMENTS_SINGLE_NODE);</span>
+      } else {
+<span class="nc" id="L391">         this.setXPath(Canonicalizer.XPATH_C14N_OMIT_COMMENTS_SINGLE_NODE);</span>
+      }
+
+<span class="nc" id="L394">      return this.canonicalize(rootNode);</span>
+   }
+
+   /**
+    * Method canonicalize
+    *
+    * @param input
+    * @return
+    */
+   public XMLSignatureInput canonicalize(XMLSignatureInput input) {
+<span class="nc" id="L404">      return null;</span>
+   }
+
+   /**
+    * Method c14nFiles
+    *
+    * @param inFile
+    * @param outFile
+    */
+   public void c14nFiles(String inFile, String outFile) {
+<span class="nc" id="L414">      this.canonicalizerSpi.engineC14nFiles(inFile, outFile);</span>
+<span class="nc" id="L415">   }</span>
+
+   /**
+    * Method output
+    *
+    * @param document
+    * @param out
+    * @throws CanonicalizationException
+    * @throws IOException
+    */
+   public void output(Document document, OutputStream out)
+           throws IOException, CanonicalizationException {
+<span class="nc" id="L427">      this.canonicalizerSpi.engineOutput(document, out);</span>
+<span class="nc" id="L428">   }</span>
+
+   /**
+    * Returns the name of the implementing {@link CanonicalizerSpi} class
+    *
+    * @return the name of the implementing {@link CanonicalizerSpi} class
+    */
+   public String getImplementingCanonicalizerClass() {
+<span class="nc" id="L436">      return this.canonicalizerSpi.getClass().getName();</span>
+   }
+
+   /**
+    * Proxy method for {@link CanonicalizerSpi#engineSetXPath}.
+    *
+    * @param xpath
+    */
+   public void setXPath(Object xpath) {
+<span class="fc" id="L445">      this.canonicalizerSpi.engineSetXPath(xpath);</span>
+<span class="fc" id="L446">   }</span>
+
+   /**
+    * Method getXPath
+    *
+    * @return
+    */
+   public Object getXPath() {
+<span class="nc" id="L454">      return this.canonicalizerSpi.engineGetXPath();</span>
+   }
+
+   /**
+    * Method getXPathString
+    *
+    * @return
+    */
+   public String getXPathString() {
+<span class="fc" id="L463">      return this.canonicalizerSpi.engineGetXPathString();</span>
+   }
+
+   /**
+    * Method setXPathNodeSet
+    *
+    * @param nodeList
+    */
+   public void setXPathNodeSet(NodeList nodeList) {
+<span class="fc" id="L472">      this.canonicalizerSpi.engineSetXPathNodeSet(nodeList);</span>
+<span class="fc" id="L473">   }</span>
+
+   /**
+    * Method getImplementingClass
+    *
+    * @param URI
+    * @return
+    */
+   private static String getImplementingClass(String URI) {
+
+<span class="fc" id="L483">      Iterator i = _canonicalizerHash.keySet().iterator();</span>
+
+<span class="fc bfc" id="L485" title="All 2 branches covered.">      while (i.hasNext()) {</span>
+<span class="fc" id="L486">         String key = (String) i.next();</span>
+
+<span class="fc bfc" id="L488" title="All 2 branches covered.">         if (key.equals(URI)) {</span>
+<span class="fc" id="L489">            return (String) _canonicalizerHash.get(key);</span>
+         }
+<span class="fc" id="L491">      }</span>
+
+<span class="fc" id="L493">      return null;</span>
+   }
+
+   /**
+    * Defines whether possibly added NS decls have to be removed after c14n.
+    * &lt;BR /&gt;
+    * During c14n of a document with only a document subset visible,
+    * Attributes for namespace declarations are created in 'visible' Elements.
+    * This means that after c14n, the infoset of the document is modified because
+    * this process added namespace attrs. If this is a problem, the added
+    * attributes have to be removed from the DOM after c14n.
+    *
+    * @param remove
+    */
+   public void engineSetRemoveNSAttrs(boolean remove) {
+<span class="nc" id="L508">      this.canonicalizerSpi.engineSetRemoveNSAttrs(remove);</span>
+<span class="nc" id="L509">   }</span>
+
+   /**
+    * Returns whether possibly added NS decls have to be removed after c14n.
+    * &lt;BR /&gt;
+    * During c14n of a document with only a document subset visible,
+    * Attributes for namespace declarations are created in 'visible' Elements.
+    * This means that after c14n, the infoset of the document is modified because
+    * this process added namespace attrs. If this is a problem, the added
+    * attributes have to be removed from the DOM after c14n.
+    *
+    * @return
+    */
+   public boolean engineGetRemoveNSAttrs() {
+<span class="nc" id="L523">      return this.canonicalizerSpi.engineGetRemoveNSAttrs();</span>
+   }
+
+   static {
+<span class="fc" id="L527">      org.apache.xml.security.Init.init();</span>
+<span class="fc" id="L528">   }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

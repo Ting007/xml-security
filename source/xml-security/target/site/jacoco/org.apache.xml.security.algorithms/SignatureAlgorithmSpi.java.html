@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SignatureAlgorithmSpi.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.algorithms</a> &gt; <span class="el_source">SignatureAlgorithmSpi.java</span></div><h1>SignatureAlgorithmSpi.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.algorithms;
+
+
+
+import java.security.Key;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import javax.crypto.SecretKey;
+import java.security.SecureRandom;
+import java.security.spec.AlgorithmParameterSpec;
+import org.apache.xml.security.signature.XMLSignatureException;
+import org.w3c.dom.*;
+
+
+/**
+ *
+ * @author $Author: dohy $
+ */
+<span class="fc" id="L77">public abstract class SignatureAlgorithmSpi {</span>
+
+   /** {@link org.apache.log4j} logging facility */
+<span class="fc" id="L80">   static org.apache.log4j.Category cat =</span>
+      org.apache.log4j.Category
+         .getInstance(SignatureAlgorithmSpi.class.getName());
+
+   /** Field _signatureAlgorithmObject */
+<span class="fc" id="L85">   private SignatureAlgorithm _signatureAlgorithmObject = null;</span>
+
+   /**
+    * Returns the URI representation of &lt;code&gt;Transformation algorithm&lt;/code&gt;
+    *
+    * @return the URI representation of &lt;code&gt;Transformation algorithm&lt;/code&gt;
+    */
+   protected abstract String engineGetURI();
+
+   /**
+    * Proxy method for {@link java.security.Signature#getAlgorithm}
+    * which is executed on the internal {@link java.security.Signature} object.
+    *
+    * @return the result of the {@link java.security.Signature#getAlgorithm} method
+    */
+   protected abstract String engineGetJCEAlgorithmString();
+
+   /**
+    * Method engineGetJCEProviderName
+    *
+    * @return
+    */
+   protected abstract String engineGetJCEProviderName();
+
+   /**
+    * Proxy method for {@link java.security.Signature#update}
+    * which is executed on the internal {@link java.security.Signature} object.
+    *
+    * @param input
+    * @throws XMLSignatureException
+    */
+   protected abstract void engineUpdate(byte[] input)
+      throws XMLSignatureException;
+
+   /**
+    * Proxy method for {@link java.security.Signature#update}
+    * which is executed on the internal {@link java.security.Signature} object.
+    *
+    * @param input
+    * @throws XMLSignatureException
+    */
+   protected abstract void engineUpdate(byte input)
+      throws XMLSignatureException;
+
+   /**
+    * Proxy method for {@link java.security.Signature#update}
+    * which is executed on the internal {@link java.security.Signature} object.
+    *
+    * @param buf
+    * @param offset
+    * @param len
+    * @throws XMLSignatureException
+    */
+   protected abstract void engineUpdate(byte buf[], int offset, int len)
+      throws XMLSignatureException;
+
+   /**
+    * Proxy method for {@link java.security.Signature#initSign}
+    * which is executed on the internal {@link java.security.Signature} object. 
+    *
+    * @param privateKey
+    * @param secureRandom
+    * @throws XMLSignatureException if this method is called on a MAC 
+    */
+   protected abstract void engineInitSign(
+      PrivateKey privateKey, SecureRandom secureRandom)
+         throws XMLSignatureException;
+
+   /**
+    * Proxy method for {@link java.security.Signature#initSign}
+    * which is executed on the internal {@link java.security.Signature} object.
+    *
+    * @param privateKey
+    * @throws XMLSignatureException if this method is called on a MAC 
+    */
+   protected abstract void engineInitSign(PrivateKey privateKey)
+      throws XMLSignatureException;
+
+   /**
+    * Proxy method for {@link javax.crypto.Mac}
+    * which is executed on the internal {@link javax.crypto.Mac#init(Key)} object.
+    *
+    * @param secretKey
+    * @throws XMLSignatureException if this method is called on a Signature
+    */
+   protected abstract void engineInitSign(Key secretKey)
+      throws XMLSignatureException;
+
+   /**
+    * Proxy method for {@link javax.crypto.Mac}
+    * which is executed on the internal {@link javax.crypto.Mac#init(Key)} object.
+    *
+    * @param secretKey
+    * @param algorithmParameterSpec
+    * @throws XMLSignatureException if this method is called on a Signature
+    */
+   protected abstract void engineInitSign(
+      Key secretKey, AlgorithmParameterSpec algorithmParameterSpec)
+         throws XMLSignatureException;
+
+   /**
+    * Proxy method for {@link java.security.Signature#sign}
+    * which is executed on the internal {@link java.security.Signature} object.
+    *
+    * @return the result of the {@link java.security.Signature#sign} method
+    * @throws XMLSignatureException
+    */
+   protected abstract byte[] engineSign() throws XMLSignatureException;
+
+   /**
+    * Proxy method for {@link java.security.Signature#initVerify}
+    * which is executed on the internal {@link java.security.Signature} object.
+    *
+    * @param publickey
+    * @throws XMLSignatureException
+    */
+   protected abstract void engineInitVerify(PublicKey publickey)
+      throws XMLSignatureException;
+
+   /**
+    * Method engineInitVerify
+    *
+    * @param secretkey
+    * @throws XMLSignatureException
+    */
+   protected abstract void engineInitVerify(Key secretkey)
+      throws XMLSignatureException;
+
+   /**
+    * Proxy method for {@link java.security.Signature#verify}
+    * which is executed on the internal {@link java.security.Signature} object.
+    *
+    * @param signature
+    * @return
+    * @throws XMLSignatureException
+    */
+   protected abstract boolean engineVerify(byte[] signature)
+      throws XMLSignatureException;
+
+   /**
+    * Proxy method for {@link java.security.Signature#setParameter}
+    * which is executed on the internal {@link java.security.Signature} object.
+    *
+    * @param params
+    * @throws XMLSignatureException
+    */
+   protected abstract void engineSetParameter(AlgorithmParameterSpec params)
+      throws XMLSignatureException;
+
+   /** Field _doc */
+<span class="fc" id="L235">   Document _doc = null;</span>
+
+   /**
+    * Method engineSetDocument
+    *
+    * @param doc
+    */
+   protected void engineSetDocument(Document doc) {
+<span class="nc" id="L243">      this._doc = doc;</span>
+<span class="nc" id="L244">   }</span>
+
+   /** Field _constructionElement */
+<span class="fc" id="L247">   Element _constructionElement = null;</span>
+
+   /**
+    * Method engineGetContextFromElement
+    *
+    * @param element
+    * @throws XMLSignatureException
+    */
+   protected void engineGetContextFromElement(Element element)
+           throws XMLSignatureException {
+<span class="fc" id="L257">      this._constructionElement = element;</span>
+<span class="fc" id="L258">   }</span>
+
+   /**
+    * Method engineAddContextToElement
+    *
+    * @param element
+    * @throws XMLSignatureException
+    */
+   protected void engineAddContextToElement(Element element)
+<span class="nc" id="L267">           throws XMLSignatureException {}</span>
+
+   /**
+    * Method engineSetHMACOutputLength
+    *
+    * @param HMACOutputLength
+    * @throws XMLSignatureException
+    */
+   protected abstract void engineSetHMACOutputLength(int HMACOutputLength)
+      throws XMLSignatureException;
+
+   static {
+<span class="fc" id="L279">      org.apache.xml.security.Init.init();</span>
+<span class="fc" id="L280">   }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

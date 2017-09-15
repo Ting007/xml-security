@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ResourceResolverSpi.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.utils.resolver</a> &gt; <span class="el_source">ResourceResolverSpi.java</span></div><h1>ResourceResolverSpi.java</h1><pre class="source lang-java linenums">
+/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.utils.resolver;
+
+
+import java.util.*;
+import java.net.URL;
+import java.net.MalformedURLException;
+import org.w3c.dom.*;
+import org.apache.xml.utils.URI;
+import org.apache.xml.security.signature.XMLSignatureInput;
+
+
+/**
+ * During reference validation, we have to retrieve resources from somewhere.
+ *
+ * @author $Author: dohy $
+ */
+<span class="fc" id="L76">public abstract class ResourceResolverSpi {</span>
+
+   /** {@link org.apache.log4j} logging facility */
+<span class="fc" id="L79">   static org.apache.log4j.Category cat =</span>
+      org.apache.log4j.Category
+         .getInstance(ResourceResolverSpi.class.getName());
+
+   /** Field _properties */
+<span class="fc" id="L84">   protected java.util.Map _properties = new java.util.HashMap(10);</span>
+
+   /**
+    * This is the workhorse method used to resolve resources.
+    *
+    * @param uri
+    * @param BaseURI
+    * @return
+    * @throws ResourceResolverException
+    */
+   public abstract XMLSignatureInput engineResolve(Attr uri, String BaseURI)
+      throws ResourceResolverException;
+
+   /**
+    * Method engineSetProperty
+    *
+    * @param key
+    * @param value
+    */
+   public void engineSetProperty(String key, String value) {
+
+<span class="nc" id="L105">      java.util.Iterator i = this._properties.keySet().iterator();</span>
+
+<span class="nc bnc" id="L107" title="All 2 branches missed.">      while (i.hasNext()) {</span>
+<span class="nc" id="L108">         String c = (String) i.next();</span>
+
+<span class="nc bnc" id="L110" title="All 2 branches missed.">         if (c.equals(key)) {</span>
+<span class="nc" id="L111">            key = c;</span>
+
+<span class="nc" id="L113">            break;</span>
+         }
+<span class="nc" id="L115">      }</span>
+
+<span class="nc" id="L117">      this._properties.put(key, value);</span>
+<span class="nc" id="L118">   }</span>
+
+   /**
+    * Method engineGetProperty
+    *
+    * @param key
+    * @return
+    */
+   public String engineGetProperty(String key) {
+
+<span class="nc" id="L128">      java.util.Iterator i = this._properties.keySet().iterator();</span>
+
+<span class="nc bnc" id="L130" title="All 2 branches missed.">      while (i.hasNext()) {</span>
+<span class="nc" id="L131">         String c = (String) i.next();</span>
+
+<span class="nc bnc" id="L133" title="All 2 branches missed.">         if (c.equals(key)) {</span>
+<span class="nc" id="L134">            key = c;</span>
+
+<span class="nc" id="L136">            break;</span>
+         }
+<span class="nc" id="L138">      }</span>
+
+<span class="nc" id="L140">      return (String) this._properties.get(key);</span>
+   }
+
+   public void engineAddProperies(Map properties) {
+<span class="fc" id="L144">      this._properties.putAll(properties);</span>
+<span class="fc" id="L145">   }</span>
+
+   /**
+    * This method helps the {@link ResourceResolver} to decide whether a
+    * {@link ResourceResolverSpi} is able to perform the requested action.
+    *
+    * @param uri
+    * @param BaseURI
+    * @return
+    */
+   public abstract boolean engineCanResolve(Attr uri, String BaseURI);
+
+   /**
+    * Method engineGetPropertyKeys
+    *
+    * @return
+    */
+   public String[] engineGetPropertyKeys() {
+<span class="nc" id="L163">      return null;</span>
+   }
+
+   /**
+    * Method understandsProperty
+    *
+    * @param propertyToTest
+    * @return
+    */
+   public boolean understandsProperty(String propertyToTest) {
+
+<span class="nc" id="L174">      String[] understood = this.engineGetPropertyKeys();</span>
+
+<span class="nc bnc" id="L176" title="All 2 branches missed.">      if (understood != null) {</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">         for (int i = 0; i &lt; understood.length; i++) {</span>
+<span class="nc bnc" id="L178" title="All 2 branches missed.">            if (understood[i].equals(propertyToTest)) {</span>
+<span class="nc" id="L179">               return true;</span>
+            }
+         }
+      }
+
+<span class="nc" id="L184">      return false;</span>
+   }
+
+   /**
+    * Expands a system id and returns the system id as a URL, if
+    * it can be expanded. A return value of null means that the
+    * identifier is already expanded. An exception thrown
+    * indicates a failure to expand the id.
+    *
+    * @param systemId The systemId to be expanded.
+    * @param currentSystemId
+    *
+    * @return Returns the URL object representing the expanded system
+    *         identifier. A null value indicates that the given
+    *         system identifier is already expanded.
+    *
+    * @throws Exception
+    * @see org.apache.xerces.validators.schema.TraverseSchema
+    */
+   public static String expandSystemId(String systemId, String currentSystemId)
+           throws Exception {
+
+<span class="fc" id="L206">      String id = systemId;</span>
+
+      // check for bad parameters id
+<span class="pc bpc" id="L209" title="2 of 4 branches missed.">      if ((id == null) || (id.length() == 0)) {</span>
+<span class="nc" id="L210">         return systemId;</span>
+      }
+
+      // if id already expanded, return
+      try {
+<span class="fc" id="L215">         URI url = new URI(id);</span>
+
+<span class="pc bpc" id="L217" title="1 of 2 branches missed.">         if (url != null) {</span>
+<span class="fc" id="L218">            return systemId;</span>
+         }
+<span class="fc" id="L220">      } catch (Exception e) {</span>
+
+         // continue on...
+<span class="nc" id="L223">      }</span>
+
+      // normalize id
+<span class="fc" id="L226">      id = ResourceResolverSpi.fixURI(id);</span>
+
+      // normalize base
+<span class="fc" id="L229">      URI base = null;</span>
+<span class="fc" id="L230">      URI url = null;</span>
+
+      try {
+<span class="pc bpc" id="L233" title="1 of 2 branches missed.">         if (currentSystemId == null) {</span>
+            String dir;
+
+            try {
+<span class="nc" id="L237">               dir = ResourceResolverSpi.fixURI(System.getProperty(&quot;user.dir&quot;));</span>
+<span class="nc" id="L238">            } catch (SecurityException se) {</span>
+<span class="nc" id="L239">               dir = &quot;&quot;;</span>
+<span class="nc" id="L240">            }</span>
+
+<span class="nc bnc" id="L242" title="All 2 branches missed.">            if (!dir.endsWith(&quot;/&quot;)) {</span>
+<span class="nc" id="L243">               dir = dir + &quot;/&quot;;</span>
+            }
+
+<span class="nc" id="L246">            final String protocol = &quot;file&quot;;</span>
+<span class="nc" id="L247">            final String host = &quot;&quot;;</span>
+
+<span class="nc" id="L249">            base = new URI(protocol, host, dir, null, null);</span>
+<span class="nc" id="L250">         } else {</span>
+
+            // should we fix currentSystemId?
+<span class="fc" id="L253">            currentSystemId = ResourceResolverSpi.fixURI(currentSystemId);</span>
+<span class="fc" id="L254">            base = new URI(currentSystemId);</span>
+         }
+
+         // expand id
+<span class="fc" id="L258">         url = new URI(base, id);</span>
+<span class="nc" id="L259">      } catch (Exception e) {</span>
+
+         // let it go through
+<span class="fc" id="L262">      }</span>
+
+<span class="pc bpc" id="L264" title="1 of 2 branches missed.">      if (url == null) {</span>
+<span class="nc" id="L265">         return systemId;</span>
+      }
+
+<span class="fc" id="L268">      return url.toString();</span>
+   }
+
+   /**
+    * Method makeFilesystemToURI
+    *
+    * @param str
+    * @return
+    */
+   public static String makeFilesystemToURI(String str) {
+
+<span class="nc" id="L279">      final String filePrefix = &quot;file:/&quot;;</span>
+
+<span class="nc" id="L281">      return &quot;&quot;;</span>
+   }
+
+   /**
+    * Method isDosFilename
+    *
+    * @param str
+    * @return
+    */
+   private static boolean isDosFilename(String str) {
+
+<span class="nc bnc" id="L292" title="All 2 branches missed.">      if (str.length() &gt;= 4) {</span>
+
+         // str =~ /^\W:\/([^/])/ # to speak perl ;-))
+         //J-
+<span class="nc" id="L296">         char ch0 = Character.toUpperCase(str.charAt(0));</span>
+<span class="nc bnc" id="L297" title="All 4 branches missed.">         boolean isDriveLetter     = (('A' &lt;= ch0) &amp;&amp; (ch0 &lt;= 'Z'));</span>
+<span class="nc bnc" id="L298" title="All 2 branches missed.">         boolean isColon           = str.charAt(1) == ':';</span>
+<span class="nc bnc" id="L299" title="All 2 branches missed.">         boolean isSlashAfterColon = str.charAt(2) == '/';</span>
+<span class="nc bnc" id="L300" title="All 2 branches missed.">         boolean isOnlyOneSlash    = str.charAt(3) != '/';</span>
+<span class="nc bnc" id="L301" title="All 8 branches missed.">         boolean isDosFilename = (isDriveLetter &amp;&amp; isColon &amp;&amp;</span>
+                                  isSlashAfterColon &amp;&amp; isOnlyOneSlash);
+         //J+
+<span class="nc" id="L304">         return isDosFilename;</span>
+      }
+
+<span class="nc" id="L307">      return false;</span>
+   }
+
+   /**
+    * Fixes a platform dependent filename to standard URI form.
+    *
+    * @param str The string to fix.
+    *
+    * @return Returns the fixed URI string.
+    * @see org.apache.xerces.validators.schema.TraverseSchema
+    */
+   public static String fixURI(String str) {
+
+      // handle platform dependent strings
+<span class="fc" id="L321">      str = str.replace(java.io.File.separatorChar, '/');</span>
+
+<span class="pc bpc" id="L323" title="1 of 2 branches missed.">      if (str.length() &gt;= 4) {</span>
+
+         // str =~ /^\W:\/([^/])/ # to speak perl ;-))
+<span class="fc" id="L326">         char ch0 = Character.toUpperCase(str.charAt(0));</span>
+<span class="fc" id="L327">         char ch1 = str.charAt(1);</span>
+<span class="fc" id="L328">         char ch2 = str.charAt(2);</span>
+<span class="fc" id="L329">         char ch3 = str.charAt(3);</span>
+<span class="pc bpc" id="L330" title="6 of 10 branches missed.">         boolean isDosFilename = ((('A' &lt;= ch0) &amp;&amp; (ch0 &lt;= 'Z'))</span>
+                                  &amp;&amp; (ch1 == ':') &amp;&amp; (ch2 == '/')
+                                  &amp;&amp; (ch3 != '/'));
+
+<span class="pc bpc" id="L334" title="1 of 2 branches missed.">         if (isDosFilename) {</span>
+<span class="nc" id="L335">            cat.debug(&quot;Found DOS filename: &quot; + str);</span>
+         }
+      }
+
+      // Windows fix
+<span class="pc bpc" id="L340" title="1 of 2 branches missed.">      if (str.length() &gt;= 2) {</span>
+<span class="fc" id="L341">         char ch1 = str.charAt(1);</span>
+
+<span class="pc bpc" id="L343" title="1 of 2 branches missed.">         if (ch1 == ':') {</span>
+<span class="nc" id="L344">            char ch0 = Character.toUpperCase(str.charAt(0));</span>
+
+<span class="nc bnc" id="L346" title="All 4 branches missed.">            if (('A' &lt;= ch0) &amp;&amp; (ch0 &lt;= 'Z')) {</span>
+<span class="nc" id="L347">               str = &quot;/&quot; + str;</span>
+            }
+         }
+      }
+
+      // done
+<span class="fc" id="L353">      return str;</span>
+   }
+
+   static {
+<span class="fc" id="L357">      org.apache.xml.security.Init.init();</span>
+<span class="fc" id="L358">   }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

@@ -1,0 +1,895 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HexDump.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.utils</a> &gt; <span class="el_source">HexDump.java</span></div><h1>HexDump.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.utils;
+
+
+import java.io.*;
+import sun.misc.HexDumpEncoder;
+
+
+/**
+ *
+ * @author Niko Schweitzer
+ */
+<span class="nc" id="L70">public class HexDump {</span>
+   /** {@link org.apache.log4j} logging facility */
+<span class="fc" id="L72">   static org.apache.log4j.Category cat =</span>
+      org.apache.log4j.Category.getInstance(HexDump.class.getName());
+
+   /**
+    * Method prettyPrintHex
+    *
+    *
+    * @param baToConvert
+    * @return hexdump string
+    */
+   public static String prettyPrintHex(byte[] baToConvert) {
+
+<span class="nc" id="L84">      HexDumpEncoder hde = new HexDumpEncoder();</span>
+
+<span class="nc" id="L86">      return hde.encodeBuffer(baToConvert);</span>
+   }
+
+   /**
+    * Method prettyPrintHex
+    *
+    *
+    * @param sToConvert
+    * @return hexdump string
+    */
+   public static String prettyPrintHex(String sToConvert) {
+<span class="nc" id="L97">      return prettyPrintHex(sToConvert.getBytes());</span>
+   }
+
+   /** Field DEBUG */
+<span class="fc" id="L101">   private static boolean DEBUG = false;</span>
+
+   /** Field HEX_DIGITS */
+<span class="fc" id="L104">   private final static char[] HEX_DIGITS = { '0', '1', '2', '3', '4', '5', '6',</span>
+                                              '7', '8', '9', 'A', 'B', 'C', 'D',
+                                              'E', 'F' };
+
+   /** Field BIT_DIGIT */
+<span class="fc" id="L109">   private static char[] BIT_DIGIT = { '0', '1' };</span>
+
+   /** Field COMPARE_BITS */
+<span class="fc" id="L112">   private final static byte[] COMPARE_BITS = { (byte) 0x80, (byte) 0x40,</span>
+                                                (byte) 0x20, (byte) 0x10,
+                                                (byte) 0x08, (byte) 0x04,
+                                                (byte) 0x02, (byte) 0x01 };
+
+   /** Field BYTE_SEPARATOR */
+<span class="fc" id="L118">   private static char BYTE_SEPARATOR = ' ';</span>
+
+   /** Field WITH_BYTE_SEPARATOR */
+<span class="fc" id="L121">   private static boolean WITH_BYTE_SEPARATOR = true;</span>
+
+   /**
+    *  Sets the Debug attribute of the Convert object
+    *
+    * @param  dbg  The new Debug value
+    */
+   public static void setDebug(boolean dbg) {
+<span class="nc" id="L129">      DEBUG = dbg;</span>
+<span class="nc" id="L130">   }</span>
+
+   /**
+    *  Sets the WithByteSeparator attribute of the Convert class
+    *
+    * @param  bs  The new WithByteSeparator value
+    */
+   public static void setWithByteSeparator(boolean bs) {
+<span class="nc" id="L138">      WITH_BYTE_SEPARATOR = bs;</span>
+<span class="nc" id="L139">   }</span>
+
+   /**
+    *  Sets the ByteSeparator attribute of the Convert class
+    *
+    * @param  bs  The new ByteSeparator value
+    */
+   public static void setByteSeparator(char bs) {
+<span class="nc" id="L147">      BYTE_SEPARATOR = bs;</span>
+<span class="nc" id="L148">   }</span>
+
+   /**
+    *  Sets the BitDigits attribute of the Convert class
+    *
+    * @param  bd             The new BitDigits value
+    * @exception  Exception  Description of Exception
+    */
+   public static void setBitDigits(char[] bd) throws Exception {
+
+<span class="nc bnc" id="L158" title="All 2 branches missed.">      if (bd.length != 2) {</span>
+<span class="nc" id="L159">         throw new Exception(&quot;wrong number of characters!&quot;);</span>
+      }
+
+<span class="nc" id="L162">      BIT_DIGIT = bd;</span>
+<span class="nc" id="L163">   }</span>
+
+   /**
+    * Method setBitDigits
+    *
+    * @param zeroBit
+    * @param oneBit
+    */
+   public static void setBitDigits(char zeroBit, char oneBit) {
+<span class="nc" id="L172">      BIT_DIGIT[0] = zeroBit;</span>
+<span class="nc" id="L173">      BIT_DIGIT[1] = oneBit;</span>
+<span class="nc" id="L174">   }</span>
+
+   /*
+    * Converts a byte array to hex string
+    */
+
+   /**
+    *  Description of the Method
+    *
+    * @param  block  Description of Parameter
+    * @return        Description of the Returned Value
+    */
+   public static String byteArrayToBinaryString(byte[] block) {
+
+<span class="nc" id="L188">      StringBuffer strBuf = new StringBuffer();</span>
+<span class="nc" id="L189">      int iLen = block.length;</span>
+
+      //---- for all bytes of array
+<span class="nc bnc" id="L192" title="All 2 branches missed.">      for (int i = 0; i &lt; iLen; i++) {</span>
+<span class="nc" id="L193">         byte2bin(block[i], strBuf);</span>
+
+         //---- if bit i is set   ----//
+<span class="nc bnc" id="L196" title="All 4 branches missed.">         if ((i &lt; iLen - 1) &amp; WITH_BYTE_SEPARATOR) {</span>
+<span class="nc" id="L197">            strBuf.append(BYTE_SEPARATOR);</span>
+         }
+      }
+
+<span class="nc" id="L201">      return strBuf.toString();</span>
+   }
+
+   /**
+    * Method toBinaryString
+    *
+    * @param ba
+    * @return
+    */
+   public static String toBinaryString(byte[] ba) {
+<span class="nc" id="L211">      return byteArrayToBinaryString(ba);</span>
+   }
+
+   /**
+    * Method toBinaryString
+    *
+    * @param b
+    * @return
+    */
+   public static String toBinaryString(byte b) {
+
+<span class="nc" id="L222">      byte[] ba = new byte[1];</span>
+
+<span class="nc" id="L224">      ba[0] = b;</span>
+
+<span class="nc" id="L226">      return byteArrayToBinaryString(ba);</span>
+   }
+
+   /**
+    * Method toBinaryString
+    *
+    * @param s
+    * @return
+    */
+   public static String toBinaryString(short s) {
+<span class="nc" id="L236">      return toBinaryString(toByteArray(s));</span>
+   }
+
+   /**
+    * Method toBinaryString
+    *
+    * @param i
+    * @return
+    */
+   public static String toBinaryString(int i) {
+<span class="nc" id="L246">      return toBinaryString(toByteArray(i));</span>
+   }
+
+   /**
+    * Method toBinaryString
+    *
+    * @param l
+    * @return
+    */
+   public static String toBinaryString(long l) {
+<span class="nc" id="L256">      return toBinaryString(toByteArray(l));</span>
+   }
+
+   /**
+    * Method toByteArray
+    *
+    * @param s
+    * @return
+    */
+   public static final byte[] toByteArray(short s) {
+
+<span class="nc" id="L267">      byte[] baTemp = new byte[2];</span>
+
+<span class="nc" id="L269">      baTemp[1] = (byte) (s);</span>
+<span class="nc" id="L270">      baTemp[0] = (byte) (s &gt;&gt; 8);</span>
+
+<span class="nc" id="L272">      return baTemp;</span>
+   }
+
+   /**
+    * Method toByteArray
+    *
+    * @param i
+    * @return
+    */
+   public static final byte[] toByteArray(int i) {
+
+<span class="nc" id="L283">      byte[] baTemp = new byte[4];</span>
+
+<span class="nc" id="L285">      baTemp[3] = (byte) i;</span>
+<span class="nc" id="L286">      baTemp[2] = (byte) (i &gt;&gt; 8);</span>
+<span class="nc" id="L287">      baTemp[1] = (byte) (i &gt;&gt; 16);</span>
+<span class="nc" id="L288">      baTemp[0] = (byte) (i &gt;&gt; 24);</span>
+
+<span class="nc" id="L290">      return baTemp;</span>
+   }
+
+   /**
+    * Method toByteArray
+    *
+    * @param l
+    * @return
+    */
+   public static final byte[] toByteArray(long l) {
+
+<span class="nc" id="L301">      byte[] baTemp = new byte[8];</span>
+
+<span class="nc" id="L303">      baTemp[7] = (byte) l;</span>
+<span class="nc" id="L304">      baTemp[6] = (byte) (l &gt;&gt; 8);</span>
+<span class="nc" id="L305">      baTemp[5] = (byte) (l &gt;&gt; 16);</span>
+<span class="nc" id="L306">      baTemp[4] = (byte) (l &gt;&gt; 24);</span>
+<span class="nc" id="L307">      baTemp[3] = (byte) (l &gt;&gt; 32);</span>
+<span class="nc" id="L308">      baTemp[2] = (byte) (l &gt;&gt; 40);</span>
+<span class="nc" id="L309">      baTemp[1] = (byte) (l &gt;&gt; 48);</span>
+<span class="nc" id="L310">      baTemp[0] = (byte) (l &gt;&gt; 56);</span>
+
+<span class="nc" id="L312">      return baTemp;</span>
+   }
+
+   /**
+    *  Description of the Method
+    *
+    * @param  block  Description of Parameter
+    * @return        Description of the Returned Value
+    */
+   public static String byteArrayToHexString(byte[] block) {
+
+<span class="fc" id="L323">      long lTime = System.currentTimeMillis();</span>
+<span class="fc" id="L324">      StringBuffer buf = new StringBuffer();</span>
+<span class="fc" id="L325">      int len = block.length;</span>
+
+<span class="fc bfc" id="L327" title="All 2 branches covered.">      for (int i = 0; i &lt; len; i++) {</span>
+<span class="fc" id="L328">         byte2hex(block[i], buf);</span>
+
+<span class="fc bfc" id="L330" title="All 4 branches covered.">         if ((i &lt; len - 1) &amp; WITH_BYTE_SEPARATOR) {</span>
+<span class="fc" id="L331">            buf.append(BYTE_SEPARATOR);</span>
+         }
+      }
+
+<span class="fc" id="L335">      return buf.toString();</span>
+   }
+
+   /**
+    *  Description of the Method
+    *
+    * @param  in  string to be converted
+    * @return     String in readable hex encoding
+    */
+   public static String stringToHexString(String in) {
+
+<span class="nc" id="L346">      byte[] ba = in.getBytes();</span>
+
+<span class="nc" id="L348">      return toHexString(ba);</span>
+   }
+
+   /**
+    *  Description of the Method
+    *
+    * @param  block   Description of Parameter
+    * @param  offset  Description of Parameter
+    * @param  length  Description of Parameter
+    * @return         Description of the Returned Value
+    */
+   public static String byteArrayToHexString(byte[] block, int offset,
+                                             int length) {
+
+<span class="nc" id="L362">      long lTime = System.currentTimeMillis();</span>
+<span class="nc" id="L363">      StringBuffer buf = new StringBuffer();</span>
+<span class="nc" id="L364">      int len = block.length;</span>
+
+<span class="nc" id="L366">      length = length + offset;</span>
+
+<span class="nc bnc" id="L368" title="All 2 branches missed.">      if ((len &lt; length)) {</span>
+<span class="nc" id="L369">         length = len;</span>
+      }
+
+<span class="nc bnc" id="L372" title="All 2 branches missed.">      for (int i = 0 + offset; i &lt; length; i++) {</span>
+<span class="nc" id="L373">         byte2hex(block[i], buf);</span>
+
+<span class="nc bnc" id="L375" title="All 2 branches missed.">         if (i &lt; length - 1) {</span>
+<span class="nc" id="L376">            buf.append(&quot;:&quot;);</span>
+         }
+      }
+
+<span class="nc" id="L380">      return buf.toString();</span>
+   }
+
+   /**
+    *  Returns a string of hexadecimal digits from a byte array. Each byte is
+    *  converted to 2 hex symbols.
+    *
+    * @param  ba  Description of Parameter
+    * @return     Description of the Returned Value
+    */
+   public static String toHexString(byte[] ba) {
+<span class="nc" id="L391">      return toHexString(ba, 0, ba.length);</span>
+   }
+
+   /**
+    * Method toHexString
+    *
+    * @param b
+    * @return
+    */
+   public static String toHexString(byte b) {
+
+<span class="nc" id="L402">      byte[] ba = new byte[1];</span>
+
+<span class="nc" id="L404">      ba[0] = b;</span>
+
+<span class="nc" id="L406">      return toHexString(ba, 0, ba.length);</span>
+   }
+
+   /**
+    *  Description of the Method
+    *
+    * @param s
+    * @return               Description of the Returned Value
+    */
+   public static String toHexString(short s) {
+<span class="nc" id="L416">      return toHexString(toByteArray(s));</span>
+   }
+
+   /**
+    * Method toHexString
+    *
+    * @param i
+    * @return
+    */
+   public static String toHexString(int i) {
+<span class="nc" id="L426">      return toHexString(toByteArray(i));</span>
+   }
+
+   /**
+    * Method toHexString
+    *
+    * @param l
+    * @return
+    */
+   public static String toHexString(long l) {
+<span class="nc" id="L436">      return toHexString(toByteArray(l));</span>
+   }
+
+   /**
+    * Method toString
+    *
+    * @param ba
+    * @return
+    */
+   public static String toString(byte[] ba) {
+<span class="nc" id="L446">      return new String(ba).toString();</span>
+   }
+
+   /**
+    * Method toString
+    *
+    * @param b
+    * @return
+    */
+   public static String toString(byte b) {
+
+<span class="nc" id="L457">      byte[] ba = new byte[1];</span>
+
+<span class="nc" id="L459">      ba[0] = b;</span>
+
+<span class="nc" id="L461">      return new String(ba).toString();</span>
+   }
+
+   /**
+    *  converts String to Hex String. Example: niko -&gt;6E696B6F
+    *
+    * @param  ba      Description of Parameter
+    * @param  offset  Description of Parameter
+    * @param  length  Description of Parameter
+    * @return         Description of the Returned Value
+    */
+   public static String toHexString(byte[] ba, int offset, int length) {
+
+<span class="nc" id="L474">      long lTime = System.currentTimeMillis();</span>
+      char[] buf;
+
+<span class="nc bnc" id="L477" title="All 2 branches missed.">      if (WITH_BYTE_SEPARATOR) {</span>
+<span class="nc" id="L478">         buf = new char[length * 3];</span>
+      } else {
+<span class="nc" id="L480">         buf = new char[length * 2];</span>
+      }
+
+<span class="nc bnc" id="L483" title="All 2 branches missed.">      for (int i = offset, j = 0, k; i &lt; offset + length; ) {</span>
+<span class="nc" id="L484">         k = ba[i++];</span>
+<span class="nc" id="L485">         buf[j++] = HEX_DIGITS[(k &gt;&gt;&gt; 4) &amp; 0x0F];</span>
+<span class="nc" id="L486">         buf[j++] = HEX_DIGITS[k &amp; 0x0F];</span>
+
+<span class="nc bnc" id="L488" title="All 2 branches missed.">         if (WITH_BYTE_SEPARATOR) {</span>
+<span class="nc" id="L489">            buf[j++] = BYTE_SEPARATOR;</span>
+         }
+      }
+
+<span class="nc" id="L493">      return new String(buf);</span>
+   }
+
+   /**
+    * Converts readable hex-String to byteArray
+    *
+    * @param strA
+    * @return
+    */
+   public static byte[] hexStringToByteArray(String strA) {
+<span class="fc" id="L503">      ByteArrayOutputStream result = new ByteArrayOutputStream();</span>
+
+      // alle Hex-Zeichen konvertieren, den Rest Ignorieren
+      // jedes Zeichen stellt einen 4-Bit Wert dar
+<span class="fc" id="L507">      byte sum = (byte) 0x00;</span>
+<span class="fc" id="L508">      boolean nextCharIsUpper = true;</span>
+
+<span class="fc bfc" id="L510" title="All 2 branches covered.">      for (int i = 0; i &lt; strA.length(); i++) {</span>
+<span class="fc" id="L511">         char c = strA.charAt(i);</span>
+
+<span class="fc bfc" id="L513" title="All 17 branches covered.">         switch (Character.toUpperCase(c)) {</span>
+
+         case '0' :
+<span class="fc bfc" id="L516" title="All 2 branches covered.">            if (nextCharIsUpper) {</span>
+<span class="fc" id="L517">               sum = (byte) 0x00;</span>
+<span class="fc" id="L518">               nextCharIsUpper = false;</span>
+            } else {
+<span class="fc" id="L520">               sum |= (byte) 0x00;</span>
+<span class="fc" id="L521">               result.write(sum);</span>
+<span class="fc" id="L522">               nextCharIsUpper = true;</span>
+            }
+<span class="fc" id="L524">            break;</span>
+
+         case '1' :
+<span class="fc bfc" id="L527" title="All 2 branches covered.">            if (nextCharIsUpper) {</span>
+<span class="fc" id="L528">               sum = (byte) 0x10;</span>
+<span class="fc" id="L529">               nextCharIsUpper = false;</span>
+            } else {
+<span class="fc" id="L531">               sum |= (byte) 0x01;</span>
+<span class="fc" id="L532">               result.write(sum);</span>
+<span class="fc" id="L533">               nextCharIsUpper = true;</span>
+            }
+<span class="fc" id="L535">            break;</span>
+
+         case '2' :
+<span class="fc bfc" id="L538" title="All 2 branches covered.">            if (nextCharIsUpper) {</span>
+<span class="fc" id="L539">               sum = (byte) 0x20;</span>
+<span class="fc" id="L540">               nextCharIsUpper = false;</span>
+            } else {
+<span class="fc" id="L542">               sum |= (byte) 0x02;</span>
+<span class="fc" id="L543">               result.write(sum);</span>
+<span class="fc" id="L544">               nextCharIsUpper = true;</span>
+            }
+<span class="fc" id="L546">            break;</span>
+
+         case '3' :
+<span class="fc bfc" id="L549" title="All 2 branches covered.">            if (nextCharIsUpper) {</span>
+<span class="fc" id="L550">               sum = (byte) 0x30;</span>
+<span class="fc" id="L551">               nextCharIsUpper = false;</span>
+            } else {
+<span class="fc" id="L553">               sum |= (byte) 0x03;</span>
+<span class="fc" id="L554">               result.write(sum);</span>
+<span class="fc" id="L555">               nextCharIsUpper = true;</span>
+            }
+<span class="fc" id="L557">            break;</span>
+
+         case '4' :
+<span class="fc bfc" id="L560" title="All 2 branches covered.">            if (nextCharIsUpper) {</span>
+<span class="fc" id="L561">               sum = (byte) 0x40;</span>
+<span class="fc" id="L562">               nextCharIsUpper = false;</span>
+            } else {
+<span class="fc" id="L564">               sum |= (byte) 0x04;</span>
+<span class="fc" id="L565">               result.write(sum);</span>
+<span class="fc" id="L566">               nextCharIsUpper = true;</span>
+            }
+<span class="fc" id="L568">            break;</span>
+
+         case '5' :
+<span class="fc bfc" id="L571" title="All 2 branches covered.">            if (nextCharIsUpper) {</span>
+<span class="fc" id="L572">               sum = (byte) 0x50;</span>
+<span class="fc" id="L573">               nextCharIsUpper = false;</span>
+            } else {
+<span class="fc" id="L575">               sum |= (byte) 0x05;</span>
+<span class="fc" id="L576">               result.write(sum);</span>
+<span class="fc" id="L577">               nextCharIsUpper = true;</span>
+            }
+<span class="fc" id="L579">            break;</span>
+
+         case '6' :
+<span class="fc bfc" id="L582" title="All 2 branches covered.">            if (nextCharIsUpper) {</span>
+<span class="fc" id="L583">               sum = (byte) 0x60;</span>
+<span class="fc" id="L584">               nextCharIsUpper = false;</span>
+            } else {
+<span class="fc" id="L586">               sum |= (byte) 0x06;</span>
+<span class="fc" id="L587">               result.write(sum);</span>
+<span class="fc" id="L588">               nextCharIsUpper = true;</span>
+            }
+<span class="fc" id="L590">            break;</span>
+
+         case '7' :
+<span class="fc bfc" id="L593" title="All 2 branches covered.">            if (nextCharIsUpper) {</span>
+<span class="fc" id="L594">               sum = (byte) 0x70;</span>
+<span class="fc" id="L595">               nextCharIsUpper = false;</span>
+            } else {
+<span class="fc" id="L597">               sum |= (byte) 0x07;</span>
+<span class="fc" id="L598">               result.write(sum);</span>
+<span class="fc" id="L599">               nextCharIsUpper = true;</span>
+            }
+<span class="fc" id="L601">            break;</span>
+
+         case '8' :
+<span class="fc bfc" id="L604" title="All 2 branches covered.">            if (nextCharIsUpper) {</span>
+<span class="fc" id="L605">               sum = (byte) 0x80;</span>
+<span class="fc" id="L606">               nextCharIsUpper = false;</span>
+            } else {
+<span class="fc" id="L608">               sum |= (byte) 0x08;</span>
+<span class="fc" id="L609">               result.write(sum);</span>
+<span class="fc" id="L610">               nextCharIsUpper = true;</span>
+            }
+<span class="fc" id="L612">            break;</span>
+
+         case '9' :
+<span class="fc bfc" id="L615" title="All 2 branches covered.">            if (nextCharIsUpper) {</span>
+<span class="fc" id="L616">               sum = (byte) 0x90;</span>
+<span class="fc" id="L617">               nextCharIsUpper = false;</span>
+            } else {
+<span class="fc" id="L619">               sum |= (byte) 0x09;</span>
+<span class="fc" id="L620">               result.write(sum);</span>
+<span class="fc" id="L621">               nextCharIsUpper = true;</span>
+            }
+<span class="fc" id="L623">            break;</span>
+
+         case 'A' :
+<span class="fc bfc" id="L626" title="All 2 branches covered.">            if (nextCharIsUpper) {</span>
+<span class="fc" id="L627">               sum = (byte) 0xA0;</span>
+<span class="fc" id="L628">               nextCharIsUpper = false;</span>
+            } else {
+<span class="fc" id="L630">               sum |= (byte) 0x0A;</span>
+<span class="fc" id="L631">               result.write(sum);</span>
+<span class="fc" id="L632">               nextCharIsUpper = true;</span>
+            }
+<span class="fc" id="L634">            break;</span>
+
+         case 'B' :
+<span class="fc bfc" id="L637" title="All 2 branches covered.">            if (nextCharIsUpper) {</span>
+<span class="fc" id="L638">               sum = (byte) 0xB0;</span>
+<span class="fc" id="L639">               nextCharIsUpper = false;</span>
+            } else {
+<span class="fc" id="L641">               sum |= (byte) 0x0B;</span>
+<span class="fc" id="L642">               result.write(sum);</span>
+<span class="fc" id="L643">               nextCharIsUpper = true;</span>
+            }
+<span class="fc" id="L645">            break;</span>
+
+         case 'C' :
+<span class="fc bfc" id="L648" title="All 2 branches covered.">            if (nextCharIsUpper) {</span>
+<span class="fc" id="L649">               sum = (byte) 0xC0;</span>
+<span class="fc" id="L650">               nextCharIsUpper = false;</span>
+            } else {
+<span class="fc" id="L652">               sum |= (byte) 0x0C;</span>
+<span class="fc" id="L653">               result.write(sum);</span>
+<span class="fc" id="L654">               nextCharIsUpper = true;</span>
+            }
+<span class="fc" id="L656">            break;</span>
+
+         case 'D' :
+<span class="fc bfc" id="L659" title="All 2 branches covered.">            if (nextCharIsUpper) {</span>
+<span class="fc" id="L660">               sum = (byte) 0xD0;</span>
+<span class="fc" id="L661">               nextCharIsUpper = false;</span>
+            } else {
+<span class="fc" id="L663">               sum |= (byte) 0x0D;</span>
+<span class="fc" id="L664">               result.write(sum);</span>
+<span class="fc" id="L665">               nextCharIsUpper = true;</span>
+            }
+<span class="fc" id="L667">            break;</span>
+
+         case 'E' :
+<span class="fc bfc" id="L670" title="All 2 branches covered.">            if (nextCharIsUpper) {</span>
+<span class="fc" id="L671">               sum = (byte) 0xE0;</span>
+<span class="fc" id="L672">               nextCharIsUpper = false;</span>
+            } else {
+<span class="fc" id="L674">               sum |= (byte) 0x0E;</span>
+<span class="fc" id="L675">               result.write(sum);</span>
+<span class="fc" id="L676">               nextCharIsUpper = true;</span>
+            }
+<span class="fc" id="L678">            break;</span>
+
+         case 'F' :
+<span class="fc bfc" id="L681" title="All 2 branches covered.">            if (nextCharIsUpper) {</span>
+<span class="fc" id="L682">               sum = (byte) 0xF0;</span>
+<span class="fc" id="L683">               nextCharIsUpper = false;</span>
+            } else {
+<span class="fc" id="L685">               sum |= (byte) 0x0F;</span>
+<span class="fc" id="L686">               result.write(sum);</span>
+<span class="fc" id="L687">               nextCharIsUpper = true;</span>
+            }
+            break;
+         }
+      }
+
+<span class="pc bpc" id="L693" title="1 of 2 branches missed.">      if (!nextCharIsUpper) {</span>
+<span class="nc" id="L694">         throw new RuntimeException(&quot;The String did not contain an equal number of hex digits&quot;);</span>
+      }
+
+<span class="fc" id="L697">      return result.toByteArray();</span>
+   }
+
+   /*
+    * Converts a byte to hex digit and writes to the supplied buffer
+    */
+
+   /**
+    *  Description of the Method
+    *
+    * @param  b    Description of Parameter
+    * @param  buf  Description of Parameter
+    */
+   private static void byte2hex(byte b, StringBuffer buf) {
+
+<span class="fc" id="L712">      char[] hexChars = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A',</span>
+                          'B', 'C', 'D', 'E', 'F' };
+<span class="fc" id="L714">      int high = ((b &amp; 0xf0) &gt;&gt; 4);</span>
+<span class="fc" id="L715">      int low = (b &amp; 0x0f);</span>
+
+<span class="fc" id="L717">      buf.append(hexChars[high]);</span>
+<span class="fc" id="L718">      buf.append(hexChars[low]);</span>
+<span class="fc" id="L719">   }</span>
+
+   /**
+    *  Description of the Method
+    *
+    * @param  b    Description of Parameter
+    * @param  buf  Description of Parameter
+    */
+   private static void byte2bin(byte b, StringBuffer buf) {
+
+      // test every 8 bit
+<span class="nc bnc" id="L730" title="All 2 branches missed.">      for (int i = 0; i &lt; 8; i++) {</span>
+
+         //---test if bit is set
+<span class="nc bnc" id="L733" title="All 2 branches missed.">         if ((b &amp; COMPARE_BITS[i]) != 0) {</span>
+<span class="nc" id="L734">            buf.append(BIT_DIGIT[1]);</span>
+         } else {
+<span class="nc" id="L736">            buf.append(BIT_DIGIT[0]);</span>
+         }
+      }
+<span class="nc" id="L739">   }</span>
+
+   /**
+    *  Returns a string of 8 hexadecimal digits (most significant digit first)
+    *  corresponding to the integer &lt;i&gt;n&lt;/i&gt; , which is treated as unsigned.
+    *
+    * @param  n  Description of Parameter
+    * @return    Description of the Returned Value
+    */
+   private static String intToHexString(int n) {
+
+<span class="nc" id="L750">      char[] buf = new char[8];</span>
+
+<span class="nc bnc" id="L752" title="All 2 branches missed.">      for (int i = 7; i &gt;= 0; i--) {</span>
+<span class="nc" id="L753">         buf[i] = HEX_DIGITS[n &amp; 0x0F];</span>
+<span class="nc" id="L754">         n &gt;&gt;&gt;= 4;</span>
+      }
+
+<span class="nc" id="L757">      return new String(buf);</span>
+   }
+
+   /**
+    *  test and demo for the Convert class
+    *
+    * @param  args  none needed
+    */
+   public static void main(String args[]) {
+
+<span class="nc" id="L767">      System.out.println(&quot;-test and demo of the converter &quot;);</span>
+
+      // enable debug outputs
+<span class="nc" id="L770">      setDebug(false);</span>
+
+<span class="nc" id="L772">      String str = new String(&quot;Niko&quot;);</span>
+<span class="nc" id="L773">      byte[] ba = str.getBytes();</span>
+
+<span class="nc" id="L775">      System.out.println(&quot;to convert: &quot; + str);</span>
+<span class="nc" id="L776">      System.out.println(&quot;converted1: &quot; + byteArrayToHexString(ba));</span>
+<span class="nc" id="L777">      System.out.println(&quot;converted1: &quot;</span>
+                         + byteArrayToHexString(ba, 0, ba.length));
+<span class="nc" id="L779">      System.out.println(&quot;converted3: &quot; + stringToHexString(str));</span>
+<span class="nc" id="L780">      System.out.println(&quot;----Convert integer to hexString...&quot;);</span>
+
+<span class="nc" id="L782">      int i = -2;</span>
+
+<span class="nc" id="L784">      System.out.println(&quot;to convert: &quot; + i + &quot; -&gt; &quot; + intToHexString(i));</span>
+<span class="nc" id="L785">      System.out.println(&quot;----Convert byte[] to binary String...&quot;);</span>
+
+<span class="nc" id="L787">      byte[] baToConvert = { (byte) 0xff, (byte) 0x00, (byte) 0x33, (byte) 0x11,</span>
+                             (byte) 0xff, (byte) 0x5f, (byte) 0x5f, (byte) 0x4f,
+                             (byte) 0x1f, (byte) 0xff };
+
+<span class="nc" id="L791">      System.out.println(&quot;to convert: &quot; + toHexString(baToConvert) + &quot; -&gt; &quot;</span>
+                         + byteArrayToBinaryString(baToConvert));
+
+      //---- modify line separator
+<span class="nc" id="L795">      setByteSeparator('-');</span>
+<span class="nc" id="L796">      System.out.println(&quot;to convert: &quot; + toHexString(baToConvert) + &quot; -&gt; &quot;</span>
+                         + byteArrayToBinaryString(baToConvert));
+
+      //---- modify line separator
+<span class="nc" id="L800">      setByteSeparator('*');</span>
+<span class="nc" id="L801">      setWithByteSeparator(true);</span>
+<span class="nc" id="L802">      System.out.println(&quot;to convert: &quot; + toHexString(baToConvert) + &quot; -&gt; &quot;</span>
+                         + byteArrayToBinaryString(baToConvert));
+
+      //---- modify bit digits
+<span class="nc" id="L806">      char[] bd = { 'a', 'b' };</span>
+
+      try {
+<span class="nc" id="L809">         setBitDigits(bd);</span>
+<span class="nc" id="L810">      } catch (Exception ex) {</span>
+<span class="nc" id="L811">         ex.printStackTrace();</span>
+<span class="nc" id="L812">      }</span>
+
+<span class="nc" id="L814">      System.out.println(&quot;to convert: &quot; + toHexString(baToConvert) + &quot; -&gt; &quot;</span>
+                         + byteArrayToBinaryString(baToConvert));
+
+      //------------------------------------------------//
+<span class="nc" id="L818">      setBitDigits('0', '1');</span>
+<span class="nc" id="L819">      System.out.println(&quot;---- Convert.toByteArray(int) &quot;);</span>
+
+<span class="nc bnc" id="L821" title="All 2 branches missed.">      for (int iToConvert = -10; iToConvert &lt; 10; iToConvert++) {</span>
+<span class="nc" id="L822">         System.out.println(&quot;to convert = &quot; + iToConvert + &quot; = &quot;</span>
+                            + HexDump.toBinaryString(iToConvert));
+
+<span class="nc" id="L825">         byte[] baConvInt = new byte[4];</span>
+
+<span class="nc" id="L827">         baConvInt = HexDump.toByteArray(iToConvert);</span>
+
+<span class="nc" id="L829">         System.out.println(&quot;convertet byteArray = &quot;</span>
+                            + HexDump.toBinaryString(baConvInt));
+      }
+
+<span class="nc" id="L833">      System.out.println(&quot;---- toHexString(int) &quot;);</span>
+
+<span class="nc" id="L835">      i = -1;</span>
+
+<span class="nc" id="L837">      System.out.println(i + &quot; = 0x&quot; + toHexString(i) + &quot; = &quot;</span>
+                         + toBinaryString(i));
+
+<span class="nc" id="L840">      i++;</span>
+
+<span class="nc" id="L842">      System.out.println(i + &quot; = 0x&quot; + toHexString(i) + &quot; = &quot;</span>
+                         + toBinaryString(i));
+
+      //------------------------------------------------//
+<span class="nc" id="L846">      System.out.println(&quot;---- toHexString(long) &quot;);</span>
+
+<span class="nc" id="L848">      long l = 100;</span>
+
+<span class="nc" id="L850">      System.out.println(l + &quot; = 0x&quot; + toHexString(l) + &quot; = &quot;</span>
+                         + toBinaryString(l));
+
+<span class="nc" id="L853">      java.util.Random rnd = new java.util.Random();</span>
+
+<span class="nc" id="L855">      l = rnd.nextLong();</span>
+
+<span class="nc" id="L857">      System.out.println(l + &quot; = 0x&quot; + toHexString(l) + &quot; = &quot;</span>
+                         + toBinaryString(l));
+
+      //------------------------------------------------//
+<span class="nc" id="L861">      System.out.println(&quot;---- toHexString(short) &quot;);</span>
+
+<span class="nc" id="L863">      short s = 100;</span>
+
+<span class="nc" id="L865">      System.out.println(s + &quot; = 0x&quot; + toHexString(s) + &quot; = &quot;</span>
+                         + toBinaryString(s));
+
+<span class="nc" id="L868">      rnd = new java.util.Random();</span>
+<span class="nc" id="L869">      s = (short) rnd.nextInt();</span>
+
+<span class="nc" id="L871">      System.out.println(s + &quot; = 0x&quot; + toHexString(s) + &quot; = &quot;</span>
+                         + toBinaryString(s));
+
+      //---------------------------------------------------------------------------//
+      // convert dezimal-String to binary
+<span class="nc" id="L876">      System.out.println(&quot;---- read file in Hex-Format &quot;);</span>
+
+<span class="nc" id="L878">      String strToConvert = &quot;12345654321&quot;;</span>
+
+<span class="nc" id="L880">      System.out.println(strToConvert + &quot; = &quot;</span>
+                         + stringToHexString(strToConvert));
+<span class="nc" id="L882">      System.out.println(&quot;Das ist die Hex-Darstellung des obigen Strings&quot;);</span>
+
+<span class="nc" id="L884">      byte[] baConverted = new byte[strToConvert.length()];</span>
+
+<span class="nc" id="L886">      baConverted = hexStringToByteArray(strToConvert);</span>
+
+<span class="nc" id="L888">      System.out.println(&quot;ba = &quot; + toHexString(ba));</span>
+<span class="nc" id="L889">   }</span>
+
+   static {
+<span class="fc" id="L892">      org.apache.xml.security.Init.init();</span>
+<span class="fc" id="L893">   }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

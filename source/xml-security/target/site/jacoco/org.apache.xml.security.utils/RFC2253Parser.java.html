@@ -1,0 +1,606 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RFC2253Parser.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.utils</a> &gt; <span class="el_source">RFC2253Parser.java</span></div><h1>RFC2253Parser.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.utils;
+
+
+
+import java.io.*;
+import java.util.*;
+
+
+/**
+ *
+ * @author $Author: dohy $
+ */
+<span class="nc" id="L71">public class RFC2253Parser {</span>
+
+   /** Field cat */
+
+   /*   static org.apache.log4j.Category cat =
+         org.apache.log4j.Category.getInstance(RFC2253Parser.class.getName());
+   */
+<span class="nc" id="L78">   static boolean _TOXML = true;</span>
+
+   /**
+    * Method rfc2253toXMLdsig
+    *
+    * @param dn
+    * @return
+    */
+   public static String rfc2253toXMLdsig(String dn) {
+
+<span class="nc" id="L88">      _TOXML = true;</span>
+
+      // transfrom from RFC1779 to RFC2253
+<span class="nc" id="L91">      String normalized = normalize(dn);</span>
+
+<span class="nc" id="L93">      return rfctoXML(normalized);</span>
+   }
+
+   /**
+    * Method xmldsigtoRFC2253
+    *
+    * @param dn
+    * @return
+    */
+   public static String xmldsigtoRFC2253(String dn) {
+
+<span class="nc" id="L104">      _TOXML = false;</span>
+
+      // transfrom from RFC1779 to RFC2253
+<span class="nc" id="L107">      String normalized = normalize(dn);</span>
+
+<span class="nc" id="L109">      return xmltoRFC(normalized);</span>
+   }
+
+   /**
+    * Method normalize
+    *
+    * @param dn
+    * @return
+    */
+   public static String normalize(String dn) {
+
+      //if empty string
+<span class="nc bnc" id="L121" title="All 4 branches missed.">      if ((dn == null) || dn.equals(&quot;&quot;)) {</span>
+<span class="nc" id="L122">         return &quot;&quot;;</span>
+      }
+
+      try {
+<span class="nc" id="L126">         String _DN = semicolonToComma(dn);</span>
+<span class="nc" id="L127">         StringBuffer sb = new StringBuffer();</span>
+<span class="nc" id="L128">         int i = 0;</span>
+<span class="nc" id="L129">         int l = 0;</span>
+         int k;
+
+         //for name component
+<span class="nc bnc" id="L133" title="All 2 branches missed.">         for (int j = 0; (k = _DN.indexOf(&quot;,&quot;, j)) &gt;= 0; j = k + 1) {</span>
+<span class="nc" id="L134">            l += countQuotes(_DN, j, k);</span>
+
+<span class="nc bnc" id="L136" title="All 6 branches missed.">            if ((k &gt; 0) &amp;&amp; (_DN.charAt(k - 1) != '\\') &amp;&amp; (l % 2) != 1) {</span>
+<span class="nc" id="L137">               sb.append(parseRDN(_DN.substring(i, k).trim()) + &quot;,&quot;);</span>
+
+<span class="nc" id="L139">               i = k + 1;</span>
+<span class="nc" id="L140">               l = 0;</span>
+            }
+         }
+
+<span class="nc" id="L144">         sb.append(parseRDN(trim(_DN.substring(i))));</span>
+
+<span class="nc" id="L146">         return sb.toString();</span>
+<span class="nc" id="L147">      } catch (IOException ex) {</span>
+<span class="nc" id="L148">         return dn;</span>
+      }
+   }
+
+   /**
+    * Method parseRDN
+    *
+    * @param str
+    * @return
+    * @throws IOException
+    */
+   static String parseRDN(String str) throws IOException {
+
+<span class="nc" id="L161">      StringBuffer sb = new StringBuffer();</span>
+<span class="nc" id="L162">      int i = 0;</span>
+<span class="nc" id="L163">      int l = 0;</span>
+      int k;
+
+<span class="nc bnc" id="L166" title="All 2 branches missed.">      for (int j = 0; (k = str.indexOf(&quot;+&quot;, j)) &gt;= 0; j = k + 1) {</span>
+<span class="nc" id="L167">         l += countQuotes(str, j, k);</span>
+
+<span class="nc bnc" id="L169" title="All 6 branches missed.">         if ((k &gt; 0) &amp;&amp; (str.charAt(k - 1) != '\\') &amp;&amp; (l % 2) != 1) {</span>
+<span class="nc" id="L170">            sb.append(parseATAV(trim(str.substring(i, k))) + &quot;+&quot;);</span>
+
+<span class="nc" id="L172">            i = k + 1;</span>
+<span class="nc" id="L173">            l = 0;</span>
+         }
+      }
+
+<span class="nc" id="L177">      sb.append(parseATAV(trim(str.substring(i))));</span>
+
+<span class="nc" id="L179">      return sb.toString();</span>
+   }
+
+   /**
+    * Method parseATAV
+    *
+    * @param str
+    * @return
+    * @throws IOException
+    */
+   static String parseATAV(String str) throws IOException {
+
+<span class="nc" id="L191">      int i = str.indexOf(&quot;=&quot;);</span>
+
+<span class="nc bnc" id="L193" title="All 6 branches missed.">      if ((i == -1) || ((i &gt; 0) &amp;&amp; (str.charAt(i - 1) == '\\'))) {</span>
+<span class="nc" id="L194">         return str;</span>
+      } else {
+<span class="nc" id="L196">         String attrType = normalizeAT(str.substring(0, i));</span>
+<span class="nc" id="L197">         String attrValue = normalizeV(str.substring(i + 1));</span>
+
+<span class="nc" id="L199">         return attrType + &quot;=&quot; + attrValue;</span>
+      }
+   }
+
+   /**
+    * Method normalizeAT
+    *
+    * @param str
+    * @return
+    */
+   static String normalizeAT(String str) {
+
+<span class="nc" id="L211">      String at = str.toUpperCase().trim();</span>
+
+<span class="nc bnc" id="L213" title="All 2 branches missed.">      if (at.startsWith(&quot;OID&quot;)) {</span>
+<span class="nc" id="L214">         at = at.substring(3);</span>
+      }
+
+<span class="nc" id="L217">      return at;</span>
+   }
+
+   /**
+    * Method normalizeV
+    *
+    * @param str
+    * @return
+    * @throws IOException
+    */
+   static String normalizeV(String str) throws IOException {
+
+<span class="nc" id="L229">      String value = trim(str);</span>
+
+<span class="nc bnc" id="L231" title="All 2 branches missed.">      if (value.startsWith(&quot;\&quot;&quot;)) {</span>
+<span class="nc" id="L232">         StringBuffer sb = new StringBuffer();</span>
+<span class="nc" id="L233">         StringReader sr = new StringReader(value.substring(1,</span>
+                              value.length() - 1));
+<span class="nc" id="L235">         int i = 0;</span>
+         char c;
+
+<span class="nc bnc" id="L238" title="All 2 branches missed.">         for (; (i = sr.read()) &gt; -1; ) {</span>
+<span class="nc" id="L239">            c = (char) i;</span>
+
+            //the following char is defined at 4.Relationship with RFC1779 and LDAPv2 inrfc2253
+<span class="nc bnc" id="L242" title="All 14 branches missed.">            if ((c == ',') || (c == '=') || (c == '+') || (c == '&lt;')</span>
+                    || (c == '&gt;') || (c == '#') || (c == ';')) {
+<span class="nc" id="L244">               sb.append('\\');</span>
+            }
+
+<span class="nc" id="L247">            sb.append(c);</span>
+         }
+
+<span class="nc" id="L250">         value = trim(sb.toString());</span>
+      }
+
+<span class="nc bnc" id="L253" title="All 2 branches missed.">      if (_TOXML == true) {</span>
+<span class="nc bnc" id="L254" title="All 2 branches missed.">         if (value.startsWith(&quot;#&quot;)) {</span>
+<span class="nc" id="L255">            value = '\\' + value;</span>
+         }
+      } else {
+<span class="nc bnc" id="L258" title="All 2 branches missed.">         if (value.startsWith(&quot;\\#&quot;)) {</span>
+<span class="nc" id="L259">            value = value.substring(1);</span>
+         }
+      }
+
+<span class="nc" id="L263">      return value;</span>
+   }
+
+   /**
+    * Method rfctoXML
+    *
+    * @param string
+    * @return
+    */
+   static String rfctoXML(String string) {
+
+      try {
+<span class="nc" id="L275">         String s = changeLess32toXML(string);</span>
+
+<span class="nc" id="L277">         return changeWStoXML(s);</span>
+<span class="nc" id="L278">      } catch (Exception e) {</span>
+<span class="nc" id="L279">         return string;</span>
+      }
+   }
+
+   /**
+    * Method xmltoRFC
+    *
+    * @param string
+    * @return
+    */
+   static String xmltoRFC(String string) {
+
+      try {
+<span class="nc" id="L292">         String s = changeLess32toRFC(string);</span>
+
+<span class="nc" id="L294">         return changeWStoRFC(s);</span>
+<span class="nc" id="L295">      } catch (Exception e) {</span>
+<span class="nc" id="L296">         return string;</span>
+      }
+   }
+
+   /**
+    * Method changeLess32toRFC
+    *
+    * @param string
+    * @return
+    * @throws IOException
+    */
+   static String changeLess32toRFC(String string) throws IOException {
+
+<span class="nc" id="L309">      StringBuffer sb = new StringBuffer();</span>
+<span class="nc" id="L310">      StringReader sr = new StringReader(string);</span>
+<span class="nc" id="L311">      int i = 0;</span>
+      char c;
+
+<span class="nc bnc" id="L314" title="All 2 branches missed.">      for (; (i = sr.read()) &gt; -1; ) {</span>
+<span class="nc" id="L315">         c = (char) i;</span>
+
+<span class="nc bnc" id="L317" title="All 2 branches missed.">         if (c == '\\') {</span>
+<span class="nc" id="L318">            sb.append(c);</span>
+
+<span class="nc" id="L320">            char c1 = (char) sr.read();</span>
+<span class="nc" id="L321">            char c2 = (char) sr.read();</span>
+
+            //65 (A) 97 (a)
+<span class="nc bnc" id="L324" title="All 24 branches missed.">            if ((((c1 &gt;= 48) &amp;&amp; (c1 &lt;= 57)) || ((c1 &gt;= 65) &amp;&amp; (c1 &lt;= 70)) || ((c1 &gt;= 97) &amp;&amp; (c1 &lt;= 102)))</span>
+                    &amp;&amp; (((c2 &gt;= 48) &amp;&amp; (c2 &lt;= 57))
+                        || ((c2 &gt;= 65) &amp;&amp; (c2 &lt;= 70))
+                        || ((c2 &gt;= 97) &amp;&amp; (c2 &lt;= 102)))) {
+<span class="nc" id="L328">               char ch = (char) Byte.parseByte(&quot;&quot; + c1 + c2, 16);</span>
+
+<span class="nc" id="L330">               sb.append(ch);</span>
+<span class="nc" id="L331">            } else {</span>
+<span class="nc" id="L332">               sb.append(c1);</span>
+<span class="nc" id="L333">               sb.append(c2);</span>
+            }
+<span class="nc" id="L335">         } else {</span>
+<span class="nc" id="L336">            sb.append(c);</span>
+         }
+      }
+
+<span class="nc" id="L340">      return sb.toString();</span>
+   }
+
+   /**
+    * Method changeLess32toXML
+    *
+    * @param string
+    * @return
+    * @throws IOException
+    */
+   static String changeLess32toXML(String string) throws IOException {
+
+<span class="nc" id="L352">      StringBuffer sb = new StringBuffer();</span>
+<span class="nc" id="L353">      StringReader sr = new StringReader(string);</span>
+<span class="nc" id="L354">      int i = 0;</span>
+
+<span class="nc bnc" id="L356" title="All 2 branches missed.">      for (; (i = sr.read()) &gt; -1; ) {</span>
+<span class="nc bnc" id="L357" title="All 2 branches missed.">         if (i &lt; 32) {</span>
+<span class="nc" id="L358">            sb.append('\\');</span>
+<span class="nc" id="L359">            sb.append(Integer.toHexString(i));</span>
+         } else {
+<span class="nc" id="L361">            sb.append((char) i);</span>
+         }
+      }
+
+<span class="nc" id="L365">      return sb.toString();</span>
+   }
+
+   /**
+    * Method changeWStoXML
+    *
+    * @param string
+    * @return
+    * @throws IOException
+    */
+   static String changeWStoXML(String string) throws IOException {
+
+<span class="nc" id="L377">      StringBuffer sb = new StringBuffer();</span>
+<span class="nc" id="L378">      StringReader sr = new StringReader(string);</span>
+<span class="nc" id="L379">      int i = 0;</span>
+      char c;
+
+<span class="nc bnc" id="L382" title="All 2 branches missed.">      for (; (i = sr.read()) &gt; -1; ) {</span>
+<span class="nc" id="L383">         c = (char) i;</span>
+
+<span class="nc bnc" id="L385" title="All 2 branches missed.">         if (c == '\\') {</span>
+<span class="nc" id="L386">            char c1 = (char) sr.read();</span>
+
+<span class="nc bnc" id="L388" title="All 2 branches missed.">            if (c1 == ' ') {</span>
+<span class="nc" id="L389">               sb.append('\\');</span>
+
+<span class="nc" id="L391">               String s = &quot;20&quot;;</span>
+
+<span class="nc" id="L393">               sb.append(s);</span>
+<span class="nc" id="L394">            } else {</span>
+<span class="nc" id="L395">               sb.append('\\');</span>
+<span class="nc" id="L396">               sb.append(c1);</span>
+            }
+<span class="nc" id="L398">         } else {</span>
+<span class="nc" id="L399">            sb.append(c);</span>
+         }
+      }
+
+<span class="nc" id="L403">      return sb.toString();</span>
+   }
+
+   /**
+    * Method changeWStoRFC
+    *
+    * @param string
+    * @return
+    * @throws IOException
+    */
+   static String changeWStoRFC(String string) throws IOException {
+
+<span class="nc" id="L415">      StringBuffer sb = new StringBuffer();</span>
+<span class="nc" id="L416">      int i = 0;</span>
+      int k;
+
+<span class="nc bnc" id="L419" title="All 2 branches missed.">      for (int j = 0; (k = string.indexOf(&quot;\\20&quot;, j)) &gt;= 0; j = k + 3) {</span>
+<span class="nc" id="L420">         sb.append(trim(string.substring(i, k)) + &quot;\\ &quot;);</span>
+
+<span class="nc" id="L422">         i = k + 3;</span>
+      }
+
+<span class="nc" id="L425">      sb.append(string.substring(i));</span>
+
+<span class="nc" id="L427">      return sb.toString();</span>
+   }
+
+   /**
+    * Method semicolonToComma
+    *
+    * @param str
+    * @return
+    */
+   static String semicolonToComma(String str) {
+<span class="nc" id="L437">      return removeWSandReplace(str, &quot;;&quot;, &quot;,&quot;);</span>
+   }
+
+   /**
+    * Method removeWhiteSpace
+    *
+    * @param str
+    * @param symbol
+    * @return
+    */
+   static String removeWhiteSpace(String str, String symbol) {
+<span class="nc" id="L448">      return removeWSandReplace(str, symbol, symbol);</span>
+   }
+
+   /**
+    * Method removeWSandReplace
+    *
+    * @param str
+    * @param symbol
+    * @param replace
+    * @return
+    */
+   static String removeWSandReplace(String str, String symbol, String replace) {
+
+<span class="nc" id="L461">      StringBuffer sb = new StringBuffer();</span>
+<span class="nc" id="L462">      int i = 0;</span>
+<span class="nc" id="L463">      int l = 0;</span>
+      int k;
+
+<span class="nc bnc" id="L466" title="All 2 branches missed.">      for (int j = 0; (k = str.indexOf(symbol, j)) &gt;= 0; j = k + 1) {</span>
+<span class="nc" id="L467">         l += countQuotes(str, j, k);</span>
+
+<span class="nc bnc" id="L469" title="All 6 branches missed.">         if ((k &gt; 0) &amp;&amp; (str.charAt(k - 1) != '\\') &amp;&amp; (l % 2) != 1) {</span>
+<span class="nc" id="L470">            sb.append(trim(str.substring(i, k)) + replace);</span>
+
+<span class="nc" id="L472">            i = k + 1;</span>
+<span class="nc" id="L473">            l = 0;</span>
+         }
+      }
+
+<span class="nc" id="L477">      sb.append(trim(str.substring(i)));</span>
+
+<span class="nc" id="L479">      return sb.toString();</span>
+   }
+
+   /**
+    * Returns the number of Quotation from i to j
+    *
+    * @param s
+    * @param i
+    * @param j
+    * @return
+    */
+   private static int countQuotes(String s, int i, int j) {
+
+<span class="nc" id="L492">      int k = 0;</span>
+
+<span class="nc bnc" id="L494" title="All 2 branches missed.">      for (int l = i; l &lt; j; l++) {</span>
+<span class="nc bnc" id="L495" title="All 2 branches missed.">         if (s.charAt(l) == '&quot;') {</span>
+<span class="nc" id="L496">            k++;</span>
+         }
+      }
+
+<span class="nc" id="L500">      return k;</span>
+   }
+
+   //only for the end of a space character occurring at the end of the string from rfc2253
+
+   /**
+    * Method trim
+    *
+    * @param str
+    * @return
+    */
+   static String trim(String str) {
+
+<span class="nc" id="L513">      String trimed = str.trim();</span>
+<span class="nc" id="L514">      int i = str.indexOf(trimed.substring(0)) + trimed.length();</span>
+
+<span class="nc bnc" id="L516" title="All 6 branches missed.">      if ((str.length() &gt; i) &amp;&amp; trimed.endsWith(&quot;\\&quot;)</span>
+              &amp;&amp;!trimed.endsWith(&quot;\\\\&quot;)) {
+<span class="nc bnc" id="L518" title="All 2 branches missed.">         if (str.charAt(i) == ' ') {</span>
+<span class="nc" id="L519">            trimed = trimed + &quot; &quot;;</span>
+         }
+      }
+
+<span class="nc" id="L523">      return trimed;</span>
+   }
+
+   /**
+    * Method main
+    *
+    * @param args
+    * @throws Exception
+    */
+   public static void main(String[] args) throws Exception {
+
+<span class="nc" id="L534">      testToXML(&quot;CN=\&quot;Steve, Kille\&quot;,  O=Isode Limited, C=GB&quot;);</span>
+<span class="nc" id="L535">      testToXML(&quot;CN=Steve Kille    ,   O=Isode Limited,C=GB&quot;);</span>
+<span class="nc" id="L536">      testToXML(&quot;\\ OU=Sales+CN=J. Smith,O=Widget Inc.,C=US\\ \\ &quot;);</span>
+<span class="nc" id="L537">      testToXML(&quot;CN=L. Eagle,O=Sue\\, Grabbit and Runn,C=GB&quot;);</span>
+<span class="nc" id="L538">      testToXML(&quot;CN=Before\\0DAfter,O=Test,C=GB&quot;);</span>
+<span class="nc" id="L539">      testToXML(&quot;CN=\&quot;L. Eagle,O=Sue, = + &lt; &gt; # ;Grabbit and Runn\&quot;,C=GB&quot;);</span>
+<span class="nc" id="L540">      testToXML(&quot;1.3.6.1.4.1.1466.0=#04024869,O=Test,C=GB&quot;);</span>
+
+      {
+<span class="nc" id="L543">         StringBuffer sb = new StringBuffer();</span>
+
+<span class="nc" id="L545">         sb.append('L');</span>
+<span class="nc" id="L546">         sb.append('u');</span>
+<span class="nc" id="L547">         sb.append('\uc48d');</span>
+<span class="nc" id="L548">         sb.append('i');</span>
+<span class="nc" id="L549">         sb.append('\uc487');</span>
+
+<span class="nc" id="L551">         String test7 = &quot;SN=&quot; + sb.toString();</span>
+
+<span class="nc" id="L553">         testToXML(test7);</span>
+      }
+
+<span class="nc" id="L556">      testToRFC(&quot;CN=\&quot;Steve, Kille\&quot;,  O=Isode Limited, C=GB&quot;);</span>
+<span class="nc" id="L557">      testToRFC(&quot;CN=Steve Kille    ,   O=Isode Limited,C=GB&quot;);</span>
+<span class="nc" id="L558">      testToRFC(&quot;\\20OU=Sales+CN=J. Smith,O=Widget Inc.,C=US\\20\\20 &quot;);</span>
+<span class="nc" id="L559">      testToRFC(&quot;CN=L. Eagle,O=Sue\\, Grabbit and Runn,C=GB&quot;);</span>
+<span class="nc" id="L560">      testToRFC(&quot;CN=Before\\12After,O=Test,C=GB&quot;);</span>
+<span class="nc" id="L561">      testToRFC(&quot;CN=\&quot;L. Eagle,O=Sue, = + &lt; &gt; # ;Grabbit and Runn\&quot;,C=GB&quot;);</span>
+<span class="nc" id="L562">      testToRFC(&quot;1.3.6.1.4.1.1466.0=\\#04024869,O=Test,C=GB&quot;);</span>
+
+      {
+<span class="nc" id="L565">         StringBuffer sb = new StringBuffer();</span>
+
+<span class="nc" id="L567">         sb.append('L');</span>
+<span class="nc" id="L568">         sb.append('u');</span>
+<span class="nc" id="L569">         sb.append('\uc48d');</span>
+<span class="nc" id="L570">         sb.append('i');</span>
+<span class="nc" id="L571">         sb.append('\uc487');</span>
+
+<span class="nc" id="L573">         String test7 = &quot;SN=&quot; + sb.toString();</span>
+
+<span class="nc" id="L575">         testToRFC(test7);</span>
+      }
+<span class="nc" id="L577">   }</span>
+
+   /** Field i */
+<span class="nc" id="L580">   static int i = 0;</span>
+
+   /**
+    * Method test
+    *
+    * @param st
+    */
+   static void testToXML(String st) {
+
+<span class="nc" id="L589">      System.out.println(&quot;start &quot; + i++ + &quot;: &quot; + st);</span>
+<span class="nc" id="L590">      System.out.println(&quot;         &quot; + rfc2253toXMLdsig(st));</span>
+<span class="nc" id="L591">      System.out.println(&quot;&quot;);</span>
+<span class="nc" id="L592">   }</span>
+
+   /**
+    * Method testToRFC
+    *
+    * @param st
+    */
+   static void testToRFC(String st) {
+
+<span class="nc" id="L601">      System.out.println(&quot;start &quot; + i++ + &quot;: &quot; + st);</span>
+<span class="nc" id="L602">      System.out.println(&quot;         &quot; + xmldsigtoRFC2253(st));</span>
+<span class="nc" id="L603">      System.out.println(&quot;&quot;);</span>
+<span class="nc" id="L604">   }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>

@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SignedInfo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Ant Example</a> &gt; <a href="index.source.html" class="el_package">org.apache.xml.security.signature</a> &gt; <span class="el_source">SignedInfo.java</span></div><h1>SignedInfo.java</h1><pre class="source lang-java linenums">/*
+ * The Apache Software License, Version 1.1
+ *
+ *
+ * Copyright (c) 1999 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       &quot;This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/).&quot;
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names &quot;&lt;WebSig&gt;&quot; and &quot;Apache Software Foundation&quot; must
+ *    not be used to endorse or promote products derived from this
+ *    software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called &quot;Apache&quot;,
+ *    nor may &quot;Apache&quot; appear in their name, without prior written
+ *    permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, Institute for
+ * Data Communications Systems, &lt;http://www.nue.et-inf.uni-siegen.de/&gt;.
+ * The development of this software was partly funded by the European
+ * Commission in the &lt;WebSig&gt; project in the ISIS Programme.
+ * For more information on the Apache Software Foundation, please see
+ * &lt;http://www.apache.org/&gt;.
+ */
+package org.apache.xml.security.signature;
+
+
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Vector;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import org.apache.xml.security.algorithms.*;
+import org.apache.xml.security.c14n.*;
+import org.apache.xml.security.c14n.helper.XPathContainer;
+import org.apache.xml.security.exceptions.*;
+import org.apache.xml.security.transforms.*;
+import org.apache.xml.security.utils.*;
+import org.apache.xml.security.utils.resolver.*;
+import org.apache.xpath.XPathAPI;
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
+
+
+/**
+ * Handles &lt;code&gt;&amp;lt;ds:SignedInfo&amp;gt;&lt;/code&gt; elements
+ * This &lt;code&gt;SignedInfo&lt;code&gt; element includes the canonicalization algorithm,
+ * a signature algorithm, and one or more references
+ * @author Christian Geuer-Pollmann
+ */
+public class SignedInfo extends Manifest {
+
+   /** {@link org.apache.log4j} logging facility */
+<span class="fc" id="L92">   static org.apache.log4j.Category cat =</span>
+      org.apache.log4j.Category.getInstance(SignedInfo.class.getName());
+
+   /** Field _signatureAlgorithm */
+<span class="pc" id="L96">   private SignatureAlgorithm _signatureAlgorithm = null;</span>
+
+   /**
+    * Overwrites {@link Manifest(org.w3c.dom.Document)} because it creates another Element.
+    *
+    * @param doc the {@link Document} in which &lt;code&gt;XMLsignature&lt;/code&gt; will be placed
+    * @throws XMLSecurityException
+    */
+   public SignedInfo(Document doc) throws XMLSecurityException {
+<span class="nc" id="L105">      this(doc, Canonicalizer.ALGO_ID_C14N_OMIT_COMMENTS,</span>
+           XMLSignature.ALGO_ID_SIGNATURE_DSA);
+<span class="nc" id="L107">   }</span>
+
+   /**
+    * Constructs {@link SignedInfo} using given Canoicaliztion algorithm and Signature algorithm
+    *
+    * @param doc &lt;code&gt;SignedInfo&lt;/code&gt; is placed in this document
+    * @param CanonicalizationMethodURI URI representation of the Canonicalization method
+    * @param SignatureMethodURI URI representation of the Digest and Signature algorithm
+    * @throws XMLSecurityException
+    */
+   public SignedInfo(
+           Document doc, String CanonicalizationMethodURI, String SignatureMethodURI)
+              throws XMLSecurityException {
+<span class="nc" id="L120">      this(doc, CanonicalizationMethodURI, SignatureMethodURI, 0);</span>
+<span class="nc" id="L121">   }</span>
+
+   /**
+    * Constructor SignedInfo
+    *
+    * @param doc
+    * @param CanonicalizationMethodURI
+    * @param SignatureMethodURI
+    * @param HMACOutputLength
+    * @throws XMLSecurityException
+    */
+   public SignedInfo(
+           Document doc, String CanonicalizationMethodURI, String SignatureMethodURI, int HMACOutputLength)
+              throws XMLSecurityException {
+
+<span class="nc" id="L136">      super(doc);</span>
+
+      // XMLUtils.addReturnToElement(this._constructionElement);
+      {
+<span class="nc" id="L140">         Element canonElem = XMLUtils.createElementInSignatureSpace(this._doc,</span>
+                                Constants._TAG_CANONICALIZATIONMETHOD);
+
+<span class="nc" id="L143">         canonElem.setAttribute(Constants._ATT_ALGORITHM,</span>
+                                CanonicalizationMethodURI);
+<span class="nc" id="L145">         this._constructionElement.appendChild(canonElem);</span>
+<span class="nc" id="L146">         XMLUtils.addReturnToElement(this._constructionElement);</span>
+      }
+      {
+<span class="nc bnc" id="L149" title="All 2 branches missed.">         if (HMACOutputLength &gt; 0) {</span>
+<span class="nc" id="L150">            this._signatureAlgorithm = new SignatureAlgorithm(this._doc,</span>
+                    SignatureMethodURI, HMACOutputLength);
+         } else {
+<span class="nc" id="L153">            this._signatureAlgorithm = new SignatureAlgorithm(this._doc,</span>
+                    SignatureMethodURI);
+         }
+
+<span class="nc" id="L157">         this._constructionElement</span>
+            .appendChild(this._signatureAlgorithm.getElement());
+<span class="nc" id="L159">         XMLUtils.addReturnToElement(this._constructionElement);</span>
+      }
+<span class="nc" id="L161">   }</span>
+
+   /**
+    * Build a {@link SignedInfo} from an {@link Element}
+    *
+    * @param element &lt;code&gt;SignedInfo&lt;/code&gt;
+    * @param BaseURI the URI of the resource where the XML instance was stored
+    * @throws XMLSecurityException
+    * @see &lt;A HREF=&quot;http://lists.w3.org/Archives/Public/w3c-ietf-xmldsig/2001OctDec/0033.html&quot;&gt;Question&lt;/A&gt;
+    * @see &lt;A HREF=&quot;http://lists.w3.org/Archives/Public/w3c-ietf-xmldsig/2001OctDec/0054.html&quot;&gt;Answer&lt;/A&gt;
+    */
+   public SignedInfo(Element element, String BaseURI)
+           throws XMLSecurityException {
+
+      // Parse the Reference children and Id attribute in the Manifest
+<span class="fc" id="L176">      super(element, BaseURI);</span>
+
+      /* canonicalize ds:SignedInfo, reparse it into a new document
+       * and replace the original not-canonicalized ds:SignedInfo by
+       * the re-parsed canonicalized one.
+       */
+      try {
+<span class="fc" id="L183">         Canonicalizer c14nizer =</span>
+            Canonicalizer.getInstance(this.getCanonicalizationMethodURI());
+<span class="fc" id="L185">         byte c14nizedBytes[] =</span>
+            c14nizer.canonicalize(this._constructionElement);
+<span class="fc" id="L187">         javax.xml.parsers.DocumentBuilderFactory dbf =</span>
+            javax.xml.parsers.DocumentBuilderFactory.newInstance();
+
+<span class="fc" id="L190">         dbf.setNamespaceAware(true);</span>
+
+<span class="fc" id="L192">         javax.xml.parsers.DocumentBuilder db = dbf.newDocumentBuilder();</span>
+<span class="fc" id="L193">         org.w3c.dom.Document newdoc =</span>
+            db.parse(new ByteArrayInputStream(c14nizedBytes));
+<span class="fc" id="L195">         Node imported = this._doc.importNode(newdoc.getDocumentElement(),</span>
+                                              true);
+
+<span class="fc" id="L198">         this._constructionElement.getParentNode().replaceChild(imported,</span>
+                 this._constructionElement);
+
+<span class="fc" id="L201">         this._constructionElement = (Element) imported;</span>
+<span class="nc" id="L202">      } catch (ParserConfigurationException ex) {</span>
+<span class="nc" id="L203">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L204">      } catch (IOException ex) {</span>
+<span class="nc" id="L205">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+<span class="nc" id="L206">      } catch (SAXException ex) {</span>
+<span class="nc" id="L207">         throw new XMLSecurityException(&quot;empty&quot;, ex);</span>
+<span class="fc" id="L208">      }</span>
+
+<span class="fc" id="L210">      this._signatureAlgorithm =</span>
+         new SignatureAlgorithm(this.getSignatureMethodElement(),
+                                this.getBaseURI());
+<span class="fc" id="L213">   }</span>
+
+   /**
+    * Tests core validation process
+    *
+    * @return true if verification was successful
+    * @throws MissingResourceFailureException
+    * @throws XMLSecurityException
+    */
+   public boolean verify()
+           throws MissingResourceFailureException, XMLSecurityException {
+<span class="nc" id="L224">      return super.verifyReferences(false);</span>
+   }
+
+   /**
+    * Tests core validation process
+    *
+    * @param followManifests defines whether the verification process has to verify referenced &lt;CODE&gt;ds:Manifest&lt;/CODE&gt;s, too
+    * @return true if verification was successful
+    * @throws MissingResourceFailureException
+    * @throws XMLSecurityException
+    */
+   public boolean verify(boolean followManifests)
+           throws MissingResourceFailureException, XMLSecurityException {
+<span class="fc" id="L237">      return super.verifyReferences(followManifests);</span>
+   }
+
+   /**
+    * Returns getCanonicalizedOctetStream
+    *
+    * @return the canonicalization result octedt stream of &lt;code&gt;SignedInfo&lt;/code&gt; element
+    * @throws CanonicalizationException
+    * @throws IOException
+    * @throws InvalidCanonicalizerException
+    * @throws XMLSecurityException
+    */
+   public byte[] getCanonicalizedOctetStream()
+           throws CanonicalizationException, InvalidCanonicalizerException,
+                  IOException, XMLSecurityException {
+
+<span class="fc" id="L253">      Canonicalizer c14nizer =</span>
+         Canonicalizer.getInstance(this.getCanonicalizationMethodURI());
+<span class="fc" id="L255">      byte[] output = c14nizer.canonicalize(this._constructionElement);</span>
+
+<span class="fc" id="L257">      return output;</span>
+   }
+
+   /**
+    * Returns the Canonicalization method URI
+    *
+    * @return the Canonicalization method URI
+    */
+   public String getCanonicalizationMethodURI() {
+
+<span class="fc" id="L267">      NodeList children = this._constructionElement.getChildNodes();</span>
+
+<span class="pc bpc" id="L269" title="1 of 2 branches missed.">      for (int i = 0; i &lt; children.getLength(); i++) {</span>
+<span class="fc" id="L270">         Node n = children.item(i);</span>
+
+<span class="fc bfc" id="L272" title="All 2 branches covered.">         if (n.getNodeType() == Node.ELEMENT_NODE) {</span>
+<span class="fc" id="L273">            boolean found = true;</span>
+
+            try {
+<span class="fc" id="L276">               XMLUtils.guaranteeThatElementInSignatureSpace((Element) n,</span>
+                       Constants._TAG_CANONICALIZATIONMETHOD);
+<span class="nc" id="L278">            } catch (XMLSecurityException ex) {</span>
+<span class="nc" id="L279">               found = false;</span>
+<span class="fc" id="L280">            }</span>
+
+<span class="pc bpc" id="L282" title="1 of 2 branches missed.">            if (found) {</span>
+<span class="fc" id="L283">               return ((Element) n).getAttribute(Constants._ATT_ALGORITHM);</span>
+            }
+         }
+      }
+
+<span class="nc" id="L288">      return null;</span>
+   }
+
+   /**
+    * Returns the Signature method URI
+    *
+    * @return the Signature method URI
+    */
+   public String getSignatureMethodURI() {
+
+<span class="nc" id="L298">      Element signatureElement = this.getSignatureMethodElement();</span>
+
+<span class="nc bnc" id="L300" title="All 2 branches missed.">      if (signatureElement != null) {</span>
+<span class="nc" id="L301">         return signatureElement.getAttribute(Constants._ATT_ALGORITHM);</span>
+      }
+
+<span class="nc" id="L304">      return null;</span>
+   }
+
+   /**
+    * Method getSignatureMethodElement
+    *
+    * @return
+    */
+   public Element getSignatureMethodElement() {
+
+<span class="fc" id="L314">      NodeList children = this._constructionElement.getChildNodes();</span>
+
+<span class="pc bpc" id="L316" title="1 of 2 branches missed.">      for (int i = 0; i &lt; children.getLength(); i++) {</span>
+<span class="fc" id="L317">         Node n = children.item(i);</span>
+
+<span class="fc" id="L319">         cat.debug(&quot;Looking for SignatureMethodURI in &quot; + n);</span>
+
+<span class="fc bfc" id="L321" title="All 2 branches covered.">         if (n.getNodeType() == Node.ELEMENT_NODE) {</span>
+<span class="fc" id="L322">            boolean found = true;</span>
+
+            try {
+<span class="fc" id="L325">               XMLUtils.guaranteeThatElementInSignatureSpace((Element) n,</span>
+                       Constants._TAG_SIGNATUREMETHOD);
+<span class="fc" id="L327">            } catch (XMLSecurityException ex) {</span>
+<span class="fc" id="L328">               found = false;</span>
+<span class="fc" id="L329">            }</span>
+
+<span class="fc bfc" id="L331" title="All 2 branches covered.">            if (found) {</span>
+<span class="fc" id="L332">               return (Element) n;</span>
+            }
+         }
+      }
+
+<span class="nc" id="L337">      return null;</span>
+   }
+
+   /**
+    * Creates a SecretKey for the appropriate Mac algorithm based on a
+    * byte[] array password.
+    *
+    * @param secretKeyBytes
+    * @return
+    * @throws XMLSecurityException
+    */
+   public SecretKey createSecretKey(byte[] secretKeyBytes)
+           throws XMLSecurityException {
+
+<span class="fc" id="L351">      return new SecretKeySpec(secretKeyBytes,</span>
+                               this._signatureAlgorithm
+                                  .getJCEAlgorithmString());
+   }
+
+   public String getBaseLocalName() {
+<span class="fc" id="L357">      return Constants._TAG_SIGNEDINFO;</span>
+   }
+
+   static {
+<span class="fc" id="L361">      org.apache.xml.security.Init.init();</span>
+<span class="fc" id="L362">   }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>
