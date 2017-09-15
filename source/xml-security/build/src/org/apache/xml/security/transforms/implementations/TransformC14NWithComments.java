@@ -1,4 +1,3 @@
-
 /*
  * The Apache Software License, Version 1.1
  *
@@ -65,9 +64,8 @@ import java.io.IOException;
 import java.io.ByteArrayInputStream;
 import org.apache.xml.security.signature.XMLSignatureInput;
 import org.apache.xml.security.utils.Constants;
-import org.apache.xml.security.c14n.Canonicalizer;
-import org.apache.xml.security.c14n.InvalidCanonicalizerException;
-import org.apache.xml.security.c14n.CanonicalizationException;
+import org.apache.xml.security.c14n.*;
+import org.apache.xml.security.c14n.implementations.*;
 import org.apache.xml.security.transforms.*;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
@@ -81,17 +79,9 @@ import org.xml.sax.SAXException;
  */
 public class TransformC14NWithComments extends TransformSpi {
 
-   /** {@link org.apache.log4j} logging facility */
-   static org.apache.log4j.Category cat =
-      org.apache.log4j.Category
-         .getInstance(TransformC14NWithComments.class.getName());
-
    /** Field implementedTransformURI */
    public static final String implementedTransformURI =
       Transforms.TRANSFORM_C14N_WITH_COMMENTS;
-
-   /** Field _c14n */
-   Canonicalizer _c14n = null;
 
    //J-
    public boolean wantsOctetStream ()   { return true; }
@@ -99,19 +89,6 @@ public class TransformC14NWithComments extends TransformSpi {
    public boolean returnsOctetStream () { return true; }
    public boolean returnsNodeSet ()     { return false; }
    //J+
-
-   /**
-    * Constructor TransformC14NWithComments
-    *
-    * @throws InvalidCanonicalizerException
-    */
-   public TransformC14NWithComments() throws InvalidCanonicalizerException {
-
-      this._c14n =
-         Canonicalizer.getInstance(Canonicalizer.ALGO_ID_C14N_WITH_COMMENTS);
-
-      this._c14n.setXPath(Canonicalizer.XPATH_C14N_WITH_COMMENTS);
-   }
 
    /**
     * Method engineGetURI
@@ -139,28 +116,18 @@ public class TransformC14NWithComments extends TransformSpi {
                   SAXException {
 
       try {
-         input.setCanonicalizerURI(Canonicalizer.ALGO_ID_C14N_WITH_COMMENTS);
-
+        Canonicalizer20010315WithComments c14n = new Canonicalizer20010315WithComments();
          byte[] result = null;
-
          if (input.isOctetStream()) {
-            result = this._c14n.canonicalize(input.getBytes());
+            result = c14n.engineCanonicalize(input.getBytes());
          } else {
-            cat.debug("Length: " + input.getNodeSet().getLength()
-                      + " nodes input");
-
-            result = this._c14n.canonicalize(input.getNodeSet());
+            result = c14n.engineCanonicalizeXPathNodeSet(input.getNodeSet());
          }
-
-         ByteArrayInputStream bais = new ByteArrayInputStream(result);
-
-         return new XMLSignatureInput(bais);
+         return new XMLSignatureInput(result);
       } catch (ParserConfigurationException ex) {
          Object[] exArgs = { ex.getMessage() };
          CanonicalizationException cex = new CanonicalizationException(
             "c14n.Canonicalizer.ParserConfigurationException", exArgs);
-
-         cat.debug(cex.toString());
 
          throw cex;
       } catch (SAXException ex) {
@@ -168,8 +135,6 @@ public class TransformC14NWithComments extends TransformSpi {
          CanonicalizationException cex =
             new CanonicalizationException("c14n.Canonicalizer.SAXException",
                                           exArgs);
-
-         cat.debug(cex.toString());
 
          throw cex;
       }

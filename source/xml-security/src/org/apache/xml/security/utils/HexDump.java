@@ -72,6 +72,10 @@ public class HexDump {
    static org.apache.log4j.Category cat =
       org.apache.log4j.Category.getInstance(HexDump.class.getName());
 
+   private HexDump() {
+     // we don't allow instantiation
+   }
+
    /**
     * Method prettyPrintHex
     *
@@ -886,9 +890,5 @@ public class HexDump {
       baConverted = hexStringToByteArray(strToConvert);
 
       System.out.println("ba = " + toHexString(ba));
-   }
-
-   static {
-      org.apache.xml.security.Init.init();
    }
 }

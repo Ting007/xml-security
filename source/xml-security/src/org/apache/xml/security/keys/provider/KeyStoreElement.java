@@ -320,9 +320,9 @@ public class KeyStoreElement extends ElementProxy {
 
       try {
          CachedXPathAPI xpath = new CachedXPathAPI();
-         Element nsctx = this._doc.createElement("nsctx");
+         Element nsctx = this._doc.createElementNS(null, "nsctx");
 
-         nsctx.setAttribute("xmlns:x",
+         nsctx.setAttributeNS(Constants.NamespaceSpecNS, "xmlns:x",
                             ApacheKeyStoreConstants.ApacheKeyStore_NAMESPACE);
 
          NodeList aliasNodes =
@@ -342,7 +342,7 @@ public class KeyStoreElement extends ElementProxy {
          return new MyEnumeration(result);
       } catch (TransformerException ex) {}
 
-      return null;
+      return new MyEnumeration(new Vector());
    }
 
    /**
@@ -381,9 +381,9 @@ public class KeyStoreElement extends ElementProxy {
 
       try {
          CachedXPathAPI xpath = new CachedXPathAPI();
-         Element nsctx = this._doc.createElement("nsctx");
+         Element nsctx = this._doc.createElementNS(null, "nsctx");
 
-         nsctx.setAttribute("xmlns:x",
+         nsctx.setAttributeNS(Constants.NamespaceSpecNS, "xmlns:x",
                             ApacheKeyStoreConstants.ApacheKeyStore_NAMESPACE);
 
          String searchExpr = "/x:" + ApacheKeyStoreConstants._TAG_KEYSTORE
@@ -413,9 +413,9 @@ public class KeyStoreElement extends ElementProxy {
 
       try {
          CachedXPathAPI xpath = new CachedXPathAPI();
-         Element nsctx = this._doc.createElement("nsctx");
+         Element nsctx = this._doc.createElementNS(null, "nsctx");
 
-         nsctx.setAttribute("xmlns:x",
+         nsctx.setAttributeNS(Constants.NamespaceSpecNS, "xmlns:x",
                             ApacheKeyStoreConstants.ApacheKeyStore_NAMESPACE);
 
          String searchExpr = "/x:" + ApacheKeyStoreConstants._TAG_KEYSTORE
@@ -550,7 +550,7 @@ public class KeyStoreElement extends ElementProxy {
          ex.printStackTrace();
       }
 
-      return null;
+      return new Certificate[0];
    }
 
    /**

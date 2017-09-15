@@ -7,7 +7,11 @@ package org.apache.xml.security.utils;
 public class Version {
 
     /** Version string. */
-    public static String fVersion = "Apache-XML-Security-J 1.0.2";
+    public static String fVersion = "Apache-XML-Security-J 1.0.4";
+
+   private Version() {
+     // we don't allow instantiation
+   }
 
     public static final String getVersion() {
        return Version.fVersion;

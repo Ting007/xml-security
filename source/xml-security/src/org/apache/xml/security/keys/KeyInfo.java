@@ -70,7 +70,7 @@ import javax.xml.transform.TransformerException;
 import org.apache.xpath.XPathAPI;
 import org.w3c.dom.*;
 import org.apache.xml.security.c14n.*;
-import org.apache.xml.security.c14n.helper.XPathContainer;
+import org.apache.xml.security.transforms.params.XPathContainer;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.keys.content.*;
 import org.apache.xml.security.keys.content.keyvalues.*;
@@ -159,7 +159,7 @@ public class KeyInfo extends SignatureElementProxy {
    public void setId(String Id) {
 
       if ((this._state == MODE_SIGN) && (Id != null)) {
-         this._constructionElement.setAttribute(Constants._ATT_ID, Id);
+         this._constructionElement.setAttributeNS(null, Constants._ATT_ID, Id);
          IdResolver.registerElementById(this._constructionElement, Id);
       }
    }
@@ -170,7 +170,7 @@ public class KeyInfo extends SignatureElementProxy {
     * @return the <code>Id</code> attribute
     */
    public String getId() {
-      return this._constructionElement.getAttribute(Constants._ATT_ID);
+      return this._constructionElement.getAttributeNS(null, Constants._ATT_ID);
    }
 
    /**
@@ -1097,6 +1097,7 @@ public class KeyInfo extends SignatureElementProxy {
          KeyInfo._alreadyInitialized = true;
       }
    }
+
    public static void registerKeyInfoContentHandler(
            String namespace, String localname, String implementingClass)
               throws ContentHandlerAlreadyRegisteredException {
@@ -1106,13 +1107,5 @@ public class KeyInfo extends SignatureElementProxy {
 
    public String getBaseLocalName() {
       return Constants._TAG_KEYINFO;
-   }
-
-   //J+
-   static {
-      org.apache.xml.security.Init.init();
-
-      KeyInfo.cat =
-         org.apache.log4j.Category.getInstance(KeyInfo.class.getName());
    }
 }

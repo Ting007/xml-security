@@ -68,7 +68,6 @@ import org.xml.sax.SAXException;
 import org.apache.xml.security.c14n.CanonicalizationException;
 import org.apache.xml.security.c14n.Canonicalizer;
 import org.apache.xml.security.c14n.InvalidCanonicalizerException;
-import org.apache.xml.security.c14n.helper.XPathContainer;
 import org.apache.xml.security.signature.XMLSignatureInput;
 import org.apache.xml.security.transforms.*;
 import org.apache.xml.security.utils.*;
@@ -132,7 +131,7 @@ public class SampleTransformXPathHereFunc {
       Transforms transforms = new Transforms(transformsElem, "memory://");
       XMLSignatureInput input = new XMLSignatureInput((Node) doc);
 
-      input.setCanonicalizerURI(Canonicalizer.ALGO_ID_C14N_WITH_COMMENTS);
+      // input.setCanonicalizerURI(Canonicalizer.ALGO_ID_C14N_WITH_COMMENTS);
 
       XMLSignatureInput result = transforms.performTransforms(input);
 

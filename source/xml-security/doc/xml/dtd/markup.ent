@@ -18,4 +18,4 @@
 <!ELEMENT code (#PCDATA|link|anchor|jump|img|resource-ref|human-resource-ref)*>
 <!ELEMENT br EMPTY>
 
-<!-- CVS $Revision: 1.1.1.1 $ $Date: 2004/12/06 19:44:14 $ -->
+<!-- CVS $Revision: 1.1.1.1 $ $Date: 2004/12/06 19:44:31 $ -->

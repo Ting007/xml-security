@@ -193,7 +193,7 @@ public abstract class KeyResolverSpi {
     * @return
     */
    public String[] engineGetPropertyKeys() {
-      return null;
+      return new String[0];
    }
 
    /**
@@ -215,9 +215,5 @@ public abstract class KeyResolverSpi {
       }
 
       return false;
-   }
-
-   static {
-      org.apache.xml.security.Init.init();
    }
 }

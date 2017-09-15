@@ -2,6 +2,6 @@
 
 <!ENTITY packagenamelong  "Apache-XML-Security-J">
 <!ENTITY packagename      "xml-security">
-<!ENTITY packageversion   "1.0.2">
+<!ENTITY packageversion   "1.0.4">
 <!ENTITY packagedirectory "@@packagedirectory@@">
 <!ENTITY packagedistname  "Apache-XML-Security-J">

@@ -72,7 +72,6 @@ import java.math.BigInteger;
 import javax.xml.transform.TransformerException;
 import org.apache.xpath.XPathAPI;
 import org.w3c.dom.*;
-import org.apache.xml.security.c14n.helper.XPathContainer;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.signature.XMLSignatureException;
 import org.apache.xml.security.utils.*;
@@ -186,9 +185,5 @@ public class DSAKeyValue extends SignatureElementProxy
 
    public String getBaseLocalName() {
       return Constants._TAG_DSAKEYVALUE;
-   }
-
-   static {
-      org.apache.xml.security.Init.init();
    }
 }

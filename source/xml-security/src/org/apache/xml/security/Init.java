@@ -74,7 +74,7 @@ import org.apache.xml.security.algorithms.SignatureAlgorithm;
 import org.apache.xml.security.algorithms.encryption.EncryptionMethod;
 import org.apache.xml.security.algorithms.JCEMapper;
 import org.apache.xml.security.c14n.Canonicalizer;
-import org.apache.xml.security.c14n.helper.XPathContainer;
+import org.apache.xml.security.transforms.params.XPathContainer;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.transforms.Transform;
 import org.apache.xml.security.transforms.implementations.FuncHere;
@@ -103,6 +103,15 @@ public class Init {
    private static boolean _alreadyInitialized = false;
 
    /**
+    * Method isInitialized
+    *
+    * @return
+    */
+   public static final boolean isInitialized() {
+      return Init._alreadyInitialized;
+   }
+
+   /**
     * Method init
     *
     */
@@ -111,11 +120,16 @@ public class Init {
       if (!_alreadyInitialized) {
          _alreadyInitialized = true;
 
-         PRNG.init(new java.security.SecureRandom());
-
          try {
+            long XX_init_start = System.currentTimeMillis();
+            long XX_prng_start = System.currentTimeMillis();
+
+            PRNG.init(new java.security.SecureRandom());
+
+            long XX_prng_end = System.currentTimeMillis();
 
             /* read library configuration file */
+            long XX_parsing_start = System.currentTimeMillis();
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 
             dbf.setNamespaceAware(true);
@@ -126,12 +140,16 @@ public class Init {
                Class.forName("org.apache.xml.security.Init")
                   .getResourceAsStream("resource/config.xml");
             Document doc = db.parse(is);
-            Element context = doc.createElement("nscontext");
+            long XX_parsing_end = System.currentTimeMillis();
+            Element context = doc.createElementNS(null, "nscontext");
 
-            context.setAttribute(
-               "xmlns:x", "http://www.xmlsecurity.org/NS/#configuration");
-            context.setAttribute("xmlns:log4j",
-                                 "http://jakarta.apache.org/log4j/");
+            context.setAttributeNS(
+               Constants.NamespaceSpecNS, "xmlns:x",
+               "http://www.xmlsecurity.org/NS/#configuration");
+            context.setAttributeNS(Constants.NamespaceSpecNS, "xmlns:log4j",
+                                   "http://jakarta.apache.org/log4j/");
+
+            long XX_configure_log4j_start = System.currentTimeMillis();
 
             {
 
@@ -144,15 +162,26 @@ public class Init {
                      log4jElem,
                      "./x:appender[@name='STDOUT']/x:param[@name='File']/@value",
                      context);
-                  String logFileName = logfile.getNodeValue();
-                  File f = new File(logFileName);
 
-                  f.delete();
+                  if (logfile != null) {
+                     String logFileName = logfile.getNodeValue();
+                     File f = new File(logFileName);
+
+                     if (f.exists()) {
+                        f.delete();
+                     }
+                  }
                } catch (Exception ex) {}
 
                org.apache.log4j.xml.DOMConfigurator.configure(log4jElem);
                cat.info("Logging is working");
+               cat.info("Date: "
+                        + new Date(System.currentTimeMillis()).toString());
+               cat.info("Version: " + Version.getVersion());
             }
+
+            long XX_configure_log4j_end = System.currentTimeMillis();
+            long XX_configure_i18n_start = System.currentTimeMillis();
 
             {
 
@@ -175,9 +204,13 @@ public class Init {
                I18n.init(languageCode, countryCode);
             }
 
+            long XX_configure_i18n_end = System.currentTimeMillis();
+
             /**
              * Try to register our here() implementation as internal function.
              */
+            long XX_configure_reg_here_start = System.currentTimeMillis();
+
             {
                FunctionTable.installFunction("here", new FuncHere());
                cat.debug(
@@ -203,6 +236,9 @@ public class Init {
                }
             }
 
+            long XX_configure_reg_here_end = System.currentTimeMillis();
+            long XX_configure_reg_c14n_start = System.currentTimeMillis();
+
             {
                Canonicalizer.init();
 
@@ -212,9 +248,11 @@ public class Init {
                   context);
 
                for (int i = 0; i < c14nElem.getLength(); i++) {
-                  String URI = ((Element) c14nElem.item(i)).getAttribute("URI");
+                  String URI = ((Element) c14nElem.item(i)).getAttributeNS(null,
+                                  "URI");
                   String JAVACLASS =
-                     ((Element) c14nElem.item(i)).getAttribute("JAVACLASS");
+                     ((Element) c14nElem.item(i)).getAttributeNS(null,
+                        "JAVACLASS");
                   boolean registerClass = true;
 
                   try {
@@ -246,6 +284,9 @@ public class Init {
                }
             }
 
+            long XX_configure_reg_c14n_end = System.currentTimeMillis();
+            long XX_configure_reg_transforms_start = System.currentTimeMillis();
+
             {
                Transform.init();
 
@@ -255,23 +296,15 @@ public class Init {
                   context);
 
                for (int i = 0; i < tranElem.getLength(); i++) {
-                  String URI = ((Element) tranElem.item(i)).getAttribute("URI");
+                  String URI = ((Element) tranElem.item(i)).getAttributeNS(null,
+                                  "URI");
                   String JAVACLASS =
-                     ((Element) tranElem.item(i)).getAttribute("JAVACLASS");
+                     ((Element) tranElem.item(i)).getAttributeNS(null,
+                        "JAVACLASS");
                   boolean registerClass = true;
 
                   try {
                      Class c = Class.forName(JAVACLASS);
-                     Method methods[] = c.getMethods();
-
-                     for (int j = 0; j < methods.length; j++) {
-                        Method currMeth = methods[j];
-
-                        if (currMeth.getDeclaringClass().getName()
-                                .equals(JAVACLASS)) {
-                           cat.debug(currMeth.getDeclaringClass());
-                        }
-                     }
                   } catch (ClassNotFoundException e) {
                      Object exArgs[] = { URI, JAVACLASS };
 
@@ -289,12 +322,18 @@ public class Init {
                }
             }
 
+            long XX_configure_reg_transforms_end = System.currentTimeMillis();
+            long XX_configure_reg_jcemapper_start = System.currentTimeMillis();
+
             {
                Element jcemapperElem = (Element) XPathAPI.selectSingleNode(
                   doc, "/x:Configuration/x:JCEAlgorithmMappings", context);
 
                JCEMapper.init(jcemapperElem);
             }
+
+            long XX_configure_reg_jcemapper_end = System.currentTimeMillis();
+            long XX_configure_reg_sigalgos_start = System.currentTimeMillis();
 
             {
                SignatureAlgorithm.providerInit();
@@ -305,9 +344,11 @@ public class Init {
                   context);
 
                for (int i = 0; i < sigElems.getLength(); i++) {
-                  String URI = ((Element) sigElems.item(i)).getAttribute("URI");
+                  String URI = ((Element) sigElems.item(i)).getAttributeNS(null,
+                                  "URI");
                   String JAVACLASS =
-                     ((Element) sigElems.item(i)).getAttribute("JAVACLASS");
+                     ((Element) sigElems.item(i)).getAttributeNS(null,
+                        "JAVACLASS");
 
                   /** @todo handle registering */
                   boolean registerClass = true;
@@ -341,15 +382,10 @@ public class Init {
                }
             }
 
-            /*
-            {
-               Element cipherAlgos = (Element) XPathAPI.selectSingleNode(doc,
-                                        "/x:Configuration/x:EncryptionMethods",
-                                        context);
+            long XX_configure_reg_sigalgos_end = System.currentTimeMillis();
+            long XX_configure_reg_resourceresolver_start =
+               System.currentTimeMillis();
 
-               EncryptionMethod.init(cipherAlgos);
-            }
-            */
             {
                ResourceResolver.init();
 
@@ -359,10 +395,11 @@ public class Init {
 
                for (int i = 0; i < resolverElem.getLength(); i++) {
                   String JAVACLASS =
-                     ((Element) resolverElem.item(i)).getAttribute("JAVACLASS");
+                     ((Element) resolverElem.item(i)).getAttributeNS(null,
+                        "JAVACLASS");
                   String Description =
-                     ((Element) resolverElem.item(i))
-                        .getAttribute("DESCRIPTION");
+                     ((Element) resolverElem.item(i)).getAttributeNS(null,
+                        "DESCRIPTION");
 
                   if ((Description != null) && (Description.length() > 0)) {
                      cat.debug("Register Resolver: " + JAVACLASS + ": "
@@ -375,6 +412,10 @@ public class Init {
                   ResourceResolver.register(JAVACLASS);
                }
             }
+
+            long XX_configure_reg_resourceresolver_end =
+               System.currentTimeMillis();
+            long XX_configure_reg_keyInfo_start = System.currentTimeMillis();
 
             {
                try {
@@ -389,14 +430,14 @@ public class Init {
 
                      for (int i = 0; i < keyElem.getLength(); i++) {
                         String namespace =
-                           ((Element) keyElem.item(i))
-                              .getAttribute("NAMESPACE");
+                           ((Element) keyElem.item(i)).getAttributeNS(null,
+                              "NAMESPACE");
                         String localname =
-                           ((Element) keyElem.item(i))
-                              .getAttribute("LOCALNAME");
+                           ((Element) keyElem.item(i)).getAttributeNS(null,
+                              "LOCALNAME");
                         String JAVACLASS =
-                           ((Element) keyElem.item(i))
-                              .getAttribute("JAVACLASS");
+                           ((Element) keyElem.item(i)).getAttributeNS(null,
+                              "JAVACLASS");
 
                         cat.debug("KeyInfoContent: " + namespace + " "
                                   + localname + " " + JAVACLASS);
@@ -412,6 +453,10 @@ public class Init {
                }
             }
 
+            long XX_configure_reg_keyInfo_end = System.currentTimeMillis();
+            long XX_configure_reg_keyResolver_start =
+               System.currentTimeMillis();
+
             {
                KeyResolver.init();
 
@@ -420,10 +465,11 @@ public class Init {
 
                for (int i = 0; i < resolverElem.getLength(); i++) {
                   String JAVACLASS =
-                     ((Element) resolverElem.item(i)).getAttribute("JAVACLASS");
+                     ((Element) resolverElem.item(i)).getAttributeNS(null,
+                        "JAVACLASS");
                   String Description =
-                     ((Element) resolverElem.item(i))
-                        .getAttribute("DESCRIPTION");
+                     ((Element) resolverElem.item(i)).getAttributeNS(null,
+                        "DESCRIPTION");
 
                   if ((Description != null) && (Description.length() > 0)) {
                      cat.debug("Register Resolver: " + JAVACLASS + ": "
@@ -437,6 +483,9 @@ public class Init {
                }
             }
 
+            long XX_configure_reg_keyResolver_end = System.currentTimeMillis();
+            long XX_configure_reg_prefixes_start = System.currentTimeMillis();
+
             {
                cat.debug("Now I try to bind prefixes:");
 
@@ -445,9 +494,10 @@ public class Init {
                   context);
 
                for (int i = 0; i < nl.getLength(); i++) {
-                  String namespace =
-                     ((Element) nl.item(i)).getAttribute("namespace");
-                  String prefix = ((Element) nl.item(i)).getAttribute("prefix");
+                  String namespace = ((Element) nl.item(i)).getAttributeNS(null,
+                                        "namespace");
+                  String prefix = ((Element) nl.item(i)).getAttributeNS(null,
+                                     "prefix");
 
                   cat.debug("Now I try to bind " + prefix + " to " + namespace);
                   org.apache.xml.security.utils.ElementProxy
@@ -455,19 +505,41 @@ public class Init {
                }
             }
 
+            long XX_configure_reg_prefixes_end = System.currentTimeMillis();
             //J-
-         EncryptionMethod.providerInit();
-         EncryptionMethod.register(EncryptionConstants.ALGO_ID_KEYWRAP_TRIPLEDES,     "org.apache.xml.security.algorithms.encryption.implementations.BC.KeyWrapImpl_TRIPLEDES_BC");
-         EncryptionMethod.register(EncryptionConstants.ALGO_ID_KEYWRAP_AES128,        "org.apache.xml.security.algorithms.encryption.implementations.BC.KeyWrapImpl_AES128_BC");
-         EncryptionMethod.register(EncryptionConstants.ALGO_ID_KEYWRAP_AES192,        "org.apache.xml.security.algorithms.encryption.implementations.BC.KeyWrapImpl_AES192_BC");
-         EncryptionMethod.register(EncryptionConstants.ALGO_ID_KEYWRAP_AES256,        "org.apache.xml.security.algorithms.encryption.implementations.BC.KeyWrapImpl_AES256_BC");
-         EncryptionMethod.register(EncryptionConstants.ALGO_ID_BLOCKCIPHER_TRIPLEDES, "org.apache.xml.security.algorithms.encryption.implementations.BC.BlockEncryptionImpl_TRIPLEDES_BC");
-         EncryptionMethod.register(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128,    "org.apache.xml.security.algorithms.encryption.implementations.BC.BlockEncryptionImpl_AES128_BC");
-         EncryptionMethod.register(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES192,    "org.apache.xml.security.algorithms.encryption.implementations.BC.BlockEncryptionImpl_AES192_BC");
-         EncryptionMethod.register(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256,    "org.apache.xml.security.algorithms.encryption.implementations.BC.BlockEncryptionImpl_AES256_BC");
-         EncryptionMethod.register(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP,  "org.apache.xml.security.algorithms.encryption.implementations.BC.KeyTransportImpl_RSAOAEP_BC");
-         EncryptionMethod.register(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSA15,    "org.apache.xml.security.algorithms.encryption.implementations.BC.KeyTransportImpl_RSAPKCS15_BC");
-         //J+
+            long XX_configure_reg_encryption_start = System.currentTimeMillis();
+            EncryptionMethod.providerInit();
+            EncryptionMethod.register(EncryptionConstants.ALGO_ID_KEYWRAP_TRIPLEDES,     "org.apache.xml.security.algorithms.encryption.implementations.BC.KeyWrapImpl_TRIPLEDES_BC");
+            EncryptionMethod.register(EncryptionConstants.ALGO_ID_KEYWRAP_AES128,        "org.apache.xml.security.algorithms.encryption.implementations.BC.KeyWrapImpl_AES128_BC");
+            EncryptionMethod.register(EncryptionConstants.ALGO_ID_KEYWRAP_AES192,        "org.apache.xml.security.algorithms.encryption.implementations.BC.KeyWrapImpl_AES192_BC");
+            EncryptionMethod.register(EncryptionConstants.ALGO_ID_KEYWRAP_AES256,        "org.apache.xml.security.algorithms.encryption.implementations.BC.KeyWrapImpl_AES256_BC");
+            EncryptionMethod.register(EncryptionConstants.ALGO_ID_BLOCKCIPHER_TRIPLEDES, "org.apache.xml.security.algorithms.encryption.implementations.BC.BlockEncryptionImpl_TRIPLEDES_BC");
+            EncryptionMethod.register(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128,    "org.apache.xml.security.algorithms.encryption.implementations.BC.BlockEncryptionImpl_AES128_BC");
+            EncryptionMethod.register(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES192,    "org.apache.xml.security.algorithms.encryption.implementations.BC.BlockEncryptionImpl_AES192_BC");
+            EncryptionMethod.register(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256,    "org.apache.xml.security.algorithms.encryption.implementations.BC.BlockEncryptionImpl_AES256_BC");
+            EncryptionMethod.register(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP,  "org.apache.xml.security.algorithms.encryption.implementations.BC.KeyTransportImpl_RSAOAEP_BC");
+            EncryptionMethod.register(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSA15,    "org.apache.xml.security.algorithms.encryption.implementations.BC.KeyTransportImpl_RSAPKCS15_BC");
+            long XX_configure_reg_encryption_end = System.currentTimeMillis();
+            //J+
+            long XX_init_end = System.currentTimeMillis();
+
+            //J-
+            cat.debug("XX_init                             " + ((int)(XX_init_end - XX_init_start)) + " ms");
+            cat.debug("  XX_configure_reg_encryption       " + ((int)(XX_configure_reg_encryption_end- XX_configure_reg_encryption_start)) + " ms");
+            cat.debug("  XX_prng                           " + ((int)(XX_prng_end - XX_prng_start)) + " ms");
+            cat.debug("  XX_parsing                        " + ((int)(XX_parsing_end - XX_parsing_start)) + " ms");
+            cat.debug("  XX_configure_i18n                 " + ((int)(XX_configure_i18n_end- XX_configure_i18n_start)) + " ms");
+            cat.debug("  XX_configure_log4j                " + ((int)(XX_configure_log4j_end- XX_configure_log4j_start)) + " ms");
+            cat.debug("  XX_configure_reg_c14n             " + ((int)(XX_configure_reg_c14n_end- XX_configure_reg_c14n_start)) + " ms");
+            cat.debug("  XX_configure_reg_here             " + ((int)(XX_configure_reg_here_end- XX_configure_reg_here_start)) + " ms");
+            cat.debug("  XX_configure_reg_jcemapper        " + ((int)(XX_configure_reg_jcemapper_end- XX_configure_reg_jcemapper_start)) + " ms");
+            cat.debug("  XX_configure_reg_keyInfo          " + ((int)(XX_configure_reg_keyInfo_end- XX_configure_reg_keyInfo_start)) + " ms");
+            cat.debug("  XX_configure_reg_keyResolver      " + ((int)(XX_configure_reg_keyResolver_end- XX_configure_reg_keyResolver_start)) + " ms");
+            cat.debug("  XX_configure_reg_prefixes         " + ((int)(XX_configure_reg_prefixes_end- XX_configure_reg_prefixes_start)) + " ms");
+            cat.debug("  XX_configure_reg_resourceresolver " + ((int)(XX_configure_reg_resourceresolver_end- XX_configure_reg_resourceresolver_start)) + " ms");
+            cat.debug("  XX_configure_reg_sigalgos         " + ((int)(XX_configure_reg_sigalgos_end- XX_configure_reg_sigalgos_start)) + " ms");
+            cat.debug("  XX_configure_reg_transforms       " + ((int)(XX_configure_reg_transforms_end- XX_configure_reg_transforms_start)) + " ms");
+            //J+
          } catch (Exception e) {
             cat.fatal("Bad: ", e);
             e.printStackTrace();
@@ -555,11 +627,12 @@ public class Init {
 
             for (int i = 0; i < nl.getLength(); i++) {
                Element e = (Element) nl.item(i);
-               String URI = e.getAttribute("URI");
-               String keyStoreType = e.getAttribute("Type");
-               String defaultKeyAlias = e.getAttribute("DefaultKeyAlias");
-               String storePass = e.getAttribute("StorePass");
-               String KeyPass = e.getAttribute("KeyPass");
+               String URI = e.getAttributeNS(null, "URI");
+               String keyStoreType = e.getAttributeNS(null, "Type");
+               String defaultKeyAlias = e.getAttributeNS(null,
+                                                         "DefaultKeyAlias");
+               String storePass = e.getAttributeNS(null, "StorePass");
+               String KeyPass = e.getAttributeNS(null, "KeyPass");
 
                // org.apache.xml.security.keys.keyStorage.KeyStorage.registerStore(URI, JAVACLASS, LOCATION, DEFAULTKEYOBJECT, CONTEXT);
             }
@@ -703,9 +776,5 @@ public class Init {
       public String getName() {
          return FuncHere.class.getName();
       }
-   }
-
-   static {
-      Init.init();
    }
 }

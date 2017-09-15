@@ -73,15 +73,31 @@ import org.apache.xml.security.Init;
  * attributes. This is done by 'registering' attributes of type ID at the
  * IdResolver. This is necessary if we create a document from scratch and we
  * sign some resources with a URI using a fragent identifier...
+ * <BR />
+ * The problem is that if you do not validate a document, you cannot use the
+ * <CODE>getElementByID</CODE> functionality. So this modules uses some implicit
+ * knowledge on selected Schemas and DTDs to pick the right Element for a given
+ * ID: We know that all <CODE>@Id</CODE> attributes in an Element from the XML
+ * Signature namespace are of type <CODE>ID</CODE>.
  *
  * @author $Author: dohy $
  * @see org.apache.xml.security.utils.resolver.implementations.ResolverFragment
+ * @see <A HREF="http://www.xml.com/lpt/a/2001/11/07/id.html">"Identity Crisis" on xml.com</A>
  */
 public class IdResolver {
 
    /** {@link org.apache.log4j} logging facility */
    static org.apache.log4j.Category cat =
       org.apache.log4j.Category.getInstance(IdResolver.class.getName());
+
+   /**
+    * Constructor IdResolver
+    *
+    */
+   private IdResolver() {
+
+      // we don't allow instantiation
+   }
 
    /**
     * Method registerElementById
@@ -135,6 +151,22 @@ public class IdResolver {
             "I could find an Element using the advanced ds:Namespace searcher method: "
             + result.getTagName());
 
+         // register the ID to speed up further queries on that ID
+         IdResolver.registerElementById(result, id);
+
+         return result;
+      }
+
+      result = IdResolver.getElementByIdInXENCNamespace(doc, id);
+
+      if (result != null) {
+         cat.debug(
+            "I could find an Element using the advanced xenc:Namespace searcher method: "
+            + result.getTagName());
+
+         // register the ID to speed up further queries on that ID
+         IdResolver.registerElementById(result, id);
+
          return result;
       }
 
@@ -144,6 +176,21 @@ public class IdResolver {
          cat.debug(
             "I could find an Element using the advanced SOAP-SEC:id searcher method: "
             + result.getTagName());
+
+         // register the ID to speed up further queries on that ID
+         IdResolver.registerElementById(result, id);
+
+         return result;
+      }
+
+      result = IdResolver.getElementByIdInXKMSNamespace(doc, id);
+
+      if (result != null) {
+         cat.debug("I could find an Element using the XKMS searcher method: "
+                   + result.getTagName());
+
+         // register the ID to speed up further queries on that ID
+         IdResolver.registerElementById(result, id);
 
          return result;
       }
@@ -155,9 +202,9 @@ public class IdResolver {
             "I could find an Element using the totally stupid and insecure Id/ID/id searcher method: "
             + result.getTagName());
 
+         // Don't register the ID, we're not sure
          return result;
       }
-
 
       return null;
    }
@@ -170,7 +217,9 @@ public class IdResolver {
     * @return
     */
    private static Element getElementByIdType(Document doc, String id) {
+
       cat.debug("getElementByIdType() Search for ID " + id);
+
       return doc.getElementById(id);
    }
 
@@ -211,7 +260,35 @@ public class IdResolver {
          }
          */
       } catch (TransformerException ex) {
-         cat.fatal("", ex);
+         cat.fatal("empty", ex);
+      }
+
+      return null;
+   }
+
+   /**
+    * Method getElementByIdInXENCNamespace
+    *
+    * @param doc
+    * @param id
+    * @return
+    */
+   private static Element getElementByIdInXENCNamespace(Document doc,
+           String id) {
+
+      cat.debug("getElementByIdInXENCNamespace() Search for ID " + id);
+
+      try {
+         Element nscontext =
+            XMLUtils.createDSctx(doc, "xenc",
+                                 org.apache.xml.security.utils
+                                    .EncryptionConstants.EncryptionSpecNS);
+         Element element = (Element) XPathAPI.selectSingleNode(doc,
+                              "//xenc:*[@Id='" + id + "']", nscontext);
+
+         return element;
+      } catch (TransformerException ex) {
+         cat.fatal("empty", ex);
       }
 
       return null;
@@ -228,6 +305,7 @@ public class IdResolver {
            String id) {
 
       cat.debug("getElementByIdInSOAPSignatureNamespace() Search for ID " + id);
+
       try {
          Element nscontext = XMLUtils.createDSctx(
             doc, "SOAP-SEC",
@@ -237,37 +315,96 @@ public class IdResolver {
 
          return element;
       } catch (TransformerException ex) {
-         cat.fatal("", ex);
+         cat.fatal("empty", ex);
       }
 
       return null;
    }
 
+   /**
+    * Method getElementByIdInXKMSNamespace
+    *
+    * @param doc
+    * @param id
+    * @return
+    * @see http://www.w3c.org/2001/XKMS/Drafts/XKMS-20020410
+    */
+   private static Element getElementByIdInXKMSNamespace(Document doc,
+           String id) {
+
+      /*
+      xmlns:xkms="http://www.w3.org/2002/03/xkms#"
+
+      <attribute name="ID"                type="ID" use="optional"/>
+      <attribute name="OriginalRequestID" type="ID" use="optional"/>
+      <attribute name="RequestID"         type="ID" use="optional"/>
+      <attribute name="ResponseID"        type="ID" use="required"/>
+      */
+      cat.debug("getElementByIdInXKMSNamespace() Search for ID " + id);
+
+      try {
+         Element nscontext =
+            XMLUtils.createDSctx(doc, "xkms",
+                                 "http://www.w3.org/2002/03/xkms#");
+         String[] attrs = { "ID", "OriginalRequestID", "RequestID",
+                            "ResponseID" };
+
+         for (int i = 0; i < attrs.length; i++) {
+            String attr = attrs[i];
+            Element element = (Element) XPathAPI.selectSingleNode(doc,
+                                 "//xkms:*[@" + attr + "='" + id + "']",
+                                 nscontext);
+
+            if (element != null) {
+               return element;
+            }
+         }
+
+         return null;
+      } catch (TransformerException ex) {
+         cat.fatal("empty", ex);
+      }
+
+      return null;
+   }
+
+   /**
+    * Method getElementByIdUnsafeMatchByIdName
+    *
+    * @param doc
+    * @param id
+    * @return
+    */
    private static Element getElementByIdUnsafeMatchByIdName(Document doc,
            String id) {
 
       cat.debug("getElementByIdUnsafeMatchByIdName() Search for ID " + id);
+
       try {
-         Element element_Id = (Element) XPathAPI.selectSingleNode(doc, "//*[@Id='" + id + "']");
+         Element element_Id = (Element) XPathAPI.selectSingleNode(doc,
+                                 "//*[@Id='" + id + "']");
+
          if (element_Id != null) {
             return element_Id;
          }
-         Element element_ID = (Element) XPathAPI.selectSingleNode(doc, "//*[@ID='" + id + "']");
+
+         Element element_ID = (Element) XPathAPI.selectSingleNode(doc,
+                                 "//*[@ID='" + id + "']");
+
          if (element_ID != null) {
             return element_ID;
          }
-         Element element_id = (Element) XPathAPI.selectSingleNode(doc, "//*[@id='" + id + "']");
+
+         Element element_id = (Element) XPathAPI.selectSingleNode(doc,
+                                 "//*[@id='" + id + "']");
+
          if (element_id != null) {
             return element_id;
          }
       } catch (TransformerException ex) {
-         cat.fatal("", ex);
+         cat.fatal("empty", ex);
       }
 
       return null;
-   }
-
-   static {
-      org.apache.xml.security.Init.init();
    }
 }

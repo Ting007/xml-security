@@ -75,6 +75,10 @@ public class JavaUtils {
    static org.apache.log4j.Category cat =
       org.apache.log4j.Category.getInstance(JavaUtils.class.getName());
 
+   private JavaUtils() {
+     // we don't allow instantiation
+   }
+
    /**
     * Checks whether an object implements a specific interface.
     *
@@ -252,9 +256,6 @@ public class JavaUtils {
          if (filename != null && bytes != null) {
             File f = new File(filename);
 
-            cat.debug("writeBytesToFilename: Try to write " + bytes.length + " to file "
-                      + f.toURL().toString());
-
             FileOutputStream fos = new FileOutputStream(f);
 
             fos.write(bytes);
@@ -266,15 +267,15 @@ public class JavaUtils {
    }
 
    /**
-    * Method getBytesFromStream
+    * This method reads all bytes from the given InputStream till EOF and returns
+    * them as a byte array.
     *
     * @param inputStream
     * @return
     * @throws FileNotFoundException
     * @throws IOException
     */
-   public static byte[] getBytesFromStream(InputStream inputStream)
-           throws FileNotFoundException, IOException {
+   public static byte[] getBytesFromStream(InputStream inputStream) throws IOException {
 
       byte refBytes[] = null;
 
@@ -326,9 +327,5 @@ public class JavaUtils {
                 + (lTotalMemAfter - lFreeMemAfter) + "= "
                 + (lTotalMemAfter - lFreeMemAfter) / 1024 + "KB");
       cat.debug("</METHOD>");
-   }
-
-   static {
-      org.apache.xml.security.Init.init();
    }
 }

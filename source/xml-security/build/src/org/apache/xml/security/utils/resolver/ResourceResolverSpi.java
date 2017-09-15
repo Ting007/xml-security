@@ -160,7 +160,7 @@ public abstract class ResourceResolverSpi {
     * @return
     */
    public String[] engineGetPropertyKeys() {
-      return null;
+      return new String[0];
    }
 
    /**
@@ -351,9 +351,5 @@ public abstract class ResourceResolverSpi {
 
       // done
       return str;
-   }
-
-   static {
-      org.apache.xml.security.Init.init();
    }
 }

@@ -73,7 +73,6 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import org.apache.xml.security.c14n.*;
 import org.apache.xml.security.c14n.CanonicalizationException;
-import org.apache.xml.security.c14n.helper.XPathContainer;
 import org.apache.xml.security.exceptions.*;
 import org.apache.xml.security.signature.*;
 import org.apache.xml.security.transforms.*;
@@ -92,10 +91,6 @@ import org.xml.sax.SAXException;
  * @author Christian Geuer-Pollmann
  */
 public class TransformXSLT extends TransformSpi {
-
-   /** {@link org.apache.log4j} logging facility */
-   static org.apache.log4j.Category cat =
-      org.apache.log4j.Category.getInstance(TransformXSLT.class.getName());
 
    /** Field implementedTransformURI */
    public static final String implementedTransformURI =
@@ -190,25 +185,17 @@ public class TransformXSLT extends TransformSpi {
       } catch (InvalidCanonicalizerException ex) {
          Object exArgs[] = { ex.getMessage() };
 
-         cat.error(I18n.translate("generic.EmptyMessage", exArgs), ex);
-
          throw new TransformationException("generic.EmptyMessage", exArgs, ex);
       } catch (XMLSecurityException ex) {
          Object exArgs[] = { ex.getMessage() };
-
-         cat.error(I18n.translate("generic.EmptyMessage", exArgs), ex);
 
          throw new TransformationException("generic.EmptyMessage", exArgs, ex);
       } catch (TransformerConfigurationException ex) {
          Object exArgs[] = { ex.getMessage() };
 
-         cat.error(I18n.translate("generic.EmptyMessage", exArgs), ex);
-
          throw new TransformationException("generic.EmptyMessage", exArgs, ex);
       } catch (TransformerException ex) {
          Object exArgs[] = { ex.getMessage() };
-
-         cat.error(I18n.translate("generic.EmptyMessage", exArgs), ex);
 
          throw new TransformationException("generic.EmptyMessage", exArgs, ex);
       }

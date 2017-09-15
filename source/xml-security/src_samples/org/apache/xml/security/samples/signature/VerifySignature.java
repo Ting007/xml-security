@@ -68,7 +68,6 @@ import java.util.*;
 import javax.xml.transform.TransformerException;
 import org.apache.xpath.XPathAPI;
 import org.w3c.dom.*;
-import org.apache.xml.security.c14n.helper.XPathContainer;
 import org.apache.xml.security.c14n.*;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.signature.*;
@@ -103,7 +102,7 @@ public class VerifySignature {
       boolean schemaValidate = false;
       final String signatureSchemaFile = "data/xmldsig-core-schema.xsd";
       // String signatureFileName = "data/ie/baltimore/merlin-examples/merlin-xmldsig-fifteen/signature-enveloping-rsa.xml";
-      String signatureFileName = "hereSignature.xml";
+      String signatureFileName = "signature.xml";
 
       if (schemaValidate) {
          System.out.println("We do schema-validation");

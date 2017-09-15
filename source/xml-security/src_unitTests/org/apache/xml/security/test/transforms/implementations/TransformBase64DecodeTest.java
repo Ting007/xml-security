@@ -74,7 +74,6 @@ import org.apache.xml.security.utils.Constants;
 import org.apache.xml.security.c14n.Canonicalizer;
 import org.apache.xml.security.c14n.CanonicalizationException;
 import org.apache.xml.security.c14n.InvalidCanonicalizerException;
-import org.apache.xml.security.c14n.helper.XPathContainer;
 import org.apache.xml.security.signature.*;
 import org.apache.xml.security.transforms.implementations.TransformBase64Decode;
 import org.apache.xml.security.transforms.*;
@@ -267,6 +266,7 @@ public class TransformBase64DecodeTest extends TestCase {
          .IgnoreAllErrorHandler());
 
       Document doc = db.parse(new ByteArrayInputStream(input.getBytes()));
+      XMLUtils.circumventBug2650(doc);
       Element nscontext = XMLUtils.createDSctx(doc, "ds", Constants.SignatureSpecNS);
 
       Node base64Node = XPathAPI.selectSingleNode(doc, "//ds:Base64", nscontext);
@@ -275,14 +275,12 @@ public class TransformBase64DecodeTest extends TestCase {
       Document doc2 = TransformBase64DecodeTest.createDocument();
       Transforms t = new Transforms(doc2);
       doc2.appendChild(t.getElement());
-      t.addTransform(TransformBase64Decode.implementedTransformURI);
+      t.addTransform(Transforms.TRANSFORM_BASE64_DECODE);
 
       XMLSignatureInput out = t.performTransforms(xmlinput);
       String result = new String(out.getBytes());
 
-      cat.debug("result = " + result);
-      assertTrue(
-         result.equals(
+      assertTrue("\"" + result + "\"", result.equals(
             "The URI of the transform is http://www.w3.org/2000/09/xmldsig#base64"));
    }
 

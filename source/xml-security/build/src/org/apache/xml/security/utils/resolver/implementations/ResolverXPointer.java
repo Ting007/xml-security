@@ -62,6 +62,7 @@ package org.apache.xml.security.utils.resolver.implementations;
 
 import java.net.*;
 import java.io.*;
+import java.util.*;
 import org.w3c.dom.*;
 import org.apache.xml.utils.URI;
 import org.apache.xpath.CachedXPathAPI;
@@ -90,7 +91,7 @@ public class ResolverXPointer extends ResourceResolverSpi {
 
    /** {@link org.apache.log4j} logging facility */
    static org.apache.log4j.Category cat =
-      org.apache.log4j.Category.getInstance(ResolverDirectHTTP.class.getName());
+      org.apache.log4j.Category.getInstance(ResolverXPointer.class.getName());
 
    /**
     * Method engineResolve
@@ -107,45 +108,45 @@ public class ResolverXPointer extends ResourceResolverSpi {
            throws ResourceResolverException {
 
       String uriNodeValue = uri.getNodeValue();
-      NodeList resultNodes = new HelperNodeList();
+      NodeList resultNodes = null;
       Document doc = uri.getOwnerDocument();
+
+      // this must be done so that Xalan can catch ALL namespaces
+      XMLUtils.circumventBug2650(doc);
+
       CachedXPathAPI cXPathAPI = new CachedXPathAPI();
 
-      if (isXPointerSlash(uri, BaseURI)) {
-         try {
+      try {
+         if (isXPointerSlash(uri, BaseURI)) {
             resultNodes =
                cXPathAPI.selectNodeList(doc,
                                         Canonicalizer.XPATH_C14N_WITH_COMMENTS);
-         } catch (javax.xml.transform.TransformerException ex) {
-            throw new ResourceResolverException("generic.EmptyMessage", ex,
-                                                uri, BaseURI);
-         }
-      } else if (isXPointerId(uri, BaseURI)) {
-         String id = getXPointerId(uri, BaseURI);
-         Element selectedElem = IdResolver.getElementById(doc, id);
+         } else if (isXPointerId(uri, BaseURI)) {
+            String id = getXPointerId(uri, BaseURI);
+            Element selectedElem = IdResolver.getElementById(doc, id);
 
-         cat.debug("Use #xpointer(id('" + id + "'))");
+            // cat.debug("Use #xpointer(id('" + id + "')) on element " + selectedElem);
 
-         try {
+            if (selectedElem == null) {
+               Object exArgs[] = { id };
+
+               throw new ResourceResolverException(
+                  "signature.Verification.MissingID", exArgs, uri, BaseURI);
+            }
+
             resultNodes =
                cXPathAPI
                   .selectNodeList(selectedElem, Canonicalizer
                      .XPATH_C14N_WITH_COMMENTS_SINGLE_NODE);
-         } catch (javax.xml.transform.TransformerException ex) {
-            throw new ResourceResolverException("generic.EmptyMessage", ex,
-                                                uri, BaseURI);
          }
+      } catch (javax.xml.transform.TransformerException ex) {
+         throw new ResourceResolverException("generic.EmptyMessage", ex, uri,
+                                             BaseURI);
       }
 
-      for (int i = 0; i < resultNodes.getLength(); i++) {
-         cat.debug("item " + i + " "
-                   + XMLUtils.getNodeTypeString(resultNodes.item(i)));
-      }
+      Set resultSet = XMLUtils.convertNodelistToSet(resultNodes);
+      XMLSignatureInput result = new XMLSignatureInput(resultSet, cXPathAPI);
 
-      XMLSignatureInput result = new XMLSignatureInput(resultNodes, cXPathAPI);
-
-      // result.setCanonicalizerURI(Canonicalizer.ALGO_ID_C14N_WITH_COMMENTS);
-      result.setCanonicalizerURI(Canonicalizer.ALGO_ID_C14N_OMIT_COMMENTS);
       result.setMIMEType("text/xml");
 
       try {
@@ -230,7 +231,7 @@ public class ResolverXPointer extends ResourceResolverSpi {
                                                      uriNodeValue.length()
                                                      - "))".length());
 
-         cat.debug("idPlusDelim=" + idPlusDelim);
+         // cat.debug("idPlusDelim=" + idPlusDelim);
 
          if (((idPlusDelim.charAt(0) == '"') && (idPlusDelim
                  .charAt(idPlusDelim.length() - 1) == '"')) || ((idPlusDelim

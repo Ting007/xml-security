@@ -130,9 +130,9 @@ public class Manifest extends SignatureElementProxy {
       super(element, BaseURI);
 
       // check out Reference children
+      int le = this.length(Constants.SignatureSpecNS, Constants._TAG_REFERENCE);
       {
-         if (this.length(Constants.SignatureSpecNS, Constants._TAG_REFERENCE)
-                 == 0) {
+         if (le == 0) {
 
             // At least one Reference must be present. Bad.
             Object exArgs[] = { Constants._TAG_REFERENCE,
@@ -143,9 +143,12 @@ public class Manifest extends SignatureElementProxy {
          }
       }
 
-      // create Vector of appropriate length
-      this._references = new Vector(this.length(Constants.SignatureSpecNS,
-                                                Constants._TAG_REFERENCE));
+      // create Vector
+      this._references = new Vector(le);
+
+      for (int i = 0; i < le; i++) {
+         this._references.add(null);
+      }
    }
 
    /**
@@ -179,10 +182,6 @@ public class Manifest extends SignatureElementProxy {
             ref.setType(ReferenceType);
          }
 
-         if (this._references == null) {
-            this._references = new Vector();
-         }
-
          // add Reference object to our cache vector
          this._references.add(ref);
 
@@ -204,7 +203,7 @@ public class Manifest extends SignatureElementProxy {
            throws XMLSignatureException, ReferenceNotInitializedException {
 
       if (this._state == MODE_SIGN) {
-         for (int i = 0; i < this._references.size(); i++) {
+         for (int i = 0; i < this.getLength(); i++) {
 
             // update the cached Reference object, the Element content is automatically updated
             Reference currentRef = (Reference) this._references.elementAt(i);
@@ -220,17 +219,7 @@ public class Manifest extends SignatureElementProxy {
     * @return the number of references
     */
    public int getLength() {
-
-      if (this._state == MODE_SIGN) {
-         if (this._references != null) {
-            return this._references.size();
-         } else {
-            return 0;
-         }
-      } else {
-         return this.length(Constants.SignatureSpecNS,
-                            Constants._TAG_REFERENCE);
-      }
+      return this._references.size();
    }
 
    /**
@@ -250,13 +239,13 @@ public class Manifest extends SignatureElementProxy {
       } else {
          if (this._references.elementAt(i) == null) {
 
-            // not yet constructed, so we have to
-            Element refElem = this.getChildElementLocalName(i,
+            // not yet constructed, so _we_ have to
+            Element refElem = super.getChildElementLocalName(i,
                                  Constants.SignatureSpecNS,
                                  Constants._TAG_REFERENCE);
             Reference ref = new Reference(refElem, this._baseURI, this);
 
-            this._references.setElementAt(ref, i);
+            this._references.set(i, ref);
          }
 
          return (Reference) this._references.elementAt(i);
@@ -271,7 +260,7 @@ public class Manifest extends SignatureElementProxy {
    public void setId(String Id) {
 
       if ((this._state == MODE_SIGN) && (Id != null)) {
-         this._constructionElement.setAttribute(Constants._ATT_ID, Id);
+         this._constructionElement.setAttributeNS(null, Constants._ATT_ID, Id);
          IdResolver.registerElementById(this._constructionElement, Id);
       }
    }
@@ -282,7 +271,7 @@ public class Manifest extends SignatureElementProxy {
     * @return the <code>Id</code> attribute in <code>ds:Manifest</code>
     */
    public String getId() {
-      return this._constructionElement.getAttribute(Constants._ATT_ID);
+      return this._constructionElement.getAttributeNS(null, Constants._ATT_ID);
    }
 
    /**
@@ -355,7 +344,7 @@ public class Manifest extends SignatureElementProxy {
                .getChildElementLocalName(i, Constants.SignatureSpecNS, Constants
                ._TAG_REFERENCE), this._baseURI, this);
 
-         this._references.add(currentRef);
+         this._references.set(i, currentRef);
 
          /* if only one item does not verify, the whole verification fails */
          try {
@@ -379,14 +368,20 @@ public class Manifest extends SignatureElementProxy {
 
                   XMLSignatureInput signedManifestNodes =
                      currentRef.getTransformsOutput();
-                  NodeList nl = signedManifestNodes.getNodeSet();
+                  Set nl = signedManifestNodes.getNodeSet();
                   Manifest referencedManifest = null;
+                  Iterator nlIterator = nl.iterator();
 
-                  findManifest: for (int j = 0; j < nl.getLength(); j++) {
-                     if (nl.item(j).getNodeType() == Node.ELEMENT_NODE) {
+                  findManifest: while (nlIterator.hasNext()) {
+                     Node n = (Node) nlIterator.next();
+
+                     if ((n.getNodeType() == Node.ELEMENT_NODE) && ((Element) n)
+                             .getNamespaceURI()
+                             .equals(Constants.SignatureSpecNS) && ((Element) n)
+                             .getLocalName().equals(Constants._TAG_MANIFEST)) {
                         try {
                            referencedManifest =
-                              new Manifest((Element) nl.item(j),
+                              new Manifest((Element) n,
                                            signedManifestNodes.getSourceURI());
 
                            break findManifest;
@@ -622,9 +617,5 @@ public class Manifest extends SignatureElementProxy {
     */
    public String getBaseLocalName() {
       return Constants._TAG_MANIFEST;
-   }
-
-   static {
-      org.apache.xml.security.Init.init();
    }
 }

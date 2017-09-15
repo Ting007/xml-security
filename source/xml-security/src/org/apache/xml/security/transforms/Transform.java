@@ -77,15 +77,19 @@ import org.apache.xml.security.utils.*;
 /**
  * Implements the behaviour of the <code>ds:Transform</code> element.
  *
- * This <code>Transform</code>(Factory) class role as the Factory and Proxy of implemanting class that have the functionality of <a href=http://www.w3.org/TR/xmldsig-core/#sec-TransformAlg>a Transform algorithm</a>.
+ * This <code>Transform</code>(Factory) class role as the Factory and Proxy of
+ * implemanting class that have the functionality of <a
+ * href=http://www.w3.org/TR/xmldsig-core/#sec-TransformAlg>a Transform
+ * algorithm</a>.
  * Implements the Factory and Proxy pattern for ds:Transform algorithms.
+ *
  * @author Christian Geuer-Pollmann
  * @see Transforms
  * @see TransformSpi
  * @see c14.Canonicalizer
  *
  */
-public class Transform extends SignatureElementProxy {
+public final class Transform extends SignatureElementProxy {
 
    /** {@link org.apache.log4j} logging facility */
    static org.apache.log4j.Category cat =
@@ -114,7 +118,7 @@ public class Transform extends SignatureElementProxy {
       super(doc);
 
       try {
-         this._constructionElement.setAttribute(Constants._ATT_ALGORITHM,
+         this._constructionElement.setAttributeNS(null, Constants._ATT_ALGORITHM,
                                                 algorithmURI);
 
          String implementingClass =
@@ -131,10 +135,17 @@ public class Transform extends SignatureElementProxy {
          this.transformSpi.setTransform(this);
 
          // give it to the current document
-         if ((contextNodes != null) && (contextNodes.getLength() > 0)) {
-            for (int i = 0; i < contextNodes.getLength(); i++) {
-               this._constructionElement.appendChild(contextNodes.item(i));
+         if (contextNodes != null) {
+            /*
+            while (contextNodes.getLength() > 0) {
+               this._constructionElement.appendChild(contextNodes.item(0));
             }
+            */
+
+            for (int i = 0; i < contextNodes.getLength(); i++) {
+               this._constructionElement.appendChild(contextNodes.item(i).cloneNode(true));
+            }
+
          }
       } catch (ClassNotFoundException ex) {
          Object exArgs[] = { algorithmURI };
@@ -155,7 +166,6 @@ public class Transform extends SignatureElementProxy {
    }
 
    /**
-    *
     * This constructor can only be called from the {@link Transforms} object, so
     * it's protected.
     *
@@ -172,7 +182,7 @@ public class Transform extends SignatureElementProxy {
       super(element, BaseURI);
 
       // retrieve Algorithm Attribute from ds:Transform
-      String AlgorithmURI = element.getAttribute(Constants._ATT_ALGORITHM);
+      String AlgorithmURI = element.getAttributeNS(null, Constants._ATT_ALGORITHM);
 
       if ((AlgorithmURI == null) || (AlgorithmURI.length() == 0)) {
          Object exArgs[] = { Constants._ATT_ALGORITHM,
@@ -234,7 +244,9 @@ public class Transform extends SignatureElementProxy {
 
       HelperNodeList contextNodes = new HelperNodeList();
 
+      contextNodes.appendChild(doc.createTextNode("\n"));
       contextNodes.appendChild(contextChild);
+      contextNodes.appendChild(doc.createTextNode("\n"));
 
       return Transform.getInstance(doc, algorithmURI, contextNodes);
    }
@@ -298,7 +310,7 @@ public class Transform extends SignatureElementProxy {
     * @return the URI representation of Transformation algorithm
     */
    public final String getURI() {
-      return this._constructionElement.getAttribute(Constants._ATT_ALGORITHM);
+      return this._constructionElement.getAttributeNS(null, Constants._ATT_ALGORITHM);
    }
 
    /**
@@ -359,9 +371,5 @@ public class Transform extends SignatureElementProxy {
 
    public String getBaseLocalName() {
       return Constants._TAG_TRANSFORM;
-   }
-
-   static {
-      org.apache.xml.security.Init.init();
    }
 }

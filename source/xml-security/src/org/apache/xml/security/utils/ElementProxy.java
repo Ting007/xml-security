@@ -171,18 +171,18 @@ public abstract class ElementProxy {
       String prefix = ElementProxy.getDefaultPrefix(namespace);
 
       if (namespace == null) {
-         result = doc.createElement(localName);
+         result = doc.createElementNS(null, localName);
       } else {
          if ((prefix == null) || (prefix.length() == 0)) {
             result = doc.createElementNS(namespace, localName);
 
-            // result.setAttribute("xmlns", namespace);
-            result.setAttributeNS(Constants.NamespaceSpecNS, "xmlns", namespace);
+            result.setAttributeNS(Constants.NamespaceSpecNS, "xmlns",
+                                  namespace);
          } else {
             result = doc.createElementNS(namespace, prefix + ":" + localName);
 
-            // result.setAttribute("xmlns:" + prefix, namespace);
-            result.setAttributeNS(Constants.NamespaceSpecNS, "xmlns:" + prefix, namespace);
+            result.setAttributeNS(Constants.NamespaceSpecNS, "xmlns:" + prefix,
+                                  namespace);
          }
       }
 
@@ -227,7 +227,7 @@ public abstract class ElementProxy {
          throw new XMLSecurityException("ElementProxy.nullElement");
       }
 
-      cat.debug("setElement(" + element.getTagName() + ", \"" + BaseURI + "\"");
+      cat.debug("setElement(\"" + element.getTagName() + "\", \"" + BaseURI + "\")");
 
       this._doc = element.getOwnerDocument();
       this._state = ElementProxy.MODE_PROCESS;
@@ -471,39 +471,48 @@ public abstract class ElementProxy {
     * Method getTextFromTextChild
     *
     * @return
-    * @throws XMLSecurityException
     */
-   public String getTextFromTextChild() throws XMLSecurityException {
-
-      try {
-         Text t = (Text) XPathAPI.selectSingleNode(this._constructionElement,
-                                                   "./text()");
-
-         return t.getData();
-      } catch (TransformerException ex) {
-         throw new XMLSecurityException("empty", ex);
-      }
+   public String getTextFromTextChild() {
+      return XMLUtils.getFullTextChildrenFromElement(this._constructionElement);
    }
 
    /**
-    * Method getChildElementLocalName
+    * This method returns the index&apos;th child with the given namespace
+    * and localname.
     *
     * @param index
     * @param namespace
     * @param localname
-    * @return
+    * @return null if the Element does not contain the requested child
     */
-   protected Element getChildElementLocalName(int index, String namespace,
+   public Element getChildElementLocalName(int index, String namespace,
                                               String localname) {
 
-      NodeList nodes =
-         this._constructionElement.getElementsByTagNameNS(namespace, localname);
+      NodeList childNodes = this._constructionElement.getChildNodes();
+      int maxLength = childNodes.getLength();
 
-      if (nodes.getLength() <= index) {
-         return null;
+      int result = -1;
+      for (int i=0; i<maxLength; i++) {
+         Node n = childNodes.item(i);
+         if (n.getNodeType() == Node.ELEMENT_NODE) {
+            String ns = n.getNamespaceURI();
+            String name = n.getLocalName();
+
+            if (namespace != null && ns != null && namespace.equals(ns) ||
+                namespace == null && ns == null) {
+               if (localname.equals(name)) {
+                  result++;
+
+                  if (result == index) {
+                     return (Element) n;
+                  }
+               }
+            }
+         }
       }
 
-      return (Element) nodes.item(index);
+      // throw new IndexOutOfBoundsException("Try to get " + index + "/" + maxLength + " {" + namespace + "}" + localname + " from " + this._constructionElement.getTagName());
+      return null;
    }
 
    /**
@@ -513,12 +522,72 @@ public abstract class ElementProxy {
     * @param localname
     * @return
     */
-   protected int length(String namespace, String localname) {
+   public int length(String namespace, String localname) {
+      NodeList childNodes = this._constructionElement.getChildNodes();
+      int maxLength = childNodes.getLength();
 
-      NodeList nodes =
-         this._constructionElement.getElementsByTagNameNS(namespace, localname);
+      int result = 0;
+      for (int i=0; i<maxLength; i++) {
+         Node n = childNodes.item(i);
+         if (n.getNodeType() == Node.ELEMENT_NODE) {
+            String ns = n.getNamespaceURI();
+            String name = n.getLocalName();
 
-      return nodes.getLength();
+            if (namespace != null && ns != null && namespace.equals(ns) ||
+                namespace == null && ns == null) {
+               if (localname.equals(name)) {
+                  result++;
+               }
+            }
+         }
+      }
+
+      return result;
+   }
+
+   /**
+    * Adds an xmlns: definition to the Element. This can be called as follows:
+    *
+    * <PRE>
+    * // set namespace with ds prefix
+    * xpathContainer.setXPathNamespaceContext("ds", "http://www.w3.org/2000/09/xmldsig#");
+    * xpathContainer.setXPathNamespaceContext("xmlns:ds", "http://www.w3.org/2000/09/xmldsig#");
+    * </PRE>
+    *
+    * @param prefix
+    * @param uri
+    * @throws XMLSecurityException
+    */
+   public void setXPathNamespaceContext(String prefix, String uri)
+           throws XMLSecurityException {
+
+      String ns;
+
+      if (prefix == null || prefix.length() == 0) {
+         ns = "xmlns";
+      } else if (prefix.equals("xmlns")) {
+         ns = "xmlns";
+      } else if (prefix.startsWith("xmlns:")) {
+         ns = "xmlns:" + prefix.substring("xmlns:".length());
+      } else {
+         ns = "xmlns:" + prefix;
+      }
+
+      if (ns.equals("xmlns")) {
+         throw new XMLSecurityException("defaultNamespaceCannotBeSetHere");
+      }
+
+      Attr a = this._constructionElement.getAttributeNode(ns);
+
+      if ((a != null) && (!a.getNodeValue().equals(uri))) {
+         Object exArgs[] = { ns, this._constructionElement.getAttributeNS(null, ns) };
+
+         throw new XMLSecurityException(
+            "namespacePrefixAlreadyUsedByOtherURI", exArgs);
+      }
+
+      this._constructionElement.setAttributeNS(Constants.NamespaceSpecNS, ns,
+                                               uri);
    }
 
    /** Field _prefixMappings */
@@ -563,10 +632,4 @@ public abstract class ElementProxy {
 
       return prefix;
    }
-
-   /*
-   static {
-      org.apache.xml.security.Init.init();
-   }
-   */
 }

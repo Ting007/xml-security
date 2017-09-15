@@ -106,11 +106,34 @@ public class AllTests extends TestCase {
    public static void main(String[] args) {
 
       XMLUtils.spitOutVersions(cat);
+      cat.debug("java.class.path            : " + System.getProperty("java.class.path"));
+      cat.debug("java.library.path          : " + System.getProperty("java.library.path"));
+      cat.debug("java.runtime.name          : " + System.getProperty("java.runtime.name"));
+      cat.debug("java.runtime.version       : " + System.getProperty("java.runtime.version"));
+      cat.debug("java.specification.name    : " + System.getProperty("java.specification.name"));
+      cat.debug("java.specification.vendor  : " + System.getProperty("java.specification.vendor"));
+      cat.debug("java.specification.version : " + System.getProperty("java.specification.version"));
+      cat.debug("java.vendor                : " + System.getProperty("java.vendor"));
+      cat.debug("java.version               : " + System.getProperty("java.version"));
+      cat.debug("java.vm.info               : " + System.getProperty("java.vm.info"));
+      cat.debug("java.vm.name               : " + System.getProperty("java.vm.name"));
+      cat.debug("java.vm.version            : " + System.getProperty("java.vm.version"));
+      cat.debug("os.arch                    : " + System.getProperty("os.arch"));
+      cat.debug("os.name                    : " + System.getProperty("os.name"));
+      cat.debug("os.version                 : " + System.getProperty("os.version"));
 
       boolean useTextUI = true;
 
       if (useTextUI) {
-         junit.textui.TestRunner.run(suite());
+         // int counter = 100;
+         // long start = System.currentTimeMillis();
+         // for (int i=0; i<counter; i++) {
+            junit.textui.TestRunner.run(suite());
+         // }
+         // long end = System.currentTimeMillis();
+         // double delta = end - start;
+         // System.out.println(counter + " full tests took " + java.text.DecimalFormat.getInstance().format(delta / 1000.) + " seconds");
+
       } else {
          String[] testCaseName = { "-noloading", AllTests.class.getName() };
 

@@ -61,1075 +61,1006 @@ package org.apache.xml.security.c14n.implementations;
 
 
 import java.io.*;
-import java.util.Enumeration;
-import java.util.Set;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Vector;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
 import javax.xml.parsers.*;
 import javax.xml.transform.TransformerException;
-import org.apache.xml.utils.PrefixResolverDefault;
-import org.apache.xpath.NodeSet;
-import org.apache.xpath.XPath;
-import org.apache.xpath.XPathAPI;
-import org.apache.xpath.compiler.XPathParser;
-import org.apache.xpath.objects.XObject;
+import org.apache.xpath.CachedXPathAPI;
 import org.w3c.dom.*;
-import org.w3c.dom.traversal.*;
 import org.xml.sax.*;
-import org.apache.xml.security.c14n.CanonicalizationException;
-import org.apache.xml.security.c14n.Canonicalizer;
-import org.apache.xml.security.c14n.CanonicalizerSpi;
-import org.apache.xml.security.c14n.helper.AttrCompare;
-import org.apache.xml.security.c14n.helper.NamespaceSearcher;
-import org.apache.xml.security.c14n.helper.C14nHelper;
-import org.apache.xml.security.c14n.helper.C14nNodeFilter;
-import org.apache.xml.security.utils.HelperNodeList;
-import org.apache.xml.security.utils.Constants;
-import org.apache.xml.security.utils.XMLUtils;
+import org.apache.xml.security.c14n.*;
+import org.apache.xml.security.c14n.helper.*;
+import org.apache.xml.security.utils.*;
 
 
 /**
- * This class implements the <A
- * HREF="http://www.w3.org/TR/2001/REC-xml-c14n-20010315">Canonical XML
- * Version 1.0</A> specification.
- * <BR>
- * The calling hierarchie is relativly easy:
+ * Class Canonicalizer20010315
  *
- * <OL>
- * <LI><code>c14nFiles</code> is called with the filenames of the input and
- * output file, the includeComments boolean and the XPath string</LI>
- * <LI><code>c14nFiles</code> calls <code>canonicalize</code> with the root
- * node and the NodeList with the selected <code>Node</code>s</LI>
- * <LI><code>canonicalize</code> calls <code>process</code></LI>
- * <LI><code>process</code> recursively calls itself and uses the
- * <code>normalizeXXX</code> functions for normalizing the different
- * NodeTypes</LI>
- * </OL>
- *
- * @author Christian Geuer-Pollmann
- * @since  REC-xml-c14n-20010315 .
+ * @author $Author: dohy $
+ * @version $Revision: 1.1.1.1 $
  */
 public abstract class Canonicalizer20010315 extends CanonicalizerSpi {
+   //J-
+   boolean _includeComments = false;
 
-   /** {@link org.apache.log4j} logging facility */
-   static org.apache.log4j.Category cat =
-      org.apache.log4j.Category
-         .getInstance(Canonicalizer20010315.class.getName());
+   Set _xpathNodeSet = null;
 
-   /** Field processingPos */
-   private short processingPos = CanonicalizerSpi.BEFORE_DOCUMENT_ELEM;
+   Document _doc = null;
+   Element _documentElement = null;
+   Node _rootNodeOfC14n = null;
 
-   /** Field hmVisibleNodes */
-   public Map hmVisibleNodes = null;
-
-   /**
-    * During c14n of a document with only a document subset visible,
-    * Attributes for namespace declarations are created in 'visible' Elements.
-    * This means that after c14n, the infoset of the document is modified because
-    * this process added namespace attrs. If this is a problem, the added
-    * attributes have to be removed from the DOM after c14n.
-    */
-   private Vector _attrsToBeRemovedAfterC14n = new Vector();
-
-   /** Field _removeNSattrsAfterC14n */
-   private boolean _removeNSattrsAfterC14n = true;
+   Writer _writer = null;
+   //J+
 
    /**
-    * Method engineVisible
+    * Constructor Canonicalizer20010315
     *
-    * @param node
-    * @return
+    * @param includeComments
     */
-   public boolean engineVisible(Node node) {
-
-      if (this.hmVisibleNodes == null) {
-         return false;
-      }
-
-      return this.hmVisibleNodes.containsKey(node);
+   public Canonicalizer20010315(boolean includeComments) {
+      this._includeComments = includeComments;
    }
 
    /**
-    * Method engineMakeVisible
+    * Method engineCanonicalizeSubTree
     *
-    * @param node
-    */
-   public void engineMakeVisible(Node node) {
-
-      if (this.hmVisibleNodes == null) {
-         this.hmVisibleNodes = (Map) new HashMap();
-      }
-
-      if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
-         Attr a = (Attr) node;
-         Element ownerElement = a.getOwnerElement();
-
-         if (ownerElement == null) {
-            cat.warn("makeVisible(" + a + ") in NULL !?! Element");
-         } else {
-            cat.debug("makeVisible(" + a + ") in Element "
-                      + ownerElement.getTagName());
-         }
-      } else {
-         cat.debug("makeVisible(" + ((node.getNamespaceURI() != null)
-                                     ? "{" + node.getNamespaceURI() + "} "
-                                     : "") + node.getNodeName() + ")");
-      }
-
-      this.hmVisibleNodes.put(node, Boolean.TRUE);
-   }
-
-   /**
-    * Method engineMakeInVisible
-    *
-    * @param node
-    */
-   public void engineMakeInVisible(Node node) {
-
-      if (this.hmVisibleNodes != null) {
-         if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
-            Attr a = (Attr) node;
-
-            cat.debug("makeInVisible(" + a + ") in Element "
-                      + a.getOwnerElement().getTagName());
-         } else {
-            cat.debug("makeInVisible(" + node + ")");
-         }
-
-         if (!engineVisible(node)) {
-            cat.fatal("Try to hide " + node + " but already is not visible");
-         }
-
-         this.hmVisibleNodes.remove(node);
-      }
-   }
-
-   /**
-    * Method engineSetXPathNodeSet
-    *
-    * @param nodeList
-    */
-   public void engineSetXPathNodeSet(NodeList nodeList) {
-
-      cat.debug("Canonicalizer20010315.engineSetXPathNodeSet("
-                + nodeList.getLength() + " nodes)");
-
-      this.hmVisibleNodes = (Map) new HashMap();
-
-      for (int i = 0; i < nodeList.getLength(); i++) {
-         engineMakeVisible(nodeList.item(i));
-      }
-   }
-
-   /**
-    * Method engineCanonicalize
-    *
-    * @param selectedNodes
+    * @param rootNode
     * @return
     * @throws CanonicalizationException
     */
-   public byte[] engineCanonicalize(NodeList selectedNodes)
+   public byte[] engineCanonicalizeSubTree(Node rootNode)
            throws CanonicalizationException {
 
-      this.engineSetXPathNodeSet(selectedNodes);
-
-      if (selectedNodes.getLength() == 0) {
-         return new byte[0];
-      }
-
-      Document document = XMLUtils.getOwnerDocument(selectedNodes.item(0));
-
-      return this.engineDoCanonicalization(document);
-   }
-
-   /**
-    * Method engineCanonicalize
-    *
-    * @param node
-    * @return
-    * @throws CanonicalizationException
-    */
-   public byte[] engineCanonicalize(Node node)
-           throws CanonicalizationException {
-
-      /**
-       * If the node set has not been set by anyone else before, we apply
-       * our own XPath to it.
-       */
-      if (this.hmVisibleNodes == null) {
-         try {
-            //J-
-            /*
-            if ((this.engineGetXPathString().equals(Canonicalizer.XPATH_C14N_WITH_COMMENTS) ||
-                 this.engineGetXPathString().equals(Canonicalizer.XPATH_C14N_WITH_COMMENTS_SINGLE_NODE) ||
-                 this.engineGetXPathString().equals(Canonicalizer.XPATH_C14N_OMIT_COMMENTS) ||
-                 this.engineGetXPathString().equals(Canonicalizer.XPATH_C14N_OMIT_COMMENTS_SINGLE_NODE))) {
-               //J+
-               // we do a c14n without strange features, so why use the XPath compliant version
-               CanonicalizerSpi c14nizer = null;
-
-               if (this.engineGetXPathString()
-                       .equals(Canonicalizer
-                       .XPATH_C14N_OMIT_COMMENTS_SINGLE_NODE) || this
-                          .engineGetXPathString()
-                          .equals(Canonicalizer.XPATH_C14N_OMIT_COMMENTS)) {
-                  c14nizer =
-                     new Canonicalizer20010315WithoutXPathSupportOmitComments();
-               } else {
-                  c14nizer =
-                     new Canonicalizer20010315WithoutXPathSupportWithComments();
-               }
-
-               if (c14nizer == null) {
-                  return null;
-               }
-
-               return c14nizer.engineCanonicalize(node);
-            } else {
-            */
-            NodeList selected = null;
-
-            if (this.engineGetXPath() instanceof Element) {
-               selected = XPathAPI.selectNodeList(node,
-                                                  this.engineGetXPathString(),
-                                                  (Node) this.engineGetXPath());
-            } else {
-               selected = XPathAPI.selectNodeList(node,
-                                                  this.engineGetXPathString());
-            }
-
-            cat.debug("xpath is" + this.engineGetXPathString());
-            this.engineSetXPathNodeSet(selected);
-
-            // }
-         } catch (TransformerException e) {
-            Object exArgs[] = { "TransformerException: " + e.getMessage() };
-
-            throw new CanonicalizationException("generic.EmptyMessage", exArgs,
-                                                e);
-         }
-      }
-
-      return this.engineDoCanonicalization(node);
-   }
-
-   /**
-    * Method engineDoCanonicalization
-    *
-    * @param node
-    * @return
-    * @throws CanonicalizationException
-    */
-   private byte[] engineDoCanonicalization(Node node)
-           throws CanonicalizationException {
-
-      Document document = XMLUtils.getOwnerDocument(node);
-
-      this.checkTraversability(document);
-
-      DocumentTraversal dt = ((DocumentTraversal) document);
-      Node rootNode = (Node) node;
-      NodeFilter nodefilter =
-         new C14nNodeFilter(this.engineGetIncludeComments());
-      TreeWalker treewalker = dt.createTreeWalker(rootNode,
-                                                  NodeFilter.SHOW_ALL,
-                                                  nodefilter, true);
-      ByteArrayOutputStream bytearrayoutputstream = new ByteArrayOutputStream();
-      PrintWriter printwriter = null;
+      this._rootNodeOfC14n = rootNode;
+      this._doc = XMLUtils.getOwnerDocument(this._rootNodeOfC14n);
+      this._documentElement = this._doc.getDocumentElement();
 
       try {
-         printwriter =
-            new PrintWriter(new OutputStreamWriter(bytearrayoutputstream,
-                                                   Canonicalizer.ENCODING));
+         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+         this._writer = new OutputStreamWriter(baos, Canonicalizer.ENCODING);
+
+         Map inscopeNamespaces;
+
+         if (rootNode.getNodeType() == Node.ELEMENT_NODE) {
+            inscopeNamespaces = this.getinscopeNamespaces((Element) rootNode);
+         } else {
+            inscopeNamespaces = new HashMap();
+         }
+
+         Map alreadyVisible = new HashMap();
+
+         this.canonicalizeSubTree(rootNode, inscopeNamespaces, alreadyVisible);
+         this._writer.close();
+
+         return baos.toByteArray();
       } catch (UnsupportedEncodingException ex) {
-         throw new CanonicalizationException("generic.EmptyMessage", ex);
+         throw new CanonicalizationException("empty", ex);
+      } catch (IOException ex) {
+         throw new CanonicalizationException("empty", ex);
+      } finally {
+
+         // mark contents for garbage collector
+         this._rootNodeOfC14n = null;
+         this._doc = null;
+         this._documentElement = null;
+         this._writer = null;
       }
-
-      process(treewalker, printwriter, this.engineGetIncludeComments());
-      printwriter.flush();
-
-      if (this.engineGetRemoveNSAttrs()) {
-         this.removeNSAttrs();
-      }
-
-      return bytearrayoutputstream.toByteArray();
    }
 
    /**
-    * Method process
+    * Method canonicalizeSubTree
     *
-    * @param treewalker
-    * @param printwriter
-    * @param includeComments
+    * @param currentNode
+    * @param inscopeNamespaces
+    * @param alreadyVisible
     * @throws CanonicalizationException
+    * @throws IOException
     */
-   private void process(
-           TreeWalker treewalker, PrintWriter printwriter, boolean includeComments)
-              throws CanonicalizationException {
+   void canonicalizeSubTree(
+           Node currentNode, Map inscopeNamespaces, Map alreadyVisible)
+              throws CanonicalizationException, IOException {
 
-      Node currentNode = treewalker.getCurrentNode();
+      int currentNodeType = currentNode.getNodeType();
 
-      switch (currentNode.getNodeType()) {
+      switch (currentNodeType) {
 
-      case Node.ENTITY_REFERENCE_NODE :
-         for (Node node1 = treewalker.firstChild(); node1 != null;
-                 node1 = treewalker.nextSibling()) {
-            process(treewalker, printwriter, includeComments);
-         }
-
-         treewalker.setCurrentNode(currentNode);
+      case Node.DOCUMENT_TYPE_NODE :
+      default :
          break;
 
       case Node.ENTITY_NODE :
-         cat.warn("Node.ENTITY_NODE called");
-         break;
+      case Node.NOTATION_NODE :
+      case Node.DOCUMENT_FRAGMENT_NODE :
+      case Node.ATTRIBUTE_NODE :
 
-      case Node.ATTRIBUTE_NODE : {
-         Object[] exArgs = {
-            XMLUtils.getNodeTypeString(currentNode.getNodeType()),
-            currentNode.getNodeName() };
-
-         throw new CanonicalizationException(
-            "c14n.Canonicalizer20010315.IllegalNode", exArgs);
-      }
-      case Node.TEXT_NODE :
-      case Node.CDATA_SECTION_NODE :
-         if (engineVisible(currentNode)) {
-            printwriter
-               .print(C14nHelper.normalizeText(currentNode.getNodeValue()));
-
-            Node nextSibling = currentNode.getNextSibling();
-
-            /**
-             * see http://nagoya.apache.org/bugzilla/show_bug.cgi?id=6329
-             */
-            while ((nextSibling != null)
-                   && ((nextSibling.getNodeType() == Node.TEXT_NODE)
-                       || (nextSibling.getNodeType()
-                           == Node.CDATA_SECTION_NODE))) {
-               printwriter
-                  .print(C14nHelper.normalizeText(nextSibling.getNodeValue()));
-
-               nextSibling = nextSibling.getNextSibling();
-            }
-         } else {
-            cat.error(currentNode + " not visible");
+         // illegal node type during traversal
+         throw new CanonicalizationException("empty");
+      case Node.DOCUMENT_NODE :
+         for (Node currentChild = currentNode.getFirstChild();
+                 currentChild != null;
+                 currentChild = currentChild.getNextSibling()) {
+            canonicalizeSubTree(currentChild, inscopeNamespaces,
+                                alreadyVisible);
          }
          break;
 
       case Node.COMMENT_NODE :
+         if (this._includeComments) {
+            int position = getPositionRelativeToDocumentElement(currentNode);
 
-         /*
-          * Comment Nodes- Nothing if generating canonical XML without comments.
-          * For canonical XML with comments, generate the opening comment
-          * symbol (<!--), the string value of the node, and the closing
-          * comment symbol (-->). Also, a trailing #xA is rendered after the
-          * closing comment symbol for comment children of the root node with
-          * a lesser document order than the document element, and a leading
-          * #xA is rendered before the opening comment symbol of comment
-          * children of the root node with a greater document order than the
-          * document element. (Comment children of the root node represent
-          * comments outside of the top-level document element and outside
-          * of the document type declaration).
-          */
-         if ( /* includeComments && */engineVisible(currentNode)) {
-            if (processingPos == CanonicalizerSpi.AFTER_DOCUMENT_ELEM) {
-               printwriter.print("\n");
+            if (position == NODE_AFTER_DOCUMENT_ELEMENT) {
+               this._writer.write("\n");
             }
 
-            /** do we need have to normalize Comments ? */
-            printwriter.print("<!--");
-            printwriter
-               .print(C14nHelper.normalizeComment(currentNode.getNodeValue()));
-            printwriter.print("-->");
+            outputCommentToWriter((Comment) currentNode);
 
-            if (processingPos == CanonicalizerSpi.BEFORE_DOCUMENT_ELEM) {
-               printwriter.print("\n");
+            if (position == NODE_BEFORE_DOCUMENT_ELEMENT) {
+               this._writer.write("\n");
             }
          }
          break;
 
       case Node.PROCESSING_INSTRUCTION_NODE :
+         int position = getPositionRelativeToDocumentElement(currentNode);
 
-         /*
-          * Processing Instruction (PI) Nodes- The opening PI symbol (<?),
-          * the PI target name of the node, a leading space and the string
-          * value if it is not empty, and the closing PI symbol (?>). If the
-          * string value is empty, then the leading space is not added.
-          * Also, a trailing #xA is rendered after the closing PI symbol for PI
-          * children of the root node with a lesser document order than the
-          * document element, and a leading #xA is rendered before the opening
-          * PI symbol of PI children of the root node with a greater document
-          * order than the document element.
-          *
-          */
-         if (engineVisible(currentNode)) {
-            if (processingPos == CanonicalizerSpi.AFTER_DOCUMENT_ELEM) {
-               printwriter.print("\n");
+         if (position == NODE_AFTER_DOCUMENT_ELEMENT) {
+            this._writer.write("\n");
+         }
+
+         outputPItoWriter((ProcessingInstruction) currentNode);
+
+         if (position == NODE_BEFORE_DOCUMENT_ELEMENT) {
+            this._writer.write("\n");
+         }
+         break;
+
+      case Node.TEXT_NODE :
+      case Node.CDATA_SECTION_NODE :
+         outputTextToWriter(currentNode.getNodeValue());
+         break;
+
+      case Node.ELEMENT_NODE :
+         Element currentElement = (Element) currentNode;
+
+         this._writer.write("<");
+         this._writer.write(currentElement.getTagName());
+
+         List attrs =
+            updateinscopeNamespacesAndReturnVisibleAttrs(currentElement,
+               inscopeNamespaces, alreadyVisible);
+
+         // we output all Attrs which are available
+         for (int i = 0; i < attrs.size(); i++) {
+            outputAttrToWriter(((Attr) attrs.get(i)).getNodeName(),
+                               ((Attr) attrs.get(i)).getNodeValue());
+         }
+
+         this._writer.write(">");
+
+         // traversal
+         for (Node currentChild = currentNode.getFirstChild();
+                 currentChild != null;
+                 currentChild = currentChild.getNextSibling()) {
+            if (currentChild.getNodeType() == Node.ELEMENT_NODE) {
+
+               /*
+                * We must 'clone' the inscopeXMLAttrs to allow the descendants
+                * to mess around in their own map
+                */
+               canonicalizeSubTree(currentChild,
+                                   new HashMap(inscopeNamespaces),
+                                   new HashMap(alreadyVisible));
+            } else {
+               canonicalizeSubTree(currentChild, inscopeNamespaces,
+                                   alreadyVisible);
+            }
+         }
+
+         this._writer.write("</");
+         this._writer.write(currentElement.getTagName());
+         this._writer.write(">");
+         break;
+      }
+   }
+
+   /**
+    * This method updates the inscopeXMLAttrs based on the currentElement and
+    * returns the Attr[]s to be outputted.
+    *
+    * @param inscopeXMLAttrs is changed by this method !!!
+    * @param currentElement
+    * @param alreadyVisible
+    * @return the Attr[]s to be outputted
+    * @throws CanonicalizationException
+    */
+   List updateinscopeNamespacesAndReturnVisibleAttrs(
+           Element currentElement, Map inscopeXMLAttrs, Map alreadyVisible)
+              throws CanonicalizationException {
+
+      Vector ns = new Vector();
+      Vector at = new Vector();
+      NamedNodeMap attributes = currentElement.getAttributes();
+      int attributesLength = attributes.getLength();
+
+      for (int i = 0; i < attributesLength; i++) {
+         Attr currentAttr = (Attr) attributes.item(i);
+         String name = currentAttr.getNodeName();
+         String value = currentAttr.getValue();
+
+         if (name.equals("xmlns") && value.equals("")) {
+
+            // undeclare default namespace
+            inscopeXMLAttrs.remove("xmlns");
+         } else if (name.startsWith("xmlns")) {
+
+            // update inscope namespaces
+            if (!value.equals("")) {
+               inscopeXMLAttrs.put(name, value);
+            }
+         } else if (name.startsWith("xml:")) {
+
+            // output xml:blah features
+            inscopeXMLAttrs.put(name, value);
+         } else {
+
+            // output regular attributes
+            at.add(currentAttr);
+         }
+      }
+
+      {
+
+         // check whether default namespace must be deleted
+         if (alreadyVisible.containsKey("xmlns")
+                 &&!inscopeXMLAttrs.containsKey("xmlns")) {
+
+            // undeclare default namespace
+            alreadyVisible.remove("xmlns");
+
+            Attr a = this._doc.createAttributeNS(Constants.NamespaceSpecNS,
+                                                 "xmlns");
+
+            a.setValue("");
+            ns.add(a);
+         }
+      }
+
+      boolean isOrphanNode = currentElement == this._rootNodeOfC14n;
+      Iterator it = inscopeXMLAttrs.keySet().iterator();
+
+      while (it.hasNext()) {
+         String name = (String) it.next();
+         String inscopeValue = (String) inscopeXMLAttrs.get(name);
+
+         if (name.startsWith("xml:")
+                 && (isOrphanNode
+                     ||!(alreadyVisible.containsKey(name)
+                         && alreadyVisible.get(name).equals(inscopeValue)))) {
+            alreadyVisible.put(name, inscopeValue);
+
+            Attr a =
+               this._doc.createAttributeNS(Constants.XML_LANG_SPACE_SpecNS,
+                                           name);
+
+            a.setValue(inscopeValue);
+            at.add(a);
+         } else if (!alreadyVisible.containsKey(name)
+                    || (alreadyVisible.containsKey(name)
+                        &&!alreadyVisible.get(name).equals(inscopeValue))) {
+            if (C14nHelper.namespaceIsRelative(inscopeValue)) {
+               Object exArgs[] = { currentElement.getTagName(), name,
+                                   inscopeValue };
+
+               throw new CanonicalizationException(
+                  "c14n.Canonicalizer.RelativeNamespace", exArgs);
             }
 
-            printwriter.print("<?");
-            printwriter.print(currentNode.getNodeName());
+            alreadyVisible.put(name, inscopeValue);
 
-            String s = currentNode.getNodeValue();
+            Attr a = this._doc.createAttributeNS(Constants.NamespaceSpecNS,
+                                                 name);
 
-            if ((s != null) && (s.length() > 0)) {
-               printwriter.print(" ");
+            a.setValue(inscopeValue);
+            ns.add(a);
+         }
+      }
 
-               /** @todo do we need PI normalization ? */
-               printwriter.print(C14nHelper.normalizeProcessingInstruction(s));
+      Collections.sort(ns,
+                       new org.apache.xml.security.c14n.helper.NSAttrCompare());
+      Collections.sort(at,
+                       new org.apache.xml.security.c14n.helper
+                          .NonNSAttrCompare());
+      ns.addAll(at);
+
+      return ns;
+   }
+
+   /**
+    * Collects all relevant xml:* and xmlns:* attributes from all ancestor
+    * Elements from rootNode and creates a Map containg the attribute
+    * names/values.
+    *
+    * @param apexElement
+    * @return
+    */
+   public static Map getinscopeNamespaces(Element apexElement) {
+
+      Map result = new HashMap();
+
+      for (Node parent = apexElement.getParentNode();
+              ((parent != null) && (parent.getNodeType() == Node.ELEMENT_NODE));
+              parent = parent.getParentNode()) {
+         NamedNodeMap attributes = parent.getAttributes();
+         int nrOfAttrs = attributes.getLength();
+
+         for (int i = 0; i < nrOfAttrs; i++) {
+            Attr currentAttr = (Attr) attributes.item(i);
+            String name = currentAttr.getNodeName();
+            String value = currentAttr.getValue();
+
+            if (name.equals("xmlns") && value.equals("")) {
+               ;    // result.remove(name);
+            } else if (name.startsWith("xml:")
+                       || (name.startsWith("xmlns") &&!value.equals(""))) {
+               if (!result.containsKey(name)) {
+                  result.put(name, value);
+               }
+            }
+         }
+      }
+
+      return result;
+   }
+
+   //J-
+   private static final int NODE_BEFORE_DOCUMENT_ELEMENT = -1;
+   private static final int NODE_NOT_BEFORE_OR_AFTER_DOCUMENT_ELEMENT = 0;
+   private static final int NODE_AFTER_DOCUMENT_ELEMENT = 1;
+   //J+
+
+   /**
+    * Checks whether a Comment or ProcessingInstruction is before or after the
+    * document element. This is needed for prepending or appending "\n"s.
+    *
+    * @param currentNode comment or pi to check
+    * @return NODE_BEFORE_DOCUMENT_ELEMENT, NODE_NOT_BEFORE_OR_AFTER_DOCUMENT_ELEMENT or NODE_AFTER_DOCUMENT_ELEMENT
+    * @see NODE_BEFORE_DOCUMENT_ELEMENT
+    * @see NODE_NOT_BEFORE_OR_AFTER_DOCUMENT_ELEMENT
+    * @see NODE_AFTER_DOCUMENT_ELEMENT
+    */
+   static int getPositionRelativeToDocumentElement(Node currentNode) {
+
+      if (currentNode == null) {
+         return NODE_NOT_BEFORE_OR_AFTER_DOCUMENT_ELEMENT;
+      }
+
+      Document doc = currentNode.getOwnerDocument();
+
+      if (currentNode.getParentNode() != doc) {
+         return NODE_NOT_BEFORE_OR_AFTER_DOCUMENT_ELEMENT;
+      }
+
+      Element documentElement = doc.getDocumentElement();
+
+      if (documentElement == null) {
+         return NODE_NOT_BEFORE_OR_AFTER_DOCUMENT_ELEMENT;
+      }
+
+      if (documentElement == currentNode) {
+         return NODE_NOT_BEFORE_OR_AFTER_DOCUMENT_ELEMENT;
+      }
+
+      for (Node x = currentNode; x != null; x = x.getNextSibling()) {
+         if (x == documentElement) {
+            return NODE_BEFORE_DOCUMENT_ELEMENT;
+         }
+      }
+
+      return NODE_AFTER_DOCUMENT_ELEMENT;
+   }
+
+   /**
+    * Method engineCanonicalizeXPathNodeSet
+    *
+    * @param xpathNodeSet
+    * @return
+    * @throws CanonicalizationException
+    */
+   public byte[] engineCanonicalizeXPathNodeSet(Set xpathNodeSet)
+           throws CanonicalizationException {
+
+      this._xpathNodeSet = xpathNodeSet;
+
+      if (this._xpathNodeSet.size() == 0) {
+         return new byte[0];
+      }
+
+      if (this._doc == null) {
+         Node n = (Node) this._xpathNodeSet.iterator().next();
+
+         this._doc = XMLUtils.getOwnerDocument(n);
+         this._documentElement = this._doc.getDocumentElement();
+      }
+
+      try {
+         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+         this._writer = new OutputStreamWriter(baos, Canonicalizer.ENCODING);
+
+         this.canonicalizeXPathNodeSet(this._doc, true,
+                                       new C14nCtx());
+         this._writer.close();
+
+         return baos.toByteArray();
+      } catch (UnsupportedEncodingException ex) {
+         throw new CanonicalizationException("empty", ex);
+      } catch (IOException ex) {
+         throw new CanonicalizationException("empty", ex);
+      } finally {
+         this._xpathNodeSet = null;
+         this._rootNodeOfC14n = null;
+         this._doc = null;
+         this._documentElement = null;
+         this._writer = null;
+      }
+   }
+
+   /**
+    * Method canonicalizeXPathNodeSet
+    *
+    * @param currentNode
+    * @param parentIsVisible
+    * @param ctx
+    * @throws CanonicalizationException
+    * @throws IOException
+    */
+   void canonicalizeXPathNodeSet(
+           Node currentNode, boolean parentIsVisible, C14nCtx ctx)
+              throws CanonicalizationException, IOException {
+
+      int currentNodeType = currentNode.getNodeType();
+      boolean currentNodeIsVisible = this._xpathNodeSet.contains(currentNode);
+
+      switch (currentNodeType) {
+
+      case Node.DOCUMENT_TYPE_NODE :
+      default :
+         break;
+
+      case Node.ENTITY_NODE :
+      case Node.NOTATION_NODE :
+      case Node.DOCUMENT_FRAGMENT_NODE :
+      case Node.ATTRIBUTE_NODE :
+         throw new CanonicalizationException("empty");
+      case Node.DOCUMENT_NODE :
+         for (Node currentChild = currentNode.getFirstChild();
+                 currentChild != null;
+                 currentChild = currentChild.getNextSibling()) {
+            canonicalizeXPathNodeSet(currentChild, currentNodeIsVisible, ctx);
+         }
+         break;
+
+      case Node.COMMENT_NODE :
+         if (this._includeComments && currentNodeIsVisible) {
+            int position = getPositionRelativeToDocumentElement(currentNode);
+
+            if (position == NODE_AFTER_DOCUMENT_ELEMENT) {
+               this._writer.write("\n");
             }
 
-            printwriter.print("?>");
+            outputCommentToWriter((Comment) currentNode);
 
-            if (processingPos == CanonicalizerSpi.BEFORE_DOCUMENT_ELEM) {
-               printwriter.print("\n");
+            if (position == NODE_BEFORE_DOCUMENT_ELEMENT) {
+               this._writer.write("\n");
+            }
+         }
+         break;
+
+      case Node.PROCESSING_INSTRUCTION_NODE :
+         if (currentNodeIsVisible) {
+            int position = getPositionRelativeToDocumentElement(currentNode);
+
+            if (position == NODE_AFTER_DOCUMENT_ELEMENT) {
+               this._writer.write("\n");
+            }
+
+            outputPItoWriter((ProcessingInstruction) currentNode);
+
+            if (position == NODE_BEFORE_DOCUMENT_ELEMENT) {
+               this._writer.write("\n");
+            }
+         }
+         break;
+
+      case Node.TEXT_NODE :
+      case Node.CDATA_SECTION_NODE :
+         if (currentNodeIsVisible) {
+            outputTextToWriter(currentNode.getNodeValue());
+
+            for (Node nextSibling =
+                    currentNode
+                       .getNextSibling(); (nextSibling != null) && ((nextSibling
+                          .getNodeType() == Node.TEXT_NODE) || (nextSibling
+                             .getNodeType() == Node
+                                .CDATA_SECTION_NODE)); nextSibling =
+                                   nextSibling.getNextSibling()) {
+
+               /* The XPath data model allows to select only the first of a
+                * sequence of mixed text and CDATA nodes. But we must output
+                * them all, so we must search:
+                *
+                * @see http://nagoya.apache.org/bugzilla/show_bug.cgi?id=6329
+                */
+               outputTextToWriter(nextSibling.getNodeValue());
             }
          }
          break;
 
       case Node.ELEMENT_NODE :
+         Element currentElement = (Element) currentNode;
 
-         // If we enter an Element, we are inside the Document Element
-         processingPos = CanonicalizerSpi.INSIDE_DOCUMENT_ELEM;
+         if (currentNodeIsVisible) {
+            this._writer.write("<");
+            this._writer.write(currentElement.getTagName());
+         }
 
-         /* We check relative Namespaces in _all_ nodes;
-          *
-          * Implementations MUST report an operation failure on documents containing
-          * relative namespace URIs. (This reads to me that the _complete_ document
-          * must not contain relative namespaces, even if we only canonicalize a
-          * subtree that does not contain relative namespace URIs).
-          */
-         checkForRelativeNamespace(currentNode);
+         // we output all Attrs which are available
+         List attrs = this.getAttrs(currentElement, parentIsVisible, ctx);
+         int attrsLength = attrs.size();
 
-         if (engineVisible(currentNode)) {
-            cat.debug(currentNode.getNodeName() + " included");
-            printwriter.print('<');
-            printwriter.print(currentNode.getNodeName());
+         for (int i = 0; i < attrsLength; i++) {
+            Attr a = (Attr) attrs.get(i);
 
-            {    // make all namespaces visible !!!
-               NamedNodeMap namednodemap = currentNode.getAttributes();
-               Attr aattr[] = C14nHelper.sortAttributes(namednodemap);
+            outputAttrToWriter(a.getNodeName(), a.getNodeValue());
+         }
 
-               for (int i = 0; i < aattr.length; i++) {
-                  Attr attr = aattr[i];
+         if (currentNodeIsVisible) {
+            this._writer.write(">");
+         }
 
-                  if (attr.getNodeName().startsWith("xmlns:")
-                          || attr.getNodeName().equals("xmlns")) {
-                     this.engineMakeVisible(attr);
-                  }
-               }
+         // traversal
+         for (Node currentChild = currentNode.getFirstChild();
+                 currentChild != null;
+                 currentChild = currentChild.getNextSibling()) {
+            if (currentChild.getNodeType() == Node.ELEMENT_NODE) {
+
+               /*
+                * We must 'clone' the inscopeXMLAttrs to allow the descendants
+                * to mess around in their own map
+                */
+               canonicalizeXPathNodeSet(currentChild, currentNodeIsVisible,
+                                        ctx.copy());
+            } else {
+               canonicalizeXPathNodeSet(currentChild, currentNodeIsVisible,
+                                        ctx);
             }
-
-            processXmlAttributes(currentNode);
-            processNamespaces(currentNode);
-
-            NamedNodeMap namednodemap = currentNode.getAttributes();
-            Attr aattr[] = C14nHelper.sortAttributes(namednodemap);
-
-            processingAttrs: for (int i = 0; i < aattr.length; i++) {
-               Attr attr = aattr[i];
-
-               // To finish processing L, simply process every namespace node
-               // in L, except omit namespace node with local name xml, which
-               // defines the xml prefix, if its string value is
-               // "http://www.w3.org/XML/1998/namespace".
-               if (attr.getNodeName().equals("xmlns:xml") &&
-
-               // attr.getLocalName().equals("xml") &&
-               attr.getNodeValue()
-                       .equals("http://www.w3.org/XML/1998/namespace")) {
-                  continue processingAttrs;
-               }
-
-               if (engineVisible((Node) attr)) {
-                  printwriter.print(' ');
-                  printwriter.print(attr.getNodeName());
-                  printwriter.print("=\"");
-                  printwriter
-                     .print(C14nHelper.normalizeAttr(attr.getNodeValue()));
-                  printwriter.print('"');
-               } else {
-                  cat.debug("Suppressed Attr: " + attr + " from Element "
-                            + attr.getOwnerElement().getTagName());
-               }
-            }
-
-            printwriter.print(">");
-         } else {
-            cat.debug(currentNode.getNodeName() + " excluded !!!");
          }
 
-         for (Node node1 = treewalker.firstChild(); node1 != null;
-                 node1 = treewalker.nextSibling()) {
-            process(treewalker, printwriter, includeComments);
+         if (currentNodeIsVisible) {
+            this._writer.write("</");
+            this._writer.write(currentElement.getTagName());
+            this._writer.write(">");
          }
-
-         treewalker.setCurrentNode(currentNode);
-
-         if (engineVisible(currentNode)) {
-            printwriter.print("</");
-            printwriter.print(currentNode.getNodeName());
-            printwriter.print('>');
-         }
-
-         // If we leave the Document Element, we are outside the Document Element
-         if (currentNode
-                 == currentNode.getOwnerDocument().getDocumentElement()) {
-            processingPos = CanonicalizerSpi.AFTER_DOCUMENT_ELEM;
-         }
-         break;
-
-      case Node.DOCUMENT_NODE :
-
-         /*
-          * Root Node- The root node is the parent of the top-level document
-          * element. The result of processing each of its child nodes that
-          * is in the node-set in document order. The root node does not
-          * generate a byte order mark, XML declaration, nor anything from
-          * within the document type declaration.
-          *
-          */
-         for (Node node1 = treewalker.firstChild(); node1 != null;
-                 node1 = treewalker.nextSibling()) {
-            process(treewalker, printwriter, includeComments);
-         }
-
-         treewalker.setCurrentNode(currentNode);
-         break;
-
-      default :
-         for (Node node1 = treewalker.firstChild(); node1 != null;
-                 node1 = treewalker.nextSibling()) {
-            process(treewalker, printwriter, includeComments);
-         }
-
-         treewalker.setCurrentNode(currentNode);
          break;
       }
    }
 
    /**
-    * Method collectUsedXmlAttributes
+    * Method getAttrs
     *
-    * @param ctxNode
+    * @param currentElement
+    * @param parentIsVisible
+    * @param ctx
     * @return
-    */
-   private static HashSet collectUsedXmlAttributes(Node ctxNode) {
-
-      HashSet attrs = new HashSet();
-
-      if ((ctxNode != null) && (ctxNode.getNodeType() == Node.ELEMENT_NODE)) {
-         Node parent = ctxNode;
-
-         searchParents: while ((parent = parent.getParentNode()) != null
-                               && (parent.getNodeType() == Node.ELEMENT_NODE)) {
-            NamedNodeMap attributes = parent.getAttributes();
-
-            for (int i = 0; i < attributes.getLength(); i++) {
-               Attr attr = (Attr) attributes.item(i);
-
-               if (attr.getName().startsWith("xml:")) {
-                  attrs.add(new String(attr.getName()));
-               }
-            }
-         }
-      }
-
-      return attrs;
-   }
-
-   /**
-    * Method processXmlAttributes
-    *
-    * @param ctxNode
-    */
-   private void processXmlAttributes(Node ctxNode) {
-
-      if (!engineVisible(ctxNode)) {
-         return;
-      }
-
-      HashSet usedXMLAttributes = collectUsedXmlAttributes(ctxNode);
-
-      // Attr attributes[] = new Attr[usedXMLAttributes.size()];
-      // cat.debug("attributes[" + usedXMLAttributes.size() + "]");
-      Iterator iterator = usedXMLAttributes.iterator();
-
-      // int i = 0;
-      while (iterator.hasNext()) {
-         String currentXMLAttribute = (String) iterator.next();
-         String newAttrValue = null;
-         boolean deleteOriginalAttribute = false;
-
-         {
-            Object result[] = processXmlAttributesAlgo(ctxNode,
-                                                       currentXMLAttribute);
-
-            newAttrValue = (String) result[0];
-            deleteOriginalAttribute = ((Boolean) result[1]).booleanValue();
-         }
-
-         if (newAttrValue == null) {
-            if (deleteOriginalAttribute) {
-               engineMakeInVisible(((Element) ctxNode)
-                  .getAttributeNode(currentXMLAttribute));
-               ((Element) ctxNode).getAttributes()
-                  .removeNamedItem(currentXMLAttribute);
-            }
-         } else {
-            ((Element) ctxNode).setAttribute(currentXMLAttribute, newAttrValue);
-            engineMakeVisible(((Element) ctxNode)
-               .getAttributeNode(currentXMLAttribute));
-         }
-      }
-   }
-
-   /**
-    * Namespace Nodes- A namespace node N is ignored if the nearest
-    * ancestor element of the node's parent element that is in the
-    * node-set has a namespace node in the node-set with the same local
-    * name and value as N. Otherwise, process the namespace node N in
-    * the same way as an attribute node, except assign the local name
-    * xmlns to the default namespace node if it exists (in XPath, the
-    * default namespace node has an empty URI and local name).
-    *
-    * <PRE LANG="DE">
-    * case 1 - definiert selbst einen nicht-leeren default NS - muss evtl. gelöscht werden
-    * case 2 - definiert selbst einen       leeren default NS - muss evtl. gelöscht werden
-    * case 3 - definiert selbst einen nicht-leeren         NS - muss evtl. gelöscht werden
-    * case 4 - definiert selbst einen       leeren         NS - muss evtl. gelöscht werden
-    * case 5 - in einem invisible wird ein nicht-leerer default NS definiert - muss evtl. hinzugefügt werden
-    * case 6 - in einem invisible wird ein       leerer default NS definiert - muss evtl. hinzugefügt werden
-    * case 7 - in einem invisible wird ein nicht-leerer         NS definiert - muss evtl. hinzugefügt werden
-    * case 8 - in einem invisible wird ein       leerer         NS definiert - muss evtl. hinzugefügt werden
-    * </PRE>
-    *
-    * <PRE LANG="EN">
-    * case 1 - defines itself a non-empty default NS - must eventually be deleted
-    * case 2 - defines itself an    empty default NS - must eventually be deleted
-    * case 3 - defines itself a non-empty         NS - must eventually be deleted
-    * case 4 - defines itself an    empty         NS - must eventually be deleted
-    * case 5 - an invivible elem defines a non-empty default NS - must eventually be added
-    * case 6 - an invivible elem defines an    empty default NS - must eventually be added
-    * case 7 - an invivible elem defines a non-empty         NS - must eventually be added
-    * case 8 - an invivible elem defines an    empty         NS - must eventually be added
-    * </PRE>
-    *
-    * @param ctxNode
     * @throws CanonicalizationException
     */
-   private void processNamespaces(Node ctxNode)
+   List getAttrs(Element currentElement, boolean parentIsVisible, C14nCtx ctx)
            throws CanonicalizationException {
 
-      if (!engineVisible(ctxNode)) {
-         return;
+      boolean currentElementIsInNodeset =
+         this._xpathNodeSet.contains(currentElement);
+      Vector namespacesInSubset = new Vector();
+      Vector attributesInSubset = new Vector();
+      Vector xmlAttributesInSubset = new Vector();
+      NamedNodeMap attributes = currentElement.getAttributes();
+      int attributesLength = attributes.getLength();
+
+      for (int i = 0; i < attributesLength; i++) {
+         Attr currentAttr = (Attr) attributes.item(i);
+         String URI = currentAttr.getNamespaceURI();
+
+         if (this._xpathNodeSet.contains(currentAttr)) {
+            if (URI != null) {
+               if (Constants.NamespaceSpecNS.equals(URI)) {
+                  String value = currentAttr.getValue();
+
+                  if (C14nHelper.namespaceIsRelative(value)) {
+                     Object exArgs[] = { currentElement.getTagName(),
+                                         currentAttr.getNodeName(), value };
+
+                     throw new CanonicalizationException(
+                        "c14n.Canonicalizer.RelativeNamespace", exArgs);
+                  }
+
+                  namespacesInSubset.add(currentAttr);
+               } else if (Constants.XML_LANG_SPACE_SpecNS.equals(URI)) {
+                  xmlAttributesInSubset.add(currentAttr);
+                  ctx.a.put(currentAttr.getNodeName(), currentAttr);
+               } else {
+                  attributesInSubset.add(currentAttr);
+               }
+            } else {
+               attributesInSubset.add(currentAttr);
+            }
+         } else {
+            if (URI != null && Constants.XML_LANG_SPACE_SpecNS.equals(URI)) {
+               ctx.a.put(currentAttr.getNodeName(), currentAttr);
+            }
+         }
       }
 
-      if (ctxNode.getNodeType() != Node.ELEMENT_NODE) {
-         cat.fatal("removeExtraNamespaces with "
-                   + XMLUtils.getNodeTypeString(ctxNode.getNodeType())
-                   + " called. Has to get an ELEMENT");
+      Collections.sort(namespacesInSubset,
+                       new org.apache.xml.security.c14n.helper.NSAttrCompare());
 
-         return;
+      // update the ctx.a with the xml:* values
+      for (int i = 0; i < xmlAttributesInSubset.size(); i++) {
+         Attr currentAttr = (Attr) xmlAttributesInSubset.get(i);
+         String name = currentAttr.getNodeName();
+
+         ctx.a.put(name, currentAttr);
       }
 
-      NamedNodeMap ctxAttributes = ctxNode.getAttributes();
-      NamespaceSearcher nss = new NamespaceSearcher(ctxNode,
-                                 this.hmVisibleNodes);
+      if (currentElementIsInNodeset &&!parentIsVisible) {
+         // it's an orphan node, so we must include all xml:* attrs all the
+         // ancestor axis along
+         Iterator it = ctx.a.keySet().iterator();
 
-      /*
-       * case 1 - definiert selbst einen nicht-leeren default NS - muss evtl. gelöscht werden
-       * case 2 - definiert selbst einen       leeren default NS - muss evtl. gelöscht werden
-       * case 3 - definiert selbst einen nicht-leeren         NS - muss evtl. gelöscht werden
-       * case 4 - definiert selbst einen       leeren         NS - muss evtl. gelöscht werden
-       * case 5 - in einem invisible wird ein nicht-leerer default NS definiert - muss evtl. hinzugefügt werden
-       * case 6 - in einem invisible wird ein       leerer default NS definiert - muss evtl. hinzugefügt werden
-       * case 7 - in einem invisible wird ein nicht-leerer         NS definiert - muss evtl. hinzugefügt werden
-       * case 8 - in einem invisible wird ein       leerer         NS definiert - muss evtl. hinzugefügt werden
+         while (it.hasNext()) {
+            String name = (String) it.next();
+
+            attributesInSubset.add(ctx.a.get(name));
+         }
+      }
+      Collections.sort(attributesInSubset,
+                       new org.apache.xml.security.c14n.helper
+                          .NonNSAttrCompare());
+
+
+      Vector nsResult = new Vector();
+      Map outputNamespaces = new HashMap();
+
+      if (namespacesInSubset.size() > 0) {
+         int firstNonDefaultNS = -1;
+         Attr firstNode = (Attr) namespacesInSubset.get(0);
+
+         if (!firstNode.getNodeName().equals("xmlns")) {
+
+            // there is no default namespace in L
+            firstNonDefaultNS = 0;
+
+            // if the output ancestor defines a default namespace
+            if (currentElementIsInNodeset && ctx.n.containsKey("xmlns") &&!ctx.n.get("xmlns").equals("")) {
+               Attr xmlns = this._doc.createAttributeNS(Constants.NamespaceSpecNS, "xmlns");
+               xmlns.setValue("");
+               nsResult.add(xmlns);
+            }
+         } else if (firstNode.getNodeName().equals("xmlns")
+                    && firstNode.getValue().equals("")) {
+
+            // there is an empty default namespace in L
+            // skip
+            firstNonDefaultNS = 1;
+
+            // if the output ancestor defines a default namespace
+            if (currentElementIsInNodeset && ctx.n.containsKey("xmlns") &&!ctx.n.get("xmlns").equals("")) {
+               nsResult.add(firstNode);
+            }
+         } else {
+            firstNonDefaultNS = 0;
+         }
+
+         // handle non-empty namespaces
+         for (int i = firstNonDefaultNS; i < namespacesInSubset.size(); i++) {
+            Attr currentAttr = (Attr) namespacesInSubset.get(i);
+            String name = currentAttr.getNodeName();
+
+            outputNamespaces.put(name, currentAttr);
+
+            if (!ctx.n.containsKey(name) || !((Attr) ctx.n.get(name)).getValue().equals(currentAttr.getValue())) {
+               nsResult.add(currentAttr);
+            }
+         }
+      }
+
+      if (currentElementIsInNodeset) {
+
+         // if the element E is in the node set, remember the namespaces for the next one
+         ctx.n = outputNamespaces;
+      }
+
+      // and append them to the result
+      nsResult.addAll(attributesInSubset);
+
+      return nsResult;
+   }
+
+   /**
+    * Normalizes an {@link Attr}ibute value
+    *
+    * The string value of the node is modified by replacing
+    * <UL>
+    * <LI>all ampersands (&) with <CODE>&amp;amp;</CODE></LI>
+    * <LI>all open angle brackets (<) with <CODE>&amp;lt;</CODE></LI>
+    * <LI>all quotation mark characters with <CODE>&amp;quot;</CODE></LI>
+    * <LI>and the whitespace characters <CODE>#x9</CODE>, #xA, and #xD, with character
+    * references. The character references are written in uppercase
+    * hexadecimal with no leading zeroes (for example, <CODE>#xD</CODE> is represented
+    * by the character reference <CODE>&amp;#xD;</CODE>)</LI>
+    * </UL>
+    *
+    * @param name
+    * @param value
+    * @throws IOException
+    */
+   void outputAttrToWriter(String name, String value) throws IOException {
+
+      this._writer.write(" ");
+      this._writer.write(name);
+      this._writer.write("=\"");
+
+      int length = value.length();
+
+      for (int i = 0; i < length; i++) {
+         char c = value.charAt(i);
+
+         switch (c) {
+
+         case '&' :
+            this._writer.write("&amp;");
+            break;
+
+         case '<' :
+            this._writer.write("&lt;");
+            break;
+
+         case '"' :
+            this._writer.write("&quot;");
+            break;
+
+         case 0x09 :    // '\t'
+            this._writer.write("&#x9;");
+            break;
+
+         case 0x0A :    // '\n'
+            this._writer.write("&#xA;");
+            break;
+
+         case 0x0D :    // '\r'
+            this._writer.write("&#xD;");
+            break;
+
+         default :
+            this._writer.write(c);
+            break;
+         }
+      }
+
+      this._writer.write("\"");
+   }
+
+   /**
+    * Normalizes a {@link org.w3c.dom.Comment} value
+    *
+    * @param currentPI
+    * @throws IOException
+    */
+   void outputPItoWriter(ProcessingInstruction currentPI) throws IOException {
+      if (currentPI == null) {
+        return;
+      }
+
+      this._writer.write("<?");
+
+      String target = currentPI.getTarget();
+      int length = target.length();
+
+      for (int i = 0; i < length; i++) {
+         char c = target.charAt(i);
+
+         switch (c) {
+
+         case 0x0D :
+            this._writer.write("&#xD;");
+            break;
+
+         default :
+            this._writer.write(c);
+            break;
+         }
+      }
+
+      String data = currentPI.getData();
+
+      length = data.length();
+
+      if ((data != null) && (length > 0)) {
+         this._writer.write(" ");
+
+         for (int i = 0; i < length; i++) {
+            char c = data.charAt(i);
+
+            switch (c) {
+
+            case 0x0D :
+               this._writer.write("&#xD;");
+               break;
+
+            default :
+               this._writer.write(c);
+               break;
+            }
+         }
+      }
+
+      this._writer.write("?>");
+   }
+
+   /**
+    * Method outputCommentToWriter
+    *
+    * @param currentComment
+    * @throws IOException
+    */
+   void outputCommentToWriter(Comment currentComment) throws IOException {
+      if (currentComment == null) {
+        return;
+      }
+
+      this._writer.write("<!--");
+
+      String data = currentComment.getData();
+      int length = data.length();
+
+      for (int i = 0; i < length; i++) {
+         char c = data.charAt(i);
+
+         switch (c) {
+
+         case 0x0D :
+            this._writer.write("&#xD;");
+            break;
+
+         default :
+            this._writer.write(c);
+            break;
+         }
+      }
+
+      this._writer.write("-->");
+   }
+
+   /**
+    * Method outputTextToWriter
+    *
+    * @param text
+    * @throws IOException
+    */
+   void outputTextToWriter(String text) throws IOException {
+      if (text == null) {
+        return;
+      }
+
+      int length = text.length();
+
+      for (int i = 0; i < length; i++) {
+         char c = text.charAt(i);
+
+         switch (c) {
+
+         case '&' :
+            this._writer.write("&amp;");
+            break;
+
+         case '<' :
+            this._writer.write("&lt;");
+            break;
+
+         case '>' :
+            this._writer.write("&gt;");
+            break;
+
+         case 0xD :
+            this._writer.write("&#xD;");
+            break;
+
+         default :
+            this._writer.write(c);
+            break;
+         }
+      }
+   }
+
+   /**
+    * Method engineCanonicalizeXPathNodeSet
+    *
+    * @param xpathNodeSet
+    * @param inclusiveNamespaces
+    * @return
+    * @throws CanonicalizationException
+    */
+   public byte[] engineCanonicalizeXPathNodeSet(
+           Set xpathNodeSet, String inclusiveNamespaces)
+              throws CanonicalizationException {
+
+      /** @todo well, should we throw UnsupportedOperationException ? */
+      throw new CanonicalizationException(
+         "c14n.Canonicalizer.UnsupportedOperation");
+   }
+
+   /**
+    * Method engineCanonicalizeSubTree
+    *
+    * @param rootNode
+    * @param inclusiveNamespaces
+    * @return
+    * @throws CanonicalizationException
+    */
+   public byte[] engineCanonicalizeSubTree(
+           Node rootNode, String inclusiveNamespaces)
+              throws CanonicalizationException {
+
+      /** @todo well, should we throw UnsupportedOperationException ? */
+      throw new CanonicalizationException(
+         "c14n.Canonicalizer.UnsupportedOperation");
+   }
+
+   /**
+    * Class C14nCtx
+    *
+    * @author $Author: dohy $
+    * @version $Revision: 1.1.1.1 $
+    */
+   class C14nCtx {
+
+      /** Field a */
+      Map a;
+
+      /** Field n */
+      Map n;
+
+      /**
+       * Constructor C14nCtx
+       *
        */
-
-      // loop through all Attributes and check whether we have to delete some
-      nextNodeAttribute: for (int i = 0; i < ctxAttributes.getLength(); i++) {
-         Attr nodeAttr = (Attr) ctxAttributes.item(i);
-         String nodeAttrName = nodeAttr.getNodeName();
-         String nodeAttrValue = nodeAttr.getValue();
-         boolean definesDefaultNS = nodeAttrName.equals("xmlns");
-         boolean definesArbitraryNS = nodeAttrName.startsWith("xmlns:");
-
-         if (definesDefaultNS) {
-            boolean attrValueEmpty = (nodeAttrValue.length() == 0);
-
-            if (!attrValueEmpty) {
-               cat.debug("case 1");
-
-               /* case 1
-                * definiert selbst einen nicht-leeren default NS - muss evtl. gelöscht werden
-                * Suche in allen sichtbaren ancestors nach default NS.
-                * Löschung kommt nur in Frage, falls überhaupt visible ancestors existieren
-                * Falls der erste Treffer identisch ist, muss der default NS gelöscht werden
-                * Falls der erste Treffer ungleich ist, Suche abbrechen.
-                * Falls kein Treffer gefunden wird, tue nichts
-                */
-               Attr a = nss.findFirstVisibleDefaultNSAttr();
-
-               if (a != null) {
-                  if (nodeAttrValue.equals(a.getValue())) {
-                     cat.debug("Here I call it");
-                     engineMakeInVisible(nodeAttr);
-                  } else {
-                     continue nextNodeAttribute;
-                  }
-               } else {
-                  cat.debug("Didn't find a visibleNS for " + nodeAttr);
-               }
-            } else {
-               cat.debug("case 2");
-
-               /* case 2
-                * definiert selbst einen leeren default NS - muss evtl. gelöscht werden
-                * Suche in allen sichtbaren ancestors nach default NS.
-                * Falls der erste Treffer nicht-leer ist, Suche abbrechen.
-                * Falls der erste Treffer leer ist, muss der default NS gelöscht werden
-                * Falls kein Treffer gefunden wird, muss der default NS gelöscht werden
-                */
-               Attr a = nss.findFirstVisibleDefaultNSAttr();
-
-               if (a != null) {
-                  if (a.getValue().length() != 0) {
-                     continue nextNodeAttribute;
-                  } else {
-                     engineMakeInVisible(nodeAttr);
-                  }
-               } else {
-                  engineMakeInVisible(nodeAttr);
-               }
-            }
-         } else if (definesArbitraryNS) {
-            boolean attrValueEmpty = (nodeAttrValue.length() == 0);
-
-            if (!attrValueEmpty) {
-               cat.debug("case 3");
-
-               /* case 3
-                * definiert selbst einen NS - muss evtl. gelöscht werden
-                * Suche in allen sichtbaren ancestors nach dem gleichen NS.
-                * Falls der erste Treffer identisch ist, muss der NS gelöscht werden
-                * Falls der erste Treffer ungleich ist, Suche abbrechen.
-                * Falls kein Treffer gefunden wird, tue nichts
-                */
-               Map ns = nss.findVisibleNonDefaultNSAttrs();
-               Attr a = (Attr) ns.get(nodeAttrName);
-
-               if (a != null) {
-                  if (nodeAttrValue.equals(a.getValue())) {
-                     engineMakeInVisible(nodeAttr);
-                  } else {
-                     continue nextNodeAttribute;
-                  }
-               }
-            } else {
-               cat.debug("case 4");
-
-               /* case 4
-                * definiert selbst einen leeren NS - muss evtl. gelöscht werden
-                */
-
-               /** @todo check what we have to do here */
-            }
-         }
+      public C14nCtx() {
+         this.a = new HashMap();
+         this.n = new HashMap();
       }
 
-      // loop through all ancestors and check whether we have to add some NS defs
-      if (nss.invisibleAncestorsContainDefaultNS()) {
-         Attr invisDefNS = nss.findFirstInvisibleDefaultNSAttr();
-
-         cat.debug("nss.findFirstInvisibleDefaultNSAttr() == " + invisDefNS);
-
-         if ((invisDefNS != null) && (invisDefNS.getValue().length() != 0)) {
-            cat.debug("case 5");
-
-            /* case 5
-             * in einem invisible zwischen ihm und dem nächsten visible wird ein nicht-leerer default NS definiert - muss evtl. hinzugefügt werden
-             * Suche alle visible ancestors über dem invisible definierenden nach default NS ab.
-             * Falls der erste Treffer identisch ist, tue nichts
-             * Falls der erste Treffer ungleich ist, füge die invisble default NS def. in den Knoten ein
-             * Falls kein Treffer gefunden wird, füge die invisble default NS def. in den Knoten ein
-             */
-            Attr visDefNS = nss.findFirstVisibleDefaultNSAttr();
-
-            if (visDefNS != null) {
-               if (invisDefNS.getValue().equals(visDefNS.getValue())) {
-                  ;
-               } else {
-                  Document doc = ctxNode.getOwnerDocument();
-                  Attr newAttr =
-                     doc.createAttributeNS(Constants.NamespaceSpecNS, "xmlns");
-
-                  newAttr.setNodeValue(invisDefNS.getValue());
-                  ((Element) ctxNode).setAttributeNode(newAttr);
-                  engineMakeVisible(newAttr);
-                  this._attrsToBeRemovedAfterC14n.add(newAttr);
-               }
-            } else {
-               if (((Element) ctxNode).getAttributeNode("xmlns") == null) {
-                  Document doc = ctxNode.getOwnerDocument();
-                  Attr newAttr =
-                     doc.createAttributeNS(Constants.NamespaceSpecNS, "xmlns");
-
-                  newAttr.setValue(invisDefNS.getValue());
-                  ((Element) ctxNode).setAttributeNode(newAttr);
-                  engineMakeVisible(newAttr);
-                  this._attrsToBeRemovedAfterC14n.add(newAttr);
-               }
-            }
-         } else {
-            cat.debug("case 6");
-
-            /* case 6
-             * in einem invisible zwischen ihm und dem nächsten visible wird ein leerer default NS definiert - muss evtl. hinzugefügt werden
-             * Suche alle visible ancestors über dem invisible definierenden nach default NS ab.
-             * Falls keine visible ancestors existieren, tue nichts
-             * Falls der erste Treffer auch leer ist, tue nichts
-             * Falls der erste Treffer nicht leer ist, füge die invisble default NS def. in den Knoten ein
-             * Falls kein Treffer gefunden wird, ftue nichts
-             */
-            Attr visDefNS = nss.findFirstVisibleDefaultNSAttr();
-
-            if (visDefNS != null) {
-               if (invisDefNS.getValue().equals(visDefNS.getValue())) {
-                  ;
-               } else {
-                  Document doc = ctxNode.getOwnerDocument();
-                  Attr newAttr =
-                     doc.createAttributeNS(Constants.NamespaceSpecNS, "xmlns");
-
-                  newAttr.setValue(invisDefNS.getValue());
-                  ((Element) ctxNode).setAttributeNode(newAttr);
-                  engineMakeVisible(newAttr);
-                  this._attrsToBeRemovedAfterC14n.add(newAttr);
-               }
-            } else {
-               ;
-            }
-         }
+      /**
+       * Constructor C14nCtx
+       *
+       * @param a
+       * @param n
+       */
+      public C14nCtx(Map a, Map n) {
+         this.a = a;
+         this.n = n;
       }
 
-      if (nss.invisibleAncestorsContainNonDefaultNS()) {
-         Map invisNS = nss.findInvisibleNonDefaultNSAttrs();
-         Iterator invisIterator = invisNS.keySet().iterator();
+      /**
+       * Method copy
+       *
+       * @return
+       */
+      public C14nCtx copy() {
 
-         while (invisIterator.hasNext()) {
-            String invisAttrName = (String) invisIterator.next();
-            Attr invisAttr = (Attr) invisNS.get(invisAttrName);
+         C14nCtx c = new C14nCtx();
 
-            cat.debug("7 " + invisAttrName + "='" + invisAttr.getValue() + "'");
+         c.a = new HashMap(this.a);
+         c.n = new HashMap(this.n);
 
-            if (invisAttr.getValue().length() != 0) {
-               cat.debug("case 7");
-
-               /* case 7
-                * in einem invisible zwischen ihm und dem nächsten visible wird ein nicht-leerer NS definiert - muss evtl. hinzugefügt werden
-                * Suche alle visible ancestors über dem invisible definierenden nach dem NS ab.
-                * Falls der erste Treffer identisch ist, tue nichts
-                * Falls der erste Treffer ungleich ist, füge die invisble NS def. in den Knoten ein
-                * Falls kein Treffer gefunden wird, füge die invisble NS def. in den Knoten ein
-                */
-               Map visNS = nss.findVisibleNonDefaultNSAttrs();
-               Attr visAttr = (Attr) visNS.get(invisAttrName);
-
-               if (visAttr != null) {
-                  if (invisAttr.getValue().equals(visAttr.getValue())) {
-                     ;
-                  } else {
-                     Document doc = ctxNode.getOwnerDocument();
-                     Attr newAttr =
-                        doc.createAttributeNS(Constants.NamespaceSpecNS,
-                                              invisAttrName);
-
-                     newAttr.setValue(invisAttr.getValue());
-                     ((Element) ctxNode).setAttributeNode(newAttr);
-                     engineMakeVisible(newAttr);
-                     this._attrsToBeRemovedAfterC14n.add(newAttr);
-                  }
-               } else {
-                  Document doc = ctxNode.getOwnerDocument();
-                  Attr newAttr =
-                     doc.createAttributeNS(Constants.NamespaceSpecNS,
-                                           invisAttrName);
-
-                  newAttr.setValue(invisAttr.getValue());
-                  ((Element) ctxNode).setAttributeNode(newAttr);
-                  engineMakeVisible(newAttr);
-                  this._attrsToBeRemovedAfterC14n.add(newAttr);
-               }
-            } else {
-               cat.debug("case 8");
-
-               /* case 8
-                * in einem invisible zwischen ihm und dem nächsten visible wird ein leerer NS definiert - muss evtl. hinzugefügt werden
-                */
-
-               /** @todo check what we have to do here */
-            }
-         }
+         return c;
       }
-   }
-
-   /**
-    * Method algo
-    *
-    * @param ctxNode
-    * @param attributeName
-    * @return
-    */
-   private Object[] processXmlAttributesAlgo(Node ctxNode,
-                                             String attributeName) {
-
-      // cat.debug(((Element) ctxNode).getTagName() + " (" + id(ctxNode) + ") hat \"" + ((Element) ctxNode).getAttribute(attributeName) + "\"");
-      Object result[] = new Object[2];
-      boolean deleteOriginalAttribute = false;
-      String ctxAttrValue = null;
-
-      if (((Element) ctxNode).getAttribute(attributeName) == null
-              || ((Element) ctxNode).getAttribute(attributeName).length()
-                 == 0) {
-         Vector parents = XMLUtils.getAncestorElements(ctxNode);
-
-         ctxAttrValue = null;
-
-         // bottom up
-         parent: for (int i = 0; i < parents.size(); i++) {
-            Element currentParent = (Element) parents.elementAt(i);
-
-            if (!engineVisible(currentParent) && (ctxAttrValue == null)) {
-               ctxAttrValue = currentParent.getAttribute(attributeName);
-
-               // cat.debug("set to " + ctxAttrValue);
-            } else if (engineVisible(currentParent) && (ctxAttrValue != null)) {
-               if (ctxAttrValue
-                       .equals(currentParent.getAttribute(attributeName))) {
-                  ctxAttrValue = null;
-
-                  // cat.debug("set to " + ctxAttrValue);
-               }
-
-               break parent;
-            }
-         }
-      } else {
-         Vector parents = XMLUtils.getAncestorElements(ctxNode);
-
-         ctxAttrValue = ((Element) ctxNode).getAttribute(attributeName);
-
-         parent: for (int i = 0; i < parents.size(); i++) {
-            Element currentParent = (Element) parents.elementAt(i);
-
-            if (engineVisible(currentParent)
-                    && (currentParent.getAttribute(attributeName) != null)
-                    && (ctxAttrValue != null)) {
-               if (ctxAttrValue
-                       .equals(currentParent.getAttribute(attributeName))) {
-                  ctxAttrValue = null;
-                  deleteOriginalAttribute = true;
-
-                  cat.debug("set to " + ctxAttrValue);
-               }
-
-               break parent;
-            }
-         }
-      }
-
-      result[0] = ctxAttrValue;
-      result[1] = new Boolean(deleteOriginalAttribute);
-
-      return result;
-   }
-
-   /**
-    * This method uses the {@link Document#isSupported} method to check whether
-    * the <CODE>Traversal</CODE> feature is available.
-    *
-    * @param document
-    * @throws CanonicalizationException
-    */
-   private void checkTraversability(Document document)
-           throws CanonicalizationException {
-
-      if (!document.isSupported("Traversal", "2.0")) {
-         cat.fatal("This DOM Document does not support Traversal");
-
-         Object exArgs[] = {
-            document.getImplementation().getClass().getName() };
-
-         throw new CanonicalizationException(
-            "c14n.Canonicalizer.TraversalNotSupported", exArgs);
-      }
-   }
-
-   /**
-    * Method checkForRelativeNamespace
-    *
-    * @param ctxNode
-    * @throws CanonicalizationException
-    */
-   protected static void checkForRelativeNamespace(Node ctxNode)
-           throws CanonicalizationException {
-
-      if ((ctxNode != null) && (ctxNode.getNodeType() == Node.ELEMENT_NODE)) {
-         NamedNodeMap attributes = ctxNode.getAttributes();
-
-         cat.debug("checkForRelativeNamespace(" + ctxNode + ")");
-
-         for (int i = 0; i < attributes.getLength(); i++) {
-            cat.debug("checkForRelativeNamespace " + (Attr) attributes.item(i));
-            C14nHelper.assertNotRelativeNS((Attr) attributes.item(i));
-         }
-      } else {
-         cat.error("Called checkForRelativeNamespace() on a " + ctxNode);
-      }
-   }
-
-   /**
-    * Method engineSetRemoveNSAttrs
-    *
-    * @param remove
-    */
-   public void engineSetRemoveNSAttrs(boolean remove) {
-      this._removeNSattrsAfterC14n = remove;
-   }
-
-   /**
-    * Method engineGetRemoveNSAttrs
-    *
-    * @return
-    */
-   public boolean engineGetRemoveNSAttrs() {
-      return this._removeNSattrsAfterC14n;
-   }
-
-   /**
-    * Iterates over all Attributes which have been added during c14n and
-    * removes them.
-    */
-   private void removeNSAttrs() {
-
-      for (int i = 0; i < this._attrsToBeRemovedAfterC14n.size(); i++) {
-         Attr currentNSdecl =
-            (Attr) this._attrsToBeRemovedAfterC14n.elementAt(i);
-         Element ownerElem = currentNSdecl.getOwnerElement();
-
-         ownerElem.removeAttributeNode(currentNSdecl);
-      }
-
-      this._attrsToBeRemovedAfterC14n.clear();
-   }
-
-   static {
-      org.apache.xml.security.Init.init();
    }
 }

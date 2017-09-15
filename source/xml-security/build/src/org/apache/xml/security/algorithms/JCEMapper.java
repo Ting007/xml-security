@@ -65,7 +65,6 @@ import java.security.*;
 import org.w3c.dom.*;
 import org.apache.xpath.XPathAPI;
 import javax.xml.transform.TransformerException;
-import org.apache.xml.security.c14n.helper.XPathContainer;
 import org.apache.xml.security.utils.*;
 
 
@@ -117,7 +116,7 @@ public class JCEMapper {
                JCEMapper._providerList,
                "./x:Providers/x:Provider[@Id='" + Id + "']",
                JCEMapper._nscontext);
-            String providerClass = providerElem.getAttribute("Class");
+            String providerClass = providerElem.getAttributeNS(null, "Class");
             java.security.Provider prov =
                (java.security.Provider) Class.forName(providerClass)
                   .newInstance();
@@ -159,7 +158,7 @@ public class JCEMapper {
                                                 "./x:Providers/x:Provider[@Id='"
                                                 + providerId + "']",
                                                 JCEMapper._nscontext);
-         String providerClass = pro.getAttribute("Class");
+         String providerClass = pro.getAttributeNS(null, "Class");
          java.security.Provider prov =
             (java.security.Provider) Class.forName(providerClass).newInstance();
 
@@ -223,8 +222,8 @@ public class JCEMapper {
 
          for (int i = 0; i < providers.getLength(); i++) {
             Element pro = (Element) providers.item(i);
-            String jceName = pro.getAttribute("JCEName");
-            String providerId = pro.getAttribute("ProviderId");
+            String jceName = pro.getAttributeNS(null, "JCEName");
+            String providerId = pro.getAttributeNS(null, "ProviderId");
 
             if (JCEMapper.getProviderIsInClassPath(providerId)) {
                JCEMapper.addProvider(providerId);
@@ -268,7 +267,7 @@ public class JCEMapper {
             "./x:Algorithms/x:Algorithm[@URI='" + AlgorithmURI
             + "']/x:ProviderAlgo[@ProviderId='" + requestedProviderId + "']",
             JCEMapper._nscontext);
-         String jceName = pro.getAttribute("JCEName");
+         String jceName = pro.getAttributeNS(null, "JCEName");
 
          JCEMapper.addProvider(requestedProviderId);
 
@@ -309,7 +308,7 @@ public class JCEMapper {
             cat.debug("Found " + jceName.getNodeValue());
          }
 
-         return ((Element) providers.item(0)).getAttribute("JCEName");
+         return ((Element) providers.item(0)).getAttributeNS(null, "JCEName");
       } catch (TransformerException ex) {
          cat.debug("Found nothing: " + ex.getMessage());
 
@@ -527,9 +526,5 @@ public class JCEMapper {
       public String getProviderId() {
          return this._providerId;
       }
-   }
-
-   static {
-      org.apache.xml.security.Init.init();
    }
 }

@@ -62,6 +62,7 @@ package org.apache.xml.security.utils.resolver.implementations;
 
 import java.net.*;
 import java.io.*;
+import java.util.*;
 import org.w3c.dom.*;
 import org.apache.xml.utils.URI;
 import org.apache.xpath.CachedXPathAPI;
@@ -83,7 +84,7 @@ public class ResolverFragment extends ResourceResolverSpi {
 
    /** {@link org.apache.log4j} logging facility */
    static org.apache.log4j.Category cat =
-      org.apache.log4j.Category.getInstance(ResolverDirectHTTP.class.getName());
+      org.apache.log4j.Category.getInstance(ResolverFragment.class.getName());
 
    /**
     * Method engineResolve
@@ -102,6 +103,10 @@ public class ResolverFragment extends ResourceResolverSpi {
       String uriNodeValue = uri.getNodeValue();
       NodeList resultNodes = null;
       Document doc = uri.getOwnerDocument();
+
+      // this must be done so that Xalan can catch ALL namespaces
+      XMLUtils.circumventBug2650(doc);
+
       CachedXPathAPI cXPathAPI = new CachedXPathAPI();
 
       if (uriNodeValue.equals("")) {
@@ -110,8 +115,8 @@ public class ResolverFragment extends ResourceResolverSpi {
           * Identifies the node-set (minus any comment nodes) of the XML
           * resource containing the signature
           */
-         cat.debug("ResolverFragment with empty URI (means complete document)");
 
+         // cat.debug("ResolverFragment with empty URI (means complete document)");
          try {
             resultNodes =
                cXPathAPI.selectNodeList(doc,
@@ -135,9 +140,7 @@ public class ResolverFragment extends ResourceResolverSpi {
          // Element selectedElem = doc.getElementById(id);
          Element selectedElem = IdResolver.getElementById(doc, id);
 
-         cat.debug("Try to catch an Element with ID " + id
-                   + " and Element was " + selectedElem);
-
+         // cat.debug("Try to catch an Element with ID " + id + " and Element was " + selectedElem);
          if (selectedElem == null) {
             resultNodes = new HelperNodeList();
          } else {
@@ -153,19 +156,17 @@ public class ResolverFragment extends ResourceResolverSpi {
          }
       }
 
-      XMLSignatureInput result = new XMLSignatureInput(resultNodes, cXPathAPI);
+      Set resultSet = XMLUtils.convertNodelistToSet(resultNodes);
+      XMLSignatureInput result = new XMLSignatureInput(resultSet, cXPathAPI);
 
-      cat.debug("We return a nodeset with " + resultNodes.getLength()
-                + " nodes");
+      // cat.debug("We return a nodeset with " + resultNodes.getLength() + " nodes");
       result.setMIMEType("text/xml");
 
       try {
          URI uriNew = new URI(new URI(BaseURI), uri.getNodeValue());
 
-         cat.debug("Set SourceURI to " + uriNew.toString());
          result.setSourceURI(uriNew.toString());
       } catch (URI.MalformedURIException ex) {
-         cat.debug("Set SourceURI to " + BaseURI);
          result.setSourceURI(BaseURI);
       }
 
@@ -190,8 +191,6 @@ public class ResolverFragment extends ResourceResolverSpi {
       if (uriNodeValue.equals("")
               || (uriNodeValue.startsWith("#")
                   &&!uriNodeValue.startsWith("#xpointer("))) {
-         cat.debug("ResolverFragment can resolve");
-
          return true;
       }
 
@@ -226,51 +225,47 @@ public class ResolverFragment extends ResourceResolverSpi {
     * @param input
     * @return
     * @throws ResourceResolverException
+    * private static XMLSignatureInput selectIdentifiedPortions(
+    *       Attr uri, String BaseURI, XMLSignatureInput input)
+    *          throws ResourceResolverException {
+    *
+    *  try {
+    *     cat.debug("Got " + input.getBytes().length
+    *               + " bytes from source and  URI oif " + input.getSourceURI());
+    *  } catch (Exception ex) {
+    *     throw new ResourceResolverException("generic.EmptyMessage", ex, uri,
+    *                                         BaseURI);
+    *  }
+    *
+    *  try {
+    *     URI fragmentURI = new URI(new URI(BaseURI), uri.getNodeValue());
+    *     String fragment = fragmentURI.getFragment();
+    *     javax.xml.parsers.DocumentBuilderFactory dbf =
+    *        javax.xml.parsers.DocumentBuilderFactory.newInstance();
+    *
+    *     dbf.setNamespaceAware(true);
+    *     dbf.setValidating(true);
+    *
+    *     javax.xml.parsers.DocumentBuilder db = dbf.newDocumentBuilder();
+    *     Document doc =
+    *        db.parse(new java.io.ByteArrayInputStream(input.getBytes()));
+    *
+    *     cat.debug("Owner Document " + doc.getDocumentElement().getTagName());
+    *     cat.debug("try to select fragment " + fragment);
+    *
+    *     // Element selectedElem = doc.getElementById(fragment);
+    *     Element selectedElem = IdResolver.getElementById(doc, fragment);
+    *
+    *     if (selectedElem != null) {
+    *        cat.debug("Selection hat geklappt!!!: "
+    *                  + selectedElem.getTagName());
+    *     }
+    *
+    *     return input;
+    *  } catch (Exception ex) {
+    *     throw new ResourceResolverException("generic.EmptyMessage", ex, uri,
+    *                                         BaseURI);
+    *  }
+    * }
     */
-   private static XMLSignatureInput selectIdentifiedPortions(
-           Attr uri, String BaseURI, XMLSignatureInput input)
-              throws ResourceResolverException {
-
-      try {
-         cat.debug("Got " + input.getBytes().length
-                   + " bytes from source and  URI oif " + input.getSourceURI());
-      } catch (Exception ex) {
-         throw new ResourceResolverException("generic.EmptyMessage", ex, uri,
-                                             BaseURI);
-      }
-
-      try {
-         URI fragmentURI = new URI(new URI(BaseURI), uri.getNodeValue());
-         String fragment = fragmentURI.getFragment();
-         javax.xml.parsers.DocumentBuilderFactory dbf =
-            javax.xml.parsers.DocumentBuilderFactory.newInstance();
-
-         dbf.setNamespaceAware(true);
-         dbf.setValidating(true);
-
-         javax.xml.parsers.DocumentBuilder db = dbf.newDocumentBuilder();
-         Document doc =
-            db.parse(new java.io.ByteArrayInputStream(input.getBytes()));
-
-         cat.debug("Owner Document " + doc.getDocumentElement().getTagName());
-         cat.debug("try to select fragment " + fragment);
-
-         // Element selectedElem = doc.getElementById(fragment);
-         Element selectedElem = IdResolver.getElementById(doc, fragment);
-
-         if (selectedElem != null) {
-            cat.debug("Selection hat geklappt!!!: "
-                      + selectedElem.getTagName());
-         }
-
-         return input;
-      } catch (Exception ex) {
-         throw new ResourceResolverException("generic.EmptyMessage", ex, uri,
-                                             BaseURI);
-      }
-   }
-
-   static {
-      org.apache.xml.security.Init.init();
-   }
 }

@@ -65,7 +65,6 @@ import java.math.BigInteger;
 import org.w3c.dom.*;
 import org.apache.xpath.XPathAPI;
 import javax.xml.transform.TransformerException;
-import org.apache.xml.security.c14n.helper.XPathContainer;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.utils.*;
 
@@ -219,9 +218,5 @@ public class XMLX509IssuerSerial extends SignatureElementProxy
 
    public String getBaseLocalName() {
       return Constants._TAG_X509ISSUERSERIAL;
-   }
-
-   static {
-      org.apache.xml.security.Init.init();
    }
 }

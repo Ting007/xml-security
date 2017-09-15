@@ -70,7 +70,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import org.apache.xml.security.algorithms.*;
 import org.apache.xml.security.c14n.*;
-import org.apache.xml.security.c14n.helper.XPathContainer;
+import org.apache.xml.security.transforms.params.XPathContainer;
 import org.apache.xml.security.exceptions.*;
 import org.apache.xml.security.transforms.*;
 import org.apache.xml.security.utils.*;
@@ -88,12 +88,11 @@ import org.xml.sax.SAXException;
  */
 public class SignedInfo extends Manifest {
 
-   /** {@link org.apache.log4j} logging facility */
-   static org.apache.log4j.Category cat =
-      org.apache.log4j.Category.getInstance(SignedInfo.class.getName());
-
    /** Field _signatureAlgorithm */
    private SignatureAlgorithm _signatureAlgorithm = null;
+
+   /** Field _c14nizedBytes           */
+   private byte[] _c14nizedBytes = null;
 
    /**
     * Overwrites {@link Manifest(org.w3c.dom.Document)} because it creates another Element.
@@ -140,7 +139,7 @@ public class SignedInfo extends Manifest {
          Element canonElem = XMLUtils.createElementInSignatureSpace(this._doc,
                                 Constants._TAG_CANONICALIZATIONMETHOD);
 
-         canonElem.setAttribute(Constants._ATT_ALGORITHM,
+         canonElem.setAttributeNS(null, Constants._ATT_ALGORITHM,
                                 CanonicalizationMethodURI);
          this._constructionElement.appendChild(canonElem);
          XMLUtils.addReturnToElement(this._constructionElement);
@@ -182,8 +181,10 @@ public class SignedInfo extends Manifest {
       try {
          Canonicalizer c14nizer =
             Canonicalizer.getInstance(this.getCanonicalizationMethodURI());
-         byte c14nizedBytes[] =
-            c14nizer.canonicalize(this._constructionElement);
+
+         this._c14nizedBytes =
+            c14nizer.canonicalizeSubtree(this._constructionElement);
+
          javax.xml.parsers.DocumentBuilderFactory dbf =
             javax.xml.parsers.DocumentBuilderFactory.newInstance();
 
@@ -191,7 +192,7 @@ public class SignedInfo extends Manifest {
 
          javax.xml.parsers.DocumentBuilder db = dbf.newDocumentBuilder();
          org.w3c.dom.Document newdoc =
-            db.parse(new ByteArrayInputStream(c14nizedBytes));
+            db.parse(new ByteArrayInputStream(this._c14nizedBytes));
          Node imported = this._doc.importNode(newdoc.getDocumentElement(),
                                               true);
 
@@ -250,9 +251,19 @@ public class SignedInfo extends Manifest {
            throws CanonicalizationException, InvalidCanonicalizerException,
                   IOException, XMLSecurityException {
 
-      Canonicalizer c14nizer =
-         Canonicalizer.getInstance(this.getCanonicalizationMethodURI());
-      byte[] output = c14nizer.canonicalize(this._constructionElement);
+      if ((this._c14nizedBytes == null)
+              && (this._state == ElementProxy.MODE_SIGN)) {
+         Canonicalizer c14nizer =
+            Canonicalizer.getInstance(this.getCanonicalizationMethodURI());
+
+         this._c14nizedBytes =
+            c14nizer.canonicalizeSubtree(this._constructionElement);
+      }
+
+      // make defensive copy
+      byte[] output = new byte[this._c14nizedBytes.length];
+
+      System.arraycopy(this._c14nizedBytes, 0, output, 0, output.length);
 
       return output;
    }
@@ -280,7 +291,7 @@ public class SignedInfo extends Manifest {
             }
 
             if (found) {
-               return ((Element) n).getAttribute(Constants._ATT_ALGORITHM);
+               return ((Element) n).getAttributeNS(null, Constants._ATT_ALGORITHM);
             }
          }
       }
@@ -298,7 +309,7 @@ public class SignedInfo extends Manifest {
       Element signatureElement = this.getSignatureMethodElement();
 
       if (signatureElement != null) {
-         return signatureElement.getAttribute(Constants._ATT_ALGORITHM);
+         return signatureElement.getAttributeNS(null, Constants._ATT_ALGORITHM);
       }
 
       return null;
@@ -353,11 +364,12 @@ public class SignedInfo extends Manifest {
                                   .getJCEAlgorithmString());
    }
 
+   /**
+    * Method getBaseLocalName
+    *
+    * @return
+    */
    public String getBaseLocalName() {
       return Constants._TAG_SIGNEDINFO;
-   }
-
-   static {
-      org.apache.xml.security.Init.init();
    }
 }

@@ -63,7 +63,6 @@ package org.apache.xml.security.keys.content;
 import javax.xml.transform.TransformerException;
 import org.apache.xpath.XPathAPI;
 import org.w3c.dom.*;
-import org.apache.xml.security.c14n.helper.XPathContainer;
 import org.apache.xml.security.signature.XMLSignatureException;
 import org.apache.xml.security.exceptions.*;
 import org.apache.xml.security.transforms.*;
@@ -116,10 +115,10 @@ public class RetrievalMethod extends SignatureElementProxy
 
       super(doc);
 
-      this._constructionElement.setAttribute(Constants._ATT_URI, URI);
+      this._constructionElement.setAttributeNS(null, Constants._ATT_URI, URI);
 
       if (Type != null) {
-         this._constructionElement.setAttribute(Constants._ATT_TYPE, Type);
+         this._constructionElement.setAttributeNS(null, Constants._ATT_TYPE, Type);
       }
 
       if (transforms != null) {
@@ -152,7 +151,7 @@ public class RetrievalMethod extends SignatureElementProxy
     * @return
     */
    public String getType() {
-      return this._constructionElement.getAttribute(Constants._ATT_TYPE);
+      return this._constructionElement.getAttributeNS(null, Constants._ATT_TYPE);
    }
 
    /**
@@ -186,9 +185,5 @@ public class RetrievalMethod extends SignatureElementProxy
 
    public String getBaseLocalName() {
       return Constants._TAG_RETRIEVALMETHOD;
-   }
-
-   static {
-      org.apache.xml.security.Init.init();
    }
 }

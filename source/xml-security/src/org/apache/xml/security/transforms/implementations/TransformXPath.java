@@ -61,13 +61,14 @@ package org.apache.xml.security.transforms.implementations;
 
 
 import java.io.IOException;
+import java.util.*;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import org.xml.sax.SAXException;
 import org.w3c.dom.*;
 import org.apache.xml.security.signature.XMLSignatureInput;
 import org.apache.xml.security.c14n.*;
-import org.apache.xml.security.c14n.helper.XPathContainer;
+import org.apache.xml.security.transforms.params.XPathContainer;
 import org.apache.xml.security.transforms.*;
 import org.apache.xml.security.exceptions.*;
 import org.apache.xml.security.utils.*;
@@ -91,8 +92,7 @@ import org.apache.xml.dtm.DTMManager;
 public class TransformXPath extends TransformSpi {
 
    /** {@link org.apache.log4j} logging facility */
-   static org.apache.log4j.Category cat =
-      org.apache.log4j.Category.getInstance(TransformXPath.class.getName());
+   static org.apache.log4j.Category cat = org.apache.log4j.Category.getInstance(TransformXPath.class.getName());
 
    /** Field implementedTransformURI */
    public static final String implementedTransformURI =
@@ -137,34 +137,21 @@ public class TransformXPath extends TransformSpi {
           * The evaluation of this expression includes all of the document's nodes
           * (including comments) in the node-set representing the octet stream.
           */
-         if (input.isOctetStream()) {
-            input.setNodesetXPath(Canonicalizer.XPATH_C14N_WITH_COMMENTS);
-         }
-
-         NodeList inputNodes = input.getNodeSet();
+         Set inputSet = input.getNodeSet();
          CachedXPathFuncHereAPI xPathFuncHereAPI =
             new CachedXPathFuncHereAPI(input.getCachedXPathAPI());
          CachedXPathAPI myXPathAPI =
             new CachedXPathAPI(input.getCachedXPathAPI());
 
-         if (inputNodes.getLength() == 0) {
+         if (inputSet.size() == 0) {
             Object exArgs[] = { "input node set contains no nodes" };
 
             throw new TransformationException("empty", exArgs);
          }
 
-         Element transformElement = this._transformObject.getElement();
-         Document doc = transformElement.getOwnerDocument();
-         Element nscontext = XMLUtils.createDSctx(doc, "ds",
-                                                  Constants.SignatureSpecNS);
-
-         cat.debug("The Transform Element is " + transformElement);
-
          Element xpathElement =
-            (Element) myXPathAPI.selectSingleNode(transformElement,
-                                                  "./ds:"
-                                                  + Constants
-                                                     ._TAG_XPATH, nscontext);
+            this._transformObject.getChildElementLocalName(0,
+               Constants.SignatureSpecNS, Constants._TAG_XPATH);
 
          if (xpathElement == null) {
             Object exArgs[] = { "ds:XPath", "Transform" };
@@ -180,7 +167,7 @@ public class TransformXPath extends TransformSpi {
           * If the boolean is false, then the node is omitted from the output
           * node-set.
           */
-         HelperNodeList resultNodes = new HelperNodeList();
+         Set resultNodes = new HashSet();
 
          /**
           * precompile XPath for evaluation; this is taken from {@link XPathAPI#eval}
@@ -194,22 +181,25 @@ public class TransformXPath extends TransformSpi {
                                    "Text must be in ds:Xpath");
          }
 
-         for (int i = 0; i < inputNodes.getLength(); i++) {
+         Iterator iterator = inputSet.iterator();
+
+         while (iterator.hasNext()) {
+            Node currentNode = (Node) iterator.next();
 
             /* Same solution as in TransformBase64 ?
-            if (inputNodes.item(i).getClass().getName().equals(
+            if (currentNode.getClass().getName().equals(
                "org.apache.xml.dtm.ref.dom2dtm.DOM2DTM$defaultNamespaceDeclarationNode")) {
                continue;
             }
             */
-            XObject includeInResult = xPathFuncHereAPI.eval(inputNodes.item(i),
+            XObject includeInResult = xPathFuncHereAPI.eval(currentNode,
                                          xpathnode, prefixResolver);
 
             if (includeInResult.bool()) {
-               resultNodes.appendChild(inputNodes.item(i));
-               cat.debug("Included: (+) " + inputNodes.item(i));
-            } else {
-               cat.debug("Excluded:     " + inputNodes.item(i));
+               resultNodes.add(currentNode);
+               // cat.debug("    Added " + org.apache.xml.security.c14n.implementations.Canonicalizer20010315.getXPath(currentNode));
+             } else {
+               // cat.debug("Not added " + org.apache.xml.security.c14n.implementations.Canonicalizer20010315.getXPath(currentNode));
             }
          }
 

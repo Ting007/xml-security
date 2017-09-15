@@ -61,7 +61,7 @@ package org.apache.xml.security.utils;
 
 
 import java.io.*;
-import java.util.Vector;
+import java.util.*;
 import java.math.BigInteger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -96,6 +96,15 @@ public class XMLUtils {
    /** {@link org.apache.log4j} logging facility */
    static org.apache.log4j.Category cat =
       org.apache.log4j.Category.getInstance(XMLUtils.class.getName());
+
+   /**
+    * Constructor XMLUtils
+    *
+    */
+   private XMLUtils() {
+
+      // we don't allow instantiation
+   }
 
    /**
     * Method getXalanVersion
@@ -381,23 +390,9 @@ public class XMLUtils {
    }
 
    /**
-    * Prints a sub-tree to standard out.
+    * Returns all ancestor elements of a given node up to the document element
     *
     * @param ctxNode
-    *
-    *  try {
-    *     Document doc = contextNode.getOwnerDocument();
-    *     OutputFormat format = new OutputFormat(doc);
-    *     StringWriter stringOut = new StringWriter();
-    *     XMLSerializer serial = new XMLSerializer(stringOut, format);
-    *
-    *     serial.asDOMSerializer();
-    *     serial.serialize(doc.getDocumentElement());
-    *     os.write(stringOut.toString());
-    *  } catch (Exception ex) {
-    *     ex.printStackTrace();
-    *  }
-    * }
     * @return
     */
    public static Vector getAncestorElements(Node ctxNode) {
@@ -411,6 +406,35 @@ public class XMLUtils {
 
       while ((parent = parent.getParentNode()) != null
              && (parent.getNodeType() == Node.ELEMENT_NODE)) {
+         ancestorVector.add(parent);
+      }
+
+      ancestorVector.trimToSize();
+
+      return ancestorVector;
+   }
+
+   /**
+    * Returns all ancestor elements of a given node up to the given root element
+    *
+    * @param ctxNode
+    * @param rootElement
+    * @return
+    */
+   public static Vector getAncestorElements(Node ctxNode, Node rootElement) {
+
+      Vector ancestorVector = new Vector();
+
+      if (ctxNode.getNodeType() != Node.ELEMENT_NODE) {
+         return ancestorVector;
+      }
+
+      Node parent = ctxNode;
+      Node parentOfRoot = rootElement.getParentNode();
+
+      while ((parent = parent.getParentNode()) != null
+             && (parent.getNodeType() == Node.ELEMENT_NODE)
+             && (parent != parentOfRoot)) {
          ancestorVector.add(parent);
       }
 
@@ -497,30 +521,29 @@ public class XMLUtils {
     * @param os the {@link OutputStream}
     */
    public static void outputDOM(Node contextNode, OutputStream os) {
-
-      /*
-   try {
-      TransformerFactory tFactory = TransformerFactory.newInstance();
-      Transformer transformer = tFactory.newTransformer();
-
-      transformer
-         .setOutputProperty(javax.xml.transform.OutputKeys
-            .OMIT_XML_DECLARATION, "yes");
-
-      DOMSource source = new DOMSource(contextNode);
-      StreamResult result = new StreamResult(os);
-
-      transformer.transform(source, result);
-   } catch (TransformerConfigurationException e) {
-      e.printStackTrace();
-   } catch (TransformerException e) {
-      e.printStackTrace();
+      XMLUtils.outputDOM(contextNode, os, false);
    }
-   */
+
+   /**
+    * Outputs a DOM tree to an {@link OutputStream}. <I>If an Exception is
+    * thrown during execution, it's StackTrace is output to System.out, but the
+    * Exception is not re-thrown.</I>
+    *
+    * @param contextNode root node of the DOM tree
+    * @param os the {@link OutputStream}
+    * @param addPreamble
+    */
+   public static void outputDOM(Node contextNode, OutputStream os,
+                                boolean addPreamble) {
+
       try {
+         if (addPreamble) {
+            os.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n".getBytes());
+         }
+
          os.write(Canonicalizer
             .getInstance(Canonicalizer.ALGO_ID_C14N_WITH_COMMENTS)
-               .canonicalize(contextNode));
+               .canonicalizeSubtree(contextNode));
       } catch (IOException ex) {}
       catch (InvalidCanonicalizerException ex) {
          ex.printStackTrace();
@@ -530,7 +553,14 @@ public class XMLUtils {
    }
 
    /**
-    * Method outputDOMc14n
+    * Serializes the <CODE>contextNode</CODE> into the OutputStream, <I>but
+    * supresses all Exceptions</I>.
+    * <BR />
+    * NOTE: <I>This should only be used for debugging purposes,
+    * NOT in a production environment; this method ignores all exceptions,
+    * so you won't notice if something goes wrong. If you're asking what is to
+    * be used in a production environment, simply use the code inside the
+    * <code>try{}</code> statement, but handle the Exceptions appropriately.</I>
     *
     * @param contextNode
     * @param os
@@ -541,10 +571,17 @@ public class XMLUtils {
       try {
          os.write(Canonicalizer
             .getInstance(Canonicalizer.ALGO_ID_C14N_WITH_COMMENTS)
-               .canonicalize(contextNode));
-      } catch (IOException ex) {}
-      catch (InvalidCanonicalizerException ex) {}
-      catch (CanonicalizationException ex) {}
+               .canonicalizeSubtree(contextNode));
+      } catch (IOException ex) {
+
+         // throw new RuntimeException(ex.getMessage());
+      } catch (InvalidCanonicalizerException ex) {
+
+         // throw new RuntimeException(ex.getMessage());
+      } catch (CanonicalizationException ex) {
+
+         // throw new RuntimeException(ex.getMessage());
+      }
    }
 
    /**
@@ -575,13 +612,7 @@ public class XMLUtils {
    public static Attr createAttr(Document doc, String QName, String Value,
                                  String NamespaceURI) {
 
-      Attr attr = null;
-
-      if ((NamespaceURI != null) && (NamespaceURI.length() > 0)) {
-         attr = doc.createAttributeNS(NamespaceURI, QName);
-      } else {
-         attr = doc.createAttribute(QName);
-      }
+      Attr attr = doc.createAttributeNS(NamespaceURI, QName);
 
       attr.setNodeValue(Value);
 
@@ -661,6 +692,29 @@ public class XMLUtils {
       element.appendChild(text);
 
       return element;
+   }
+
+   /**
+    * Method getFullTextChildrenFromElement
+    *
+    * @param element
+    * @return
+    */
+   public static String getFullTextChildrenFromElement(Element element) {
+
+      StringBuffer sb = new StringBuffer();
+      NodeList children = element.getChildNodes();
+      int iMax = children.getLength();
+
+      for (int i = 0; i < iMax; i++) {
+         Node curr = children.item(i);
+
+         if (curr.getNodeType() == Node.TEXT_NODE) {
+            sb.append(((Text) curr).getData());
+         }
+      }
+
+      return sb.toString();
    }
 
    /**
@@ -748,14 +802,16 @@ public class XMLUtils {
          Element element = doc.createElementNS(Constants.SignatureSpecNS,
                                                elementName);
 
-         element.setAttribute("xmlns", Constants.SignatureSpecNS);
+         element.setAttributeNS(Constants.NamespaceSpecNS, "xmlns",
+                                Constants.SignatureSpecNS);
 
          return element;
       } else {
          Element element = doc.createElementNS(Constants.SignatureSpecNS,
                                                ds + ":" + elementName);
 
-         element.setAttribute("xmlns:" + ds, Constants.SignatureSpecNS);
+         element.setAttributeNS(Constants.NamespaceSpecNS, "xmlns:" + ds,
+                                Constants.SignatureSpecNS);
 
          return element;
       }
@@ -782,7 +838,8 @@ public class XMLUtils {
             doc.createElementNS(EncryptionConstants.EncryptionSpecNS,
                                 elementName);
 
-         element.setAttribute("xmlns", Constants.SignatureSpecNS);
+         element.setAttributeNS(Constants.NamespaceSpecNS, "xmlns",
+                                Constants.SignatureSpecNS);
 
          return element;
       } else {
@@ -790,8 +847,8 @@ public class XMLUtils {
             doc.createElementNS(EncryptionConstants.EncryptionSpecNS,
                                 xenc + ":" + elementName);
 
-         element.setAttribute("xmlns:" + xenc,
-                              EncryptionConstants.EncryptionSpecNS);
+         element.setAttributeNS(Constants.NamespaceSpecNS, "xmlns:" + xenc,
+                                EncryptionConstants.EncryptionSpecNS);
 
          return element;
       }
@@ -930,7 +987,13 @@ public class XMLUtils {
       if (node.getNodeType() == Node.DOCUMENT_NODE) {
          return (Document) node;
       } else {
-         return node.getOwnerDocument();
+         try {
+            return node.getOwnerDocument();
+         } catch (NullPointerException npe) {
+            throw new NullPointerException(I18n.translate("endorsed.jdk1.4.0")
+                                           + " Original message was \""
+                                           + npe.getMessage() + "\"");
+         }
       }
    }
 
@@ -994,9 +1057,10 @@ public class XMLUtils {
    public static Element createDSctx(Document doc, String prefix,
                                      String namespace) {
 
-      Element ctx = doc.createElement("namespaceContext");
+      Element ctx = doc.createElementNS(null, "namespaceContext");
 
-      ctx.setAttribute("xmlns:" + prefix.trim(), namespace);
+      ctx.setAttributeNS(Constants.NamespaceSpecNS, "xmlns:" + prefix.trim(),
+                         namespace);
 
       return ctx;
    }
@@ -1084,7 +1148,158 @@ public class XMLUtils {
       n.appendChild(doc.createTextNode("\n"));
    }
 
-   static {
-      org.apache.xml.security.Init.init();
+   /**
+    * Method convertNodelistToSet
+    *
+    * @param xpathNodeSet
+    * @return
+    */
+   public static Set convertNodelistToSet(NodeList xpathNodeSet) {
+
+      if (xpathNodeSet == null) {
+         return new HashSet();
+      }
+
+      int length = xpathNodeSet.getLength();
+      Set set = new HashSet(length);
+
+      for (int i = 0; i < length; i++) {
+         set.add(xpathNodeSet.item(i));
+      }
+
+      return set;
+   }
+
+   /**
+    * Method convertSetToNodelist
+    *
+    * @param set
+    * @return
+    */
+   public static NodeList convertSetToNodelist(Set set) {
+
+      HelperNodeList result = new HelperNodeList();
+      Iterator it = set.iterator();
+
+      while (it.hasNext()) {
+         result.appendChild((Node) it.next());
+      }
+
+      return result;
+   }
+
+   /**
+    * This method spreads all namespace attributes in a DOM document to their
+    * children. This is needed because the XML Signature XPath transform
+    * must evaluate the XPath against all nodes in the input, even against
+    * XPath namespace nodes. Through a bug in XalanJ2, the namespace nodes are
+    * not fully visible in the Xalan XPath model, so we have to do this by
+    * hand in DOM spaces so that the nodes become visible in XPath space.
+    *
+    * @param doc
+    * @see <A HREF="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=2650">Namespace axis resolution is not XPath compliant </A>
+    */
+   public static void circumventBug2650(Document doc) {
+      XMLUtils.circumventBug2650recurse(doc);
+   }
+
+   /**
+    * This is the work horse for {@link #circumventBug2650}.
+    *
+    * @param node
+    * @see <A HREF="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=2650">Namespace axis resolution is not XPath compliant </A>
+    */
+   private static void circumventBug2650recurse(Node node) {
+
+      if (node.getNodeType() == Node.ELEMENT_NODE) {
+         Element element = (Element) node;
+         NamedNodeMap attributes = element.getAttributes();
+         int attributesLength = attributes.getLength();
+         NodeList children = element.getChildNodes();
+         int childrenLength = children.getLength();
+
+         for (int j = 0; j < childrenLength; j++) {
+            Node child = children.item(j);
+
+            if (child.getNodeType() == Node.ELEMENT_NODE) {
+               Element childElement = (Element) child;
+
+               for (int i = 0; i < attributesLength; i++) {
+                  Attr currentAttr = (Attr) attributes.item(i);
+                  String name = currentAttr.getNodeName();
+
+                  if (name.startsWith("xmlns")) {
+                     String value = currentAttr.getNodeValue();
+                     boolean mustBeDefinedInChild =
+                        !childElement.hasAttribute(name);
+
+                     if (mustBeDefinedInChild) {
+                        childElement.setAttributeNS(Constants.NamespaceSpecNS,
+                                                    name, value);
+                     }
+                  }
+               }
+            }
+         }
+      }
+
+      for (Node child = node.getFirstChild(); child != null;
+              child = child.getNextSibling()) {
+         switch (child.getNodeType()) {
+
+         case Node.ELEMENT_NODE :
+         case Node.ENTITY_REFERENCE_NODE :
+         case Node.DOCUMENT_NODE :
+            circumventBug2650recurse(child);
+         }
+      }
+   }
+
+   /**
+    * Method getXPath
+    *
+    * @param n
+    * @param result
+    * @return
+    */
+   private static String getXPath(Node n, String result) {
+
+      if (n == null) {
+         return result;
+      }
+
+      switch (n.getNodeType()) {
+
+      case Node.ATTRIBUTE_NODE :
+         return getXPath(((Attr) n).getOwnerElement(),
+                         "/@" + ((Attr) n).getNodeName() + "=\""
+                         + ((Attr) n).getNodeValue() + "\"");
+
+      case Node.ELEMENT_NODE :
+         return getXPath(n.getParentNode(),
+                         "/" + ((Element) n).getTagName() + result);
+
+      case Node.TEXT_NODE :
+         return getXPath(n.getParentNode(), "/#text");
+
+      case Node.DOCUMENT_NODE :
+         if (result.length() > 0) {
+            return result;
+         } else {
+            return "/";
+         }
+      }
+
+      return result;
+   }
+
+   /**
+    * Simple tool to return the position of a particular node in an XPath like String.
+    *
+    * @param n
+    * @return
+    */
+   public static String getXPath(Node n) {
+      return getXPath(n, "");
    }
 }
